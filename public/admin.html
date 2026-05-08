@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetSearch Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#020817;color:white;min-height:100vh}
+.header{padding:22px 40px;background:#0f172a;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:28px;font-weight:bold;color:#38bdf8}
+.btn{padding:10px 15px;border:none;border-radius:10px;background:#2563eb;color:white;cursor:pointer;margin:4px}
+.green{background:#16a34a}
+.yellow{background:#ca8a04}
+.red{background:#dc2626}
+.purple{background:#9333ea}
+.container{max-width:1200px;margin:auto;padding:35px 20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:25px}
+.card,.section{background:#0f172a;border:1px solid #1e293b;border-radius:18px;padding:22px;margin-bottom:25px}
+.card h2{font-size:34px;color:#38bdf8}
+.site{background:#111827;border:1px solid #1e293b;border-radius:15px;padding:18px;margin-top:14px}
+.site h3{color:#38bdf8;margin-bottom:8px}
+.site p{color:#cbd5e1;margin:6px 0}
+.badge{display:inline-block;padding:5px 10px;border-radius:20px;background:#334155;margin:5px 5px 5px 0;font-size:13px}
+.sponsor{background:#9333ea}
+input,textarea{width:100%;padding:13px;margin:7px 0;background:#020817;border:1px solid #334155;border-radius:10px;color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px}
+.small{color:#94a3b8;font-size:14px;margin-top:10px}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="logo">NetSearch Admin</div>
+  <div>
+    <button class="btn" onclick="location.href='/'">Ana Sayfa</button>
+    <button class="btn red" onclick="logout()">Çıkış</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="cards">
+    <div class="card"><h2 id="totalCount">0</h2><p>Toplam Site</p></div>
+    <div class="card"><h2 id="pendingCount">0</h2><p>Onay Bekleyen</p></div>
+    <div class="card"><h2 id="approvedCount">0</h2><p>Onaylı Site</p></div>
+    <div class="card"><h2 id="adCount">0</h2><p>Aktif Reklam</p></div>
+  </div>
+
+  <div class="section">
+    <h2>Admin Olarak Site Ekle</h2>
+    <input id="title" placeholder="Site Başlığı">
+    <input id="url" placeholder="Site Linki">
+    <input id="keywords" placeholder="Anahtar Kelimeler">
+    <textarea id="desc" placeholder="Açıklama"></textarea>
+    <button class="btn green" onclick="addSite()">Siteyi Kaydet</button>
+  </div>
+
+  <div class="section">
+    <h2>Onay Bekleyen Siteler</h2>
+    <div id="pendingSites"></div>
+  </div>
+
+  <div class="section">
+    <h2>Onaylı Siteler / Reklam Yönetimi</h2>
+    <div id="approvedSites"></div>
+  </div>
+
+  <div class="section">
+    <h2>Reddedilen Siteler</h2>
+    <div id="rejectedSites"></div>
+  </div>
+
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+
+if(!user){
+  window.location.href = "/login.html";
+}
+
+if(user.role !== "admin"){
+  window.location.href = "/";
+}
+
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href = "/login.html";
+}
+
+async function loadSites(){
+  const res = await fetch("/api/sites");
+  const sites = await res.json();
+
+  const pending = sites.filter(s => s.status === "pending");
+  const approved = sites.filter(s => s.status === "approved");
+  const rejected = sites.filter(s => s.status === "rejected");
+  const ads = sites.filter(s => s.adActive === true);
+
+  document.getElementById("totalCount").innerText = sites.length;
+  document.getElementById("pendingCount").innerText = pending.length;
+  document.getElementById("approvedCount").innerText = approved.length;
+  document.getElementById("adCount").innerText = ads.length;
+
+  renderPending(pending);
+  renderApproved(approved);
+  renderRejected(rejected);
+}
+
+function renderPending(list){
+  const box = document.getElementById("pendingSites");
+  box.innerHTML = "";
+
+  if(list.length === 0){
+    box.innerHTML = "<p class='small'>Onay bekleyen site yok.</p>";
+    return;
+  }
+
+  list.forEach(site => {
+    box.innerHTML += `
+      <div class="site">
+        <h3>${site.title}</h3>
+        <span class="badge">Onay Bekliyor</span>
+        <p><b>Link:</b> ${site.url}</p>
+        <p><b>Açıklama:</b> ${site.desc}</p>
+        <p><b>Anahtar Kelimeler:</b> ${site.keywords}</p>
+        <p><b>Ekleyen:</b> ${site.ownerName || "Admin"}</p>
+        <button class="btn green" onclick="updateStatus('${site.id}', 'approved')">Onayla</button>
+        <button class="btn yellow" onclick="updateStatus('${site.id}', 'rejected')">Reddet</button>
+        <button class="btn red" onclick="deleteSite('${site.id}')">Sil</button>
+      </div>
+    `;
+  });
+}
+
+function renderApproved(list){
+  const box = document.getElementById("approvedSites");
+  box.innerHTML = "";
+
+  if(list.length === 0){
+    box.innerHTML = "<p class='small'>Onaylı site yok.</p>";
+    return;
+  }
+
+  list.forEach(site => {
+    box.innerHTML += `
+      <div class="site">
+        <h3>${site.title}</h3>
+        <span class="badge">Onaylı</span>
+        ${site.adActive ? "<span class='badge sponsor'>Sponsorlu</span>" : ""}
+
+        <p><b>Link:</b> ${site.url}</p>
+        <p><b>Açıklama:</b> ${site.desc}</p>
+        <p><b>Anahtar Kelimeler:</b> ${site.keywords}</p>
+        <p><b>Ekleyen:</b> ${site.ownerName || "Admin"}</p>
+        <p><b>Görüntülenme:</b> ${site.views || 0} | <b>Tıklama:</b> ${site.clicks || 0} | <b>Ücretli Tıklama:</b> ${site.paidClicks || 0}</p>
+        <p><b>Bakiye:</b> ${site.balance || 0} TL | <b>CPC:</b> ${site.costPerClick || 0} TL | <b>Günlük Limit:</b> ${site.dailyLimit || 0} TL</p>
+
+        <div class="grid">
+          <input id="balance-${site.id}" type="number" value="${site.balance || 0}" placeholder="Bakiye">
+          <input id="cpc-${site.id}" type="number" value="${site.costPerClick || 5}" placeholder="CPC">
+          <input id="limit-${site.id}" type="number" value="${site.dailyLimit || 100}" placeholder="Günlük Limit">
+          <input id="city-${site.id}" value="${site.city || ""}" placeholder="Şehir">
+          <input id="district-${site.id}" value="${site.district || ""}" placeholder="İlçe">
+          <input id="negative-${site.id}" value="${site.negativeKeywords || ""}" placeholder="Negatif Kelimeler">
+        </div>
+
+        <button class="btn purple" onclick="saveAd('${site.id}', true)">Reklamı Aç / Güncelle</button>
+        <button class="btn yellow" onclick="saveAd('${site.id}', false)">Reklamı Kapat</button>
+        <button class="btn red" onclick="deleteSite('${site.id}')">Sil</button>
+      </div>
+    `;
+  });
+}
+
+function renderRejected(list){
+  const box = document.getElementById("rejectedSites");
+  box.innerHTML = "";
+
+  if(list.length === 0){
+    box.innerHTML = "<p class='small'>Reddedilen site yok.</p>";
+    return;
+  }
+
+  list.forEach(site => {
+    box.innerHTML += `
+      <div class="site">
+        <h3>${site.title}</h3>
+        <span class="badge">Reddedildi</span>
+        <p><b>Link:</b> ${site.url}</p>
+        <p><b>Açıklama:</b> ${site.desc}</p>
+        <button class="btn green" onclick="updateStatus('${site.id}', 'approved')">Tekrar Onayla</button>
+        <button class="btn red" onclick="deleteSite('${site.id}')">Sil</button>
+      </div>
+    `;
+  });
+}
+
+async function addSite(){
+  const title = document.getElementById("title").value.trim();
+  const url = document.getElementById("url").value.trim();
+  const keywords = document.getElementById("keywords").value.trim();
+  const desc = document.getElementById("desc").value.trim();
+
+  if(!title || !url || !keywords || !desc){
+    alert("Tüm alanları doldur.");
+    return;
+  }
+
+  const res = await fetch("/api/sites", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ title, url, keywords, desc })
+  });
+
+  const data = await res.json();
+  alert(data.message || "Kaydedildi.");
+
+  document.getElementById("title").value = "";
+  document.getElementById("url").value = "";
+  document.getElementById("keywords").value = "";
+  document.getElementById("desc").value = "";
+
+  loadSites();
+}
+
+async function updateStatus(id, status){
+  await fetch(`/api/sites/${id}/status`, {
+    method:"PUT",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ status })
+  });
+
+  loadSites();
+}
+
+async function saveAd(id, active){
+  const balance = document.getElementById(`balance-${id}`).value;
+  const costPerClick = document.getElementById(`cpc-${id}`).value;
+  const dailyLimit = document.getElementById(`limit-${id}`).value;
+  const city = document.getElementById(`city-${id}`).value;
+  const district = document.getElementById(`district-${id}`).value;
+  const negativeKeywords = document.getElementById(`negative-${id}`).value;
+
+  const res = await fetch(`/api/sites/${id}/ad`, {
+    method:"PUT",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      adActive: active,
+      balance,
+      costPerClick,
+      dailyLimit,
+      city,
+      district,
+      negativeKeywords
+    })
+  });
+
+  const data = await res.json();
+  alert(data.message || "Güncellendi.");
+
+  loadSites();
+}
+
+async function deleteSite(id){
+  if(!confirm("Bu site silinsin mi?")) return;
+
+  await fetch(`/api/sites/${id}`, {
+    method:"DELETE"
+  });
+
+  loadSites();
+}
+
+loadSites();
+</script>
+
+</body>
+</html>

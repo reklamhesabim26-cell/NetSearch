@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetSearch Giriş</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+
+body{
+background:#020817;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+color:white;
+}
+
+.box{
+width:420px;
+background:#0f172a;
+border:1px solid #1e293b;
+border-radius:22px;
+padding:38px;
+}
+
+h1{
+text-align:center;
+color:#38bdf8;
+font-size:42px;
+margin-bottom:30px;
+}
+
+input{
+width:100%;
+padding:16px;
+margin-bottom:15px;
+background:#020817;
+border:1px solid #334155;
+border-radius:10px;
+color:white;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:16px;
+border:none;
+border-radius:10px;
+background:linear-gradient(90deg,#00bfff,#2563eb);
+color:white;
+font-size:17px;
+cursor:pointer;
+}
+
+.link{
+text-align:center;
+margin-top:20px;
+color:#cbd5e1;
+}
+
+.link a{
+color:#38bdf8;
+text-decoration:none;
+}
+
+.msg{
+margin-top:15px;
+text-align:center;
+color:#facc15;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>NetSearch</h1>
+
+<input id="username" type="text" placeholder="Kullanıcı Adı">
+<input id="password" type="password" placeholder="Şifre">
+
+<button type="button" onclick="loginUser()">
+Giriş Yap
+</button>
+
+<div class="msg" id="msg"></div>
+
+<div class="link">
+Hesabın yok mu?
+<a href="/register.html">Kayıt Ol</a>
+</div>
+
+</div>
+
+<script>
+async function loginUser(){
+
+const username = document.getElementById("username").value.trim();
+const password = document.getElementById("password").value.trim();
+const msg = document.getElementById("msg");
+
+msg.innerText = "";
+
+if(!username || !password){
+  msg.innerText = "Tüm alanları doldur.";
+  return;
+}
+
+try{
+
+const res = await fetch("/login", {
+  method:"POST",
+  headers:{
+    "Content-Type":"application/json"
+  },
+  body:JSON.stringify({
+    username,
+    password
+  })
+});
+
+const data = await res.json();
+
+if(!data.success){
+  msg.innerText = data.message || "Giriş başarısız.";
+  return;
+}
+
+const user = {
+  username:data.username,
+  role:data.role
+};
+
+localStorage.setItem("user", JSON.stringify(user));
+
+if(data.role === "admin"){
+  window.location.href = "/admin.html";
+}else{
+  window.location.href = "/user-panel.html";
+}
+
+}catch(err){
+  console.log(err);
+  msg.innerText = "Sunucuya bağlanılamadı.";
+}
+
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kayıt Ol</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#020817;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:20px;
+color:white;
+}
+
+.box{
+width:450px;
+background:#0f172a;
+padding:40px;
+border-radius:20px;
+border:1px solid #1e293b;
+}
+
+h1{
+text-align:center;
+margin-bottom:30px;
+color:#38bdf8;
+}
+
+input{
+width:100%;
+padding:16px;
+margin-bottom:15px;
+background:#111827;
+border:none;
+border-radius:10px;
+color:white;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:16px;
+border:none;
+border-radius:10px;
+background:linear-gradient(90deg,#00bfff,#2563eb);
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+.link{
+text-align:center;
+margin-top:20px;
+}
+
+a{
+color:#38bdf8;
+text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>Hesap Oluştur</h1>
+
+<input type="text" id="name" placeholder="Ad Soyad">
+<input type="text" id="company" placeholder="Firma Adı">
+<input type="email" id="email" placeholder="E-Posta">
+<input type="text" id="phone" placeholder="Telefon">
+<input type="text" id="username" placeholder="Kullanıcı Adı">
+<input type="password" id="password" placeholder="Şifre">
+
+<button onclick="register()">
+Hesap Oluştur
+</button>
+
+<div class="link">
+Zaten hesabın var mı?
+<a href="/login.html">
+Giriş Yap
+</a>
+</div>
+
+</div>
+
+<script>
+
+async function register(){
+
+const name = document.getElementById("name").value.trim();
+const company = document.getElementById("company").value.trim();
+const email = document.getElementById("email").value.trim();
+const phone = document.getElementById("phone").value.trim();
+const username = document.getElementById("username").value.trim();
+const password = document.getElementById("password").value.trim();
+
+if(
+!name ||
+!company ||
+!email ||
+!phone ||
+!username ||
+!password
+){
+alert("Tüm alanları doldur.");
+return;
+}
+
+const res = await fetch("/api/register",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+name,
+company,
+email,
+phone,
+username,
+password
+})
+
+});
+
+const data = await res.json();
+
+if(!res.ok){
+
+alert(data.message || "Kayıt başarısız.");
+
+return;
+
+}
+
+alert("Kayıt başarılı 🚀");
+
+window.location.href = "/login.html";
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1778202148298,
+    "name": "ender orakçı",
+    "company": "er teknik",
+    "email": "enderorakci266@gmail.com",
+    "phone": "05307034112",
+    "username": "enderadmin",
+    "password": "123456",
+    "role": "admin"
+  },
+  {
+    "id": 1778206595146,
+    "name": "ender orakçı",
+    "company": "pasam",
+    "email": "teknik.destek.ekibi26@gmail.com",
+    "phone": "05307034112",
+    "username": "admin12",
+    "password": "123456",
+    "role": "user"
+  }
+]

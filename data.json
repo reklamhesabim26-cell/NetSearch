@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1778201295228,
+    "title": "netservis",
+    "url": "https://www.netservis.tr/",
+    "keywords": "kombi servisi kombi tamircisi en yakın kombi servisi acil kombi tamircisi acil kombi servisi vestel çamaşır makinesi servisi baymak kombi servisi",
+    "desc": "Tüm Marka Model Beyaz Eşya Tamir Servis Hizmeti",
+    "adActive": true,
+    "balance": 500,
+    "costPerClick": 20,
+    "dailyLimit": 100,
+    "city": "eskişehir",
+    "district": "tepebaşı odunpazarı",
+    "negativeKeywords": "",
+    "isAd": true,
+    "views": 34,
+    "clicks": 1
+  },
+  {
+    "id": 1778206642325,
+    "title": "kombi",
+    "url": "https://www.enyakinservisi.com.tr/",
+    "keywords": "kombi servisi kombi tamircisi",
+    "desc": "bağımsız kombi tamircisi",
+    "ownerId": 1778206595146,
+    "ownerName": "ender orakçı",
+    "status": "approved",
+    "isAd": false,
+    "adActive": false,
+    "balance": 0,
+    "costPerClick": 5,
+    "dailyLimit": 100,
+    "todaySpent": 0,
+    "clicks": 1,
+    "views": 34,
+    "city": "",
+    "district": "",
+    "negativeKeywords": "",
+    "createdAt": "2026-05-08T02:17:22.325Z"
+  }
+]

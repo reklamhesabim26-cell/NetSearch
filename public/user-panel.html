@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kullanıcı Paneli</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+
+body{
+background:#020817;
+color:white;
+min-height:100vh;
+}
+
+.header{
+padding:24px 45px;
+background:#0f172a;
+border-bottom:1px solid #1e293b;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.logo{
+font-size:28px;
+font-weight:bold;
+color:#38bdf8;
+}
+
+.btn{
+border:none;
+background:#2563eb;
+color:white;
+padding:11px 16px;
+border-radius:10px;
+cursor:pointer;
+margin-left:8px;
+}
+
+.red{background:#dc2626}
+
+.container{
+max-width:1150px;
+margin:auto;
+padding:35px 20px;
+}
+
+.box{
+background:#0f172a;
+border:1px solid #1e293b;
+border-radius:20px;
+padding:28px;
+margin-bottom:25px;
+}
+
+input,textarea{
+width:100%;
+padding:15px;
+margin:9px 0;
+background:#020817;
+border:1px solid #334155;
+border-radius:10px;
+color:white;
+font-size:15px;
+}
+
+.site{
+background:#111827;
+border:1px solid #1e293b;
+border-radius:16px;
+padding:22px;
+margin-top:15px;
+}
+
+.site h3{
+color:#38bdf8;
+margin-bottom:8px;
+}
+
+.site p{
+color:#cbd5e1;
+margin:6px 0;
+}
+
+.badge{
+display:inline-block;
+padding:6px 12px;
+border-radius:999px;
+background:#334155;
+font-size:13px;
+margin:8px 5px 8px 0;
+}
+
+.pending{background:#ca8a04}
+.approved{background:#16a34a}
+.rejected{background:#dc2626}
+.sponsor{background:#9333ea}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:10px;
+margin-top:15px;
+}
+
+.stat{
+background:#0f172a;
+border:1px solid #1e293b;
+border-radius:12px;
+padding:14px;
+}
+
+.stat b{
+display:block;
+color:#38bdf8;
+margin-bottom:5px;
+}
+
+.small{
+color:#94a3b8;
+font-size:14px;
+margin-top:12px;
+}
+
+@media(max-width:700px){
+.header{
+flex-direction:column;
+gap:12px;
+}
+.btn{
+margin:4px;
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="logo">Kullanıcı Paneli</div>
+  <div>
+    <button class="btn" onclick="location.href='/'">Ana Sayfa</button>
+    <button class="btn" onclick="location.href='/settings.html'">Ayarlar</button>
+    <button class="btn red" onclick="logout()">Çıkış</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="box">
+    <h2 id="welcome">Hoş geldin</h2>
+    <p>Buradan kendi siteni NetSearch arama motoruna ekleyebilirsin.</p>
+  </div>
+
+  <div class="box">
+    <h2>Site Ekle</h2>
+
+    <input id="title" placeholder="Site Başlığı">
+    <input id="url" placeholder="Site Linki">
+    <input id="keywords" placeholder="Anahtar Kelimeler">
+    <textarea id="desc" placeholder="Açıklama"></textarea>
+
+    <button class="btn" onclick="addSite()">Siteyi Gönder</button>
+
+    <p class="small">
+      Eklediğin site önce admin onayına düşer. Onaylandıktan sonra arama sonuçlarında görünür.
+    </p>
+  </div>
+
+  <div class="box">
+    <h2>Benim Sitelerim</h2>
+    <div id="mySites"></div>
+  </div>
+
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+
+if(!user){
+  window.location.href = "/login.html";
+}
+
+if(user.role === "admin"){
+  window.location.href = "/admin.html";
+}
+
+document.getElementById("welcome").innerText =
+`Hoş geldin, ${user.name || user.username}`;
+
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href = "/login.html";
+}
+
+async function addSite(){
+  const title = document.getElementById("title").value.trim();
+  const url = document.getElementById("url").value.trim();
+  const keywords = document.getElementById("keywords").value.trim();
+  const desc = document.getElementById("desc").value.trim();
+
+  if(!title || !url || !keywords || !desc){
+    alert("Tüm alanları doldur.");
+    return;
+  }
+
+  const res = await fetch("/api/sites", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      title,
+      url,
+      keywords,
+      desc,
+      ownerId:user.id,
+      ownerName:user.name || user.username
+    })
+  });
+
+  const data = await res.json();
+
+  alert(data.message || "Site gönderildi.");
+
+  document.getElementById("title").value = "";
+  document.getElementById("url").value = "";
+  document.getElementById("keywords").value = "";
+  document.getElementById("desc").value = "";
+
+  loadMySites();
+}
+
+async function loadMySites(){
+  const res = await fetch("/api/sites");
+  const sites = await res.json();
+
+  const mine = sites.filter(site => site.ownerId === user.id);
+
+  const box = document.getElementById("mySites");
+  box.innerHTML = "";
+
+  if(mine.length === 0){
+    box.innerHTML = "<p class='small'>Henüz site eklemedin.</p>";
+    return;
+  }
+
+  mine.forEach(site => {
+    const statusClass =
+      site.status === "approved" ? "approved" :
+      site.status === "rejected" ? "rejected" :
+      "pending";
+
+    const statusText =
+      site.status === "approved" ? "Onaylandı" :
+      site.status === "rejected" ? "Reddedildi" :
+      "Onay Bekliyor";
+
+    box.innerHTML += `
+      <div class="site">
+        <h3>${site.title}</h3>
+
+        <span class="badge ${statusClass}">
+          ${statusText}
+        </span>
+
+        ${site.adActive ? `
+          <span class="badge sponsor">Sponsorlu Reklam Aktif</span>
+        ` : ""}
+
+        <p><b>Link:</b> ${site.url}</p>
+        <p><b>Açıklama:</b> ${site.desc}</p>
+        <p><b>Anahtar Kelimeler:</b> ${site.keywords}</p>
+
+        <div class="stats">
+          <div class="stat">
+            <b>Bakiye</b>
+            ${site.balance || 0} TL
+          </div>
+
+          <div class="stat">
+            <b>Tıklama</b>
+            ${site.clicks || 0}
+          </div>
+
+          <div class="stat">
+            <b>Ücretli Tıklama</b>
+            ${site.paidClicks || 0}
+          </div>
+
+          <div class="stat">
+            <b>Görüntülenme</b>
+            ${site.views || 0}
+          </div>
+
+          <div class="stat">
+            <b>CPC</b>
+            ${site.costPerClick || 0} TL
+          </div>
+
+          <div class="stat">
+            <b>Günlük Limit</b>
+            ${site.dailyLimit || 0} TL
+          </div>
+        </div>
+
+        <p class="small">
+          Reklam bakiyesi ve reklam ayarları şu anda admin tarafından yönetiliyor.
+        </p>
+      </div>
+    `;
+  });
+}
+
+loadMySites();
+</script>
+
+</body>
+</html>
