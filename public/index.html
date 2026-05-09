@@ -11,7 +11,7 @@ body{background:#020817;color:white;min-height:100vh}
 .header{padding:24px 50px;display:flex;justify-content:space-between;align-items:center}
 .brand{font-size:30px;font-weight:bold;color:#38bdf8}
 .nav a{color:white;text-decoration:none;margin-left:12px;background:#0f172a;border:1px solid #1e293b;padding:11px 18px;border-radius:999px}
-.container{max-width:1150px;margin:auto;padding:70px 20px;text-align:center}
+.container{max-width:1200px;margin:auto;padding:70px 20px;text-align:center}
 .logo{font-size:78px;font-weight:bold;background:linear-gradient(90deg,#00bfff,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .subtitle{color:#cbd5e1;font-size:22px;margin:14px 0 36px}
 .searchArea{max-width:850px;margin:auto;position:relative}
@@ -23,22 +23,35 @@ body{background:#020817;color:white;min-height:100vh}
 .suggestion:hover{background:#1e293b;color:white}
 .quick{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:24px}
 .quick button{background:#0f172a;color:white;border:1px solid #1e293b;padding:10px 16px;border-radius:999px;cursor:pointer}
+
 .results{margin-top:55px;text-align:left}
-.resultCard{background:#0f172a;border:1px solid #1e293b;border-radius:22px;padding:28px;margin-bottom:18px;transition:.2s}
+.resultCard{background:#0f172a;border:1px solid #1e293b;border-radius:24px;padding:0;margin-bottom:24px;overflow:hidden;transition:.2s}
 .resultCard:hover{transform:translateY(-2px);border-color:#38bdf8}
 .resultCard.sponsored{border-color:#9333ea;box-shadow:0 0 30px rgba(147,51,234,.18)}
-.resultCard a.title{color:#38bdf8;font-size:27px;font-weight:bold;text-decoration:none}
-.url{display:block;color:#22c55e;margin:10px 0;word-break:break-all}
-.desc{color:#cbd5e1;font-size:17px;line-height:1.6}
-.badge{display:inline-block;margin-top:14px;margin-right:6px;padding:6px 12px;border-radius:999px;font-size:13px;background:#1e293b;color:#38bdf8}
+.cover{width:100%;height:180px;object-fit:cover;background:#111827}
+.cardBody{padding:24px}
+.cardTop{display:flex;gap:16px;align-items:flex-start}
+.siteLogo{width:72px;height:72px;border-radius:18px;object-fit:cover;background:#020817;border:1px solid #334155}
+.title{color:#38bdf8;font-size:26px;font-weight:bold;text-decoration:none}
+.url{display:block;color:#22c55e;margin:8px 0;word-break:break-all}
+.desc{color:#cbd5e1;font-size:16px;line-height:1.6;margin-top:10px}
+.badge{display:inline-block;margin-top:12px;margin-right:6px;padding:6px 12px;border-radius:999px;font-size:13px;background:#1e293b;color:#38bdf8}
 .sponsorBadge{background:#9333ea;color:white}
 .aiBadge{background:#0f766e;color:white}
-.mapBadge{background:#1d4ed8;color:white}
+.catBadge{background:#1d4ed8;color:white}
+.ratingBadge{background:#ca8a04;color:white}
 .actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
 .actionBtn{border:none;border-radius:999px;padding:10px 15px;cursor:pointer;color:white;background:#2563eb;text-decoration:none;font-size:14px}
 .actionBtn.green{background:#16a34a}
-.actionBtn.purple{background:#9333ea}
 .actionBtn.orange{background:#ea580c}
+.actionBtn.purple{background:#9333ea}
+
+.reviewBox{margin-top:18px;background:#111827;border:1px solid #1e293b;border-radius:18px;padding:16px;display:none}
+.reviewItem{border-top:1px solid #1e293b;padding-top:12px;margin-top:12px;color:#cbd5e1}
+.reviewForm{display:grid;grid-template-columns:1fr 110px;gap:10px;margin-top:14px}
+.reviewForm input,.reviewForm select,.reviewForm textarea{width:100%;padding:12px;background:#020817;border:1px solid #334155;border-radius:10px;color:white}
+.reviewForm textarea{grid-column:1 / -1;min-height:80px}
+.reviewForm button{grid-column:1 / -1;padding:12px;border:none;border-radius:10px;background:#16a34a;color:white;cursor:pointer}
 .empty{text-align:center;color:#94a3b8;font-size:22px;margin-top:50px}
 
 @media(max-width:700px){
@@ -48,6 +61,8 @@ body{background:#020817;color:white;min-height:100vh}
 .searchBox button{width:100%;padding:18px}
 .suggestions{top:132px}
 .nav a{display:inline-block;margin:4px}
+.cardTop{flex-direction:column}
+.reviewForm{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -62,11 +77,11 @@ body{background:#020817;color:white;min-height:100vh}
 <div class="container">
 
   <div class="logo">NetSearch</div>
-  <div class="subtitle">AI skor, sponsorlu sonuç ve güven odaklı arama motoru</div>
+  <div class="subtitle">AI skor, işletme kartları, yorumlar ve sponsorlu arama motoru</div>
 
   <div class="searchArea">
     <div class="searchBox">
-      <input id="searchInput" type="text" placeholder="Eskişehir kombi servisi, klima tamiri..." oninput="showSuggestions()">
+      <input id="searchInput" type="text" placeholder="Eskişehir kombi servisi, çiçekçi, e-devlet..." oninput="showSuggestions()">
       <button ontouchstart="hideKeyboard()" onmousedown="hideKeyboard()" onclick="searchSite()">Ara</button>
     </div>
     <div class="suggestions" id="suggestions"></div>
@@ -74,10 +89,10 @@ body{background:#020817;color:white;min-height:100vh}
 
   <div class="quick">
     <button onclick="quickSearch('kombi servisi')">Kombi Servisi</button>
-    <button onclick="quickSearch('çamaşır makinesi servisi')">Çamaşır Makinesi</button>
-    <button onclick="quickSearch('buzdolabı tamiri')">Buzdolabı</button>
-    <button onclick="quickSearch('klima servisi')">Klima</button>
-    <button onclick="quickSearch('eskişehir teknik servis')">Eskişehir Servis</button>
+    <button onclick="quickSearch('çiçekçi')">Çiçekçi</button>
+    <button onclick="quickSearch('bakkal')">Bakkal</button>
+    <button onclick="quickSearch('e devlet')">E-Devlet</button>
+    <button onclick="quickSearch('teknik servis')">Teknik Servis</button>
   </div>
 
   <div class="results" id="results"></div>
@@ -86,6 +101,7 @@ body{background:#020817;color:white;min-height:100vh}
 
 <script>
 let sites = [];
+let reviewsCache = {};
 
 const navMenu = document.getElementById("navMenu");
 const user = JSON.parse(localStorage.getItem("user"));
@@ -117,11 +133,8 @@ function logout(){
 function hideKeyboard(){
   const input = document.getElementById("searchInput");
   input.blur();
-
   setTimeout(() => {
-    if(document.activeElement){
-      document.activeElement.blur();
-    }
+    if(document.activeElement) document.activeElement.blur();
   }, 50);
 }
 
@@ -150,34 +163,16 @@ function isSponsored(site){
   Number(site.todaySpent || 0) < Number(site.dailyLimit || 0);
 }
 
+function logoFallback(site){
+  return site.logoUrl || "https://via.placeholder.com/150x150.png?text=NS";
+}
+
+function coverFallback(site){
+  return site.imageUrl || "";
+}
+
 function getLocationText(site){
-  const city = site.city || "";
-  const district = site.district || "";
-  return `${city} ${district}`.trim();
-}
-
-function getGoogleQuery(site){
-  return encodeURIComponent([
-    site.title || "",
-    site.keywords || "",
-    site.city || "",
-    site.district || ""
-  ].join(" ").trim());
-}
-
-function googleSearch(siteId){
-  const site = sites.find(s => s.id === siteId);
-  if(!site) return;
-
-  window.open(`https://www.google.com/search?q=${getGoogleQuery(site)}`, "_blank");
-}
-
-function googleReviews(siteId){
-  const site = sites.find(s => s.id === siteId);
-  if(!site) return;
-
-  const query = encodeURIComponent(`${site.title || ""} yorumları şikayet güvenilir mi`);
-  window.open(`https://www.google.com/search?q=${query}`, "_blank");
+  return `${site.city || ""} ${site.district || ""}`.trim();
 }
 
 function buildSuggestions(){
@@ -185,6 +180,7 @@ function buildSuggestions(){
 
   sites.forEach(site => {
     if(site.title) set.add(site.title.toLowerCase());
+    if(site.category) set.add(site.category.toLowerCase());
 
     if(site.keywords){
       site.keywords.split(" ").forEach(w => {
@@ -197,23 +193,20 @@ function buildSuggestions(){
     }
 
     if(site.city && site.title) set.add(`${site.city} ${site.title}`.toLowerCase());
-    if(site.city && site.keywords) set.add(`${site.city} ${site.keywords}`.toLowerCase());
-    if(site.district && site.title) set.add(`${site.district} ${site.title}`.toLowerCase());
+    if(site.city && site.category) set.add(`${site.city} ${site.category}`.toLowerCase());
   });
 
   [
     "eskişehir kombi servisi",
-    "tepebaşı kombi servisi",
-    "odunpazarı beyaz eşya servisi",
-    "kombi tamircisi",
-    "petek temizleme",
+    "çiçekçi",
+    "bakkal",
+    "e devlet",
     "beyaz eşya servisi",
     "çamaşır makinesi servisi",
     "buzdolabı tamiri",
     "klima servisi",
     "teknik servis",
-    "güvenilir kombi servisi",
-    "yorumları iyi teknik servis"
+    "yorumları iyi firma"
   ].forEach(x => set.add(x));
 
   return Array.from(set);
@@ -270,34 +263,56 @@ function calculateAIScore(site, input){
   const title = normalize(site.title || "");
   const desc = normalize(site.desc || "");
   const keywords = normalize(site.keywords || "");
+  const category = normalize(site.category || "");
   const city = normalize(site.city || "");
   const district = normalize(site.district || "");
+  const address = normalize(site.address || "");
   const negativeKeywords = normalize(site.negativeKeywords || "");
 
-  const fullText = `${title} ${desc} ${keywords} ${city} ${district}`;
+  const fullText = `${title} ${desc} ${keywords} ${category} ${city} ${district} ${address}`;
 
   words.forEach(word => {
     if(title.includes(word)) score += 10;
     if(keywords.includes(word)) score += 8;
+    if(category.includes(word)) score += 7;
     if(desc.includes(word)) score += 4;
     if(city.includes(word)) score += 4;
     if(district.includes(word)) score += 4;
+    if(address.includes(word)) score += 3;
     if(fullText.includes(word)) score += 2;
     if(negativeKeywords.includes(word)) score -= 30;
   });
 
   if(title === query) score += 30;
   if(keywords === query) score += 25;
+  if(category === query) score += 20;
   if(title.includes(query)) score += 15;
   if(keywords.includes(query)) score += 12;
-
-  if(query.includes("yorum") || query.includes("güvenilir") || query.includes("sikayet")){
-    score += 4;
-  }
 
   if(isSponsored(site)) score += 15;
 
   return score;
+}
+
+async function getReviews(siteId){
+  if(reviewsCache[siteId]) return reviewsCache[siteId];
+
+  const res = await fetch(`/api/sites/${siteId}/reviews`);
+  const reviews = await res.json();
+
+  reviewsCache[siteId] = reviews;
+  return reviews;
+}
+
+function averageRating(reviews){
+  if(!reviews || reviews.length === 0) return "Yeni";
+  const avg = reviews.reduce((sum,r) => sum + Number(r.rating || 5), 0) / reviews.length;
+  return avg.toFixed(1);
+}
+
+function stars(rating){
+  const n = Math.round(Number(rating || 5));
+  return "★".repeat(n) + "☆".repeat(5 - n);
 }
 
 async function searchSite(){
@@ -329,50 +344,127 @@ async function searchSite(){
     return;
   }
 
-  filtered.forEach(site => {
+  for(const site of filtered){
     const sponsor = isSponsored(site);
     const locationText = getLocationText(site);
+    const reviews = await getReviews(site.id);
+    const avg = averageRating(reviews);
+    const cover = coverFallback(site);
 
     fetch(`/api/sites/${site.id}/view`, { method:"POST" });
 
     results.innerHTML += `
       <div class="resultCard ${sponsor ? "sponsored" : ""}">
-        <a class="title" href="#" onclick="openResult('${site.id}', '${site.url.replace(/'/g,"\\'")}')">
-          ${site.title}
-        </a>
+        ${cover ? `<img class="cover" src="${cover}" onerror="this.style.display='none'">` : ""}
 
-        <span class="url">${site.url}</span>
+        <div class="cardBody">
+          <div class="cardTop">
+            <img class="siteLogo" src="${logoFallback(site)}" onerror="this.src='https://via.placeholder.com/150x150.png?text=NS'">
 
-        <div class="desc">${site.desc || ""}</div>
+            <div>
+              <a class="title" href="#" onclick="openResult('${site.id}', '${site.url.replace(/'/g,"\\'")}')">
+                ${site.title}
+              </a>
 
-        ${sponsor 
-          ? `<span class="badge sponsorBadge">Sponsorlu</span>` 
-          : `<span class="badge">Organik Sonuç</span>`
-        }
+              <span class="url">${site.url}</span>
 
-        <span class="badge aiBadge">AI Skor: ${site.aiScore}</span>
+              <div>
+                ${sponsor ? `<span class="badge sponsorBadge">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
+                <span class="badge aiBadge">AI Skor: ${site.aiScore}</span>
+                <span class="badge catBadge">${site.category || "Genel"}</span>
+                <span class="badge ratingBadge">⭐ ${avg} (${reviews.length} yorum)</span>
+              </div>
 
-        ${locationText 
-          ? `<span class="badge mapBadge">📍 ${locationText}</span>` 
-          : `<span class="badge mapBadge">Güven kontrolü destekli</span>`
-        }
+              ${locationText ? `<span class="badge">📍 ${locationText}</span>` : ""}
+              ${site.phone ? `<span class="badge">📞 ${site.phone}</span>` : ""}
+            </div>
+          </div>
 
-        <div class="actions">
-          <button class="actionBtn green" onclick="openResult('${site.id}', '${site.url.replace(/'/g,"\\'")}')">
-            Siteye Git
-          </button>
+          <div class="desc">${site.desc || ""}</div>
 
-          <button class="actionBtn" onclick="googleSearch('${site.id}')">
-            Google’da Ara
-          </button>
+          ${site.address ? `<div class="desc"><b>Adres:</b> ${site.address}</div>` : ""}
 
-          <button class="actionBtn orange" onclick="googleReviews('${site.id}')">
-            Yorumları Gör
-          </button>
+          <div class="actions">
+            <button class="actionBtn green" onclick="openResult('${site.id}', '${site.url.replace(/'/g,"\\'")}')">
+              Siteye Git
+            </button>
+
+            <button class="actionBtn" onclick="googleSearch('${site.title.replace(/'/g,"\\'")}')">
+              Google’da Ara
+            </button>
+
+            <button class="actionBtn orange" onclick="toggleReviews('${site.id}')">
+              Yorumları Gör / Yaz
+            </button>
+          </div>
+
+          <div class="reviewBox" id="reviews-${site.id}">
+            <h3>Yorumlar</h3>
+
+            <div id="reviewList-${site.id}">
+              ${reviews.length === 0 ? `<p class="desc">Henüz yorum yok. İlk yorumu sen yaz.</p>` : ""}
+              ${reviews.map(r => `
+                <div class="reviewItem">
+                  <b>${r.userName || "Ziyaretçi"}</b> - <span style="color:#facc15">${stars(r.rating)}</span>
+                  <p>${r.comment}</p>
+                </div>
+              `).join("")}
+            </div>
+
+            <div class="reviewForm">
+              <input id="reviewName-${site.id}" placeholder="Adınız">
+              <select id="reviewRating-${site.id}">
+                <option value="5">5 Yıldız</option>
+                <option value="4">4 Yıldız</option>
+                <option value="3">3 Yıldız</option>
+                <option value="2">2 Yıldız</option>
+                <option value="1">1 Yıldız</option>
+              </select>
+              <textarea id="reviewComment-${site.id}" placeholder="Yorumunuzu yazın"></textarea>
+              <button onclick="addReview('${site.id}')">Yorumu Gönder</button>
+            </div>
+          </div>
         </div>
       </div>
     `;
+  }
+}
+
+function googleSearch(title){
+  const q = encodeURIComponent(title + " yorumları güvenilir mi");
+  window.open(`https://www.google.com/search?q=${q}`, "_blank");
+}
+
+function toggleReviews(siteId){
+  const box = document.getElementById(`reviews-${siteId}`);
+  box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+async function addReview(siteId){
+  const userName = document.getElementById(`reviewName-${siteId}`).value.trim();
+  const rating = document.getElementById(`reviewRating-${siteId}`).value;
+  const comment = document.getElementById(`reviewComment-${siteId}`).value.trim();
+
+  if(!comment){
+    alert("Yorum yazmalısın.");
+    return;
+  }
+
+  const res = await fetch(`/api/sites/${siteId}/reviews`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      userName:userName || "Ziyaretçi",
+      rating,
+      comment
+    })
   });
+
+  const data = await res.json();
+  alert(data.message || "Yorum eklendi.");
+
+  delete reviewsCache[siteId];
+  searchSite();
 }
 
 async function openResult(id, url){
