@@ -292,6 +292,9 @@ function calculateAIScore(site, input){
 }
 
 async function searchSite(){
+
+  document.getElementById("searchInput").blur();
+
   await loadSites();
 
   const input = document.getElementById("searchInput").value.trim();
