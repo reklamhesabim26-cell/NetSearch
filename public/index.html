@@ -38,6 +38,7 @@ body{background:#020817;color:white;min-height:100vh}
 .actionBtn{border:none;border-radius:999px;padding:10px 15px;cursor:pointer;color:white;background:#2563eb;text-decoration:none;font-size:14px}
 .actionBtn.green{background:#16a34a}
 .actionBtn.purple{background:#9333ea}
+.actionBtn.orange{background:#ea580c}
 .empty{text-align:center;color:#94a3b8;font-size:22px;margin-top:50px}
 
 @media(max-width:700px){
@@ -61,12 +62,12 @@ body{background:#020817;color:white;min-height:100vh}
 <div class="container">
 
   <div class="logo">NetSearch</div>
-  <div class="subtitle">AI skor, sponsorlu sonuç ve harita destekli arama motoru</div>
+  <div class="subtitle">AI skor, sponsorlu sonuç ve güven odaklı arama motoru</div>
 
   <div class="searchArea">
     <div class="searchBox">
       <input id="searchInput" type="text" placeholder="Eskişehir kombi servisi, klima tamiri..." oninput="showSuggestions()">
-      <button onclick="searchSite()">Ara</button>
+      <button ontouchstart="hideKeyboard()" onmousedown="hideKeyboard()" onclick="searchSite()">Ara</button>
     </div>
     <div class="suggestions" id="suggestions"></div>
   </div>
@@ -113,6 +114,17 @@ function logout(){
   window.location.href = "/";
 }
 
+function hideKeyboard(){
+  const input = document.getElementById("searchInput");
+  input.blur();
+
+  setTimeout(() => {
+    if(document.activeElement){
+      document.activeElement.blur();
+    }
+  }, 50);
+}
+
 function normalize(text){
   return (text || "")
     .toLowerCase()
@@ -144,31 +156,28 @@ function getLocationText(site){
   return `${city} ${district}`.trim();
 }
 
-function getMapQuery(site){
-  const parts = [
+function getGoogleQuery(site){
+  return encodeURIComponent([
     site.title || "",
     site.keywords || "",
     site.city || "",
     site.district || ""
-  ];
-
-  return parts.join(" ").trim();
+  ].join(" ").trim());
 }
 
-function openMap(siteId){
+function googleSearch(siteId){
   const site = sites.find(s => s.id === siteId);
   if(!site) return;
 
-  const query = encodeURIComponent(getMapQuery(site));
-  window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
+  window.open(`https://www.google.com/search?q=${getGoogleQuery(site)}`, "_blank");
 }
 
-function getDirections(siteId){
+function googleReviews(siteId){
   const site = sites.find(s => s.id === siteId);
   if(!site) return;
 
-  const query = encodeURIComponent(getMapQuery(site));
-  window.open(`https://www.google.com/maps/dir/?api=1&destination=${query}`, "_blank");
+  const query = encodeURIComponent(`${site.title || ""} yorumları şikayet güvenilir mi`);
+  window.open(`https://www.google.com/search?q=${query}`, "_blank");
 }
 
 function buildSuggestions(){
@@ -203,8 +212,8 @@ function buildSuggestions(){
     "buzdolabı tamiri",
     "klima servisi",
     "teknik servis",
-    "yakınımdaki kombi servisi",
-    "haritada kombi servisi"
+    "güvenilir kombi servisi",
+    "yorumları iyi teknik servis"
   ].forEach(x => set.add(x));
 
   return Array.from(set);
@@ -282,8 +291,8 @@ function calculateAIScore(site, input){
   if(title.includes(query)) score += 15;
   if(keywords.includes(query)) score += 12;
 
-  if(query.includes("yakınım") || query.includes("harita") || query.includes("konum")){
-    if(city || district) score += 12;
+  if(query.includes("yorum") || query.includes("güvenilir") || query.includes("sikayet")){
+    score += 4;
   }
 
   if(isSponsored(site)) score += 15;
@@ -292,8 +301,7 @@ function calculateAIScore(site, input){
 }
 
 async function searchSite(){
-
-  document.getElementById("searchInput").blur();
+  hideKeyboard();
 
   await loadSites();
 
@@ -346,7 +354,7 @@ async function searchSite(){
 
         ${locationText 
           ? `<span class="badge mapBadge">📍 ${locationText}</span>` 
-          : `<span class="badge mapBadge">📍 Harita destekli</span>`
+          : `<span class="badge mapBadge">Güven kontrolü destekli</span>`
         }
 
         <div class="actions">
@@ -354,12 +362,12 @@ async function searchSite(){
             Siteye Git
           </button>
 
-          <button class="actionBtn" onclick="openMap('${site.id}')">
-            Haritada Aç
+          <button class="actionBtn" onclick="googleSearch('${site.id}')">
+            Google’da Ara
           </button>
 
-          <button class="actionBtn purple" onclick="getDirections('${site.id}')">
-            Yol Tarifi
+          <button class="actionBtn orange" onclick="googleReviews('${site.id}')">
+            Yorumları Gör
           </button>
         </div>
       </div>
@@ -368,12 +376,17 @@ async function searchSite(){
 }
 
 async function openResult(id, url){
+  hideKeyboard();
+
   await fetch(`/api/sites/${id}/click`, { method:"POST" });
   window.open(url, "_blank");
 }
 
 document.getElementById("searchInput").addEventListener("keydown", function(e){
-  if(e.key === "Enter") searchSite();
+  if(e.key === "Enter"){
+    hideKeyboard();
+    searchSite();
+  }
 });
 
 document.addEventListener("click", function(e){
