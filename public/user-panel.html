@@ -3,135 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kullanıcı Paneli</title>
+<title>NetSearch Kullanıcı Paneli</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-
-body{
-background:#020817;
-color:white;
-min-height:100vh;
-}
-
+body{background:#020817;color:white;min-height:100vh}
 .header{
-padding:24px 45px;
-background:#0f172a;
-border-bottom:1px solid #1e293b;
-display:flex;
-justify-content:space-between;
-align-items:center;
+  padding:22px 40px;
+  background:#0f172a;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
-
 .logo{
-font-size:28px;
-font-weight:bold;
-color:#38bdf8;
+  font-size:28px;
+  font-weight:bold;
+  color:#38bdf8;
 }
-
 .btn{
-border:none;
-background:#2563eb;
-color:white;
-padding:11px 16px;
-border-radius:10px;
-cursor:pointer;
-margin-left:8px;
+  padding:10px 15px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:white;
+  cursor:pointer;
+  margin:4px;
 }
-
+.green{background:#16a34a}
 .red{background:#dc2626}
-
+.orange{background:#ea580c}
 .container{
-max-width:1150px;
-margin:auto;
-padding:35px 20px;
+  max-width:1250px;
+  margin:auto;
+  padding:35px 20px;
 }
-
-.box{
-background:#0f172a;
-border:1px solid #1e293b;
-border-radius:20px;
-padding:28px;
-margin-bottom:25px;
+.card,.section{
+  background:#0f172a;
+  border:1px solid #1e293b;
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:25px;
 }
-
-input,textarea{
-width:100%;
-padding:15px;
-margin:9px 0;
-background:#020817;
-border:1px solid #334155;
-border-radius:10px;
-color:white;
-font-size:15px;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
 }
-
+input,textarea,select{
+  width:100%;
+  padding:13px;
+  margin:7px 0;
+  background:#020817;
+  border:1px solid #334155;
+  border-radius:10px;
+  color:white;
+}
 .site{
-background:#111827;
-border:1px solid #1e293b;
-border-radius:16px;
-padding:22px;
-margin-top:15px;
+  background:#111827;
+  border:1px solid #1e293b;
+  border-radius:15px;
+  padding:18px;
+  margin-top:14px;
 }
-
+.siteTop{
+  display:flex;
+  gap:15px;
+  align-items:flex-start;
+}
+.siteLogo{
+  width:65px;
+  height:65px;
+  border-radius:15px;
+  object-fit:cover;
+  background:#020817;
+  border:1px solid #334155;
+}
 .site h3{
-color:#38bdf8;
-margin-bottom:8px;
+  color:#38bdf8;
+  margin-bottom:8px;
 }
-
 .site p{
-color:#cbd5e1;
-margin:6px 0;
+  color:#cbd5e1;
+  margin:6px 0;
 }
-
 .badge{
-display:inline-block;
-padding:6px 12px;
-border-radius:999px;
-background:#334155;
-font-size:13px;
-margin:8px 5px 8px 0;
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  background:#334155;
+  margin:5px 5px 5px 0;
+  font-size:13px;
 }
-
 .pending{background:#ca8a04}
 .approved{background:#16a34a}
 .rejected{background:#dc2626}
-.sponsor{background:#9333ea}
-
-.stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-gap:10px;
-margin-top:15px;
-}
-
-.stat{
-background:#0f172a;
-border:1px solid #1e293b;
-border-radius:12px;
-padding:14px;
-}
-
-.stat b{
-display:block;
-color:#38bdf8;
-margin-bottom:5px;
-}
-
 .small{
-color:#94a3b8;
-font-size:14px;
-margin-top:12px;
+  color:#94a3b8;
+  font-size:14px;
+  margin-top:10px;
 }
-
-@media(max-width:700px){
-.header{
-flex-direction:column;
-gap:12px;
-}
-.btn{
-margin:4px;
-}
+.preview{
+  width:100%;
+  max-height:220px;
+  object-fit:cover;
+  border-radius:14px;
+  margin-top:12px;
+  border:1px solid #334155;
 }
 </style>
 </head>
@@ -139,37 +117,65 @@ margin:4px;
 <body>
 
 <div class="header">
-  <div class="logo">Kullanıcı Paneli</div>
+  <div class="logo">NetSearch Kullanıcı Paneli</div>
+
   <div>
     <button class="btn" onclick="location.href='/'">Ana Sayfa</button>
-    <button class="btn" onclick="location.href='/settings.html'">Ayarlar</button>
     <button class="btn red" onclick="logout()">Çıkış</button>
   </div>
 </div>
 
 <div class="container">
 
-  <div class="box">
-    <h2 id="welcome">Hoş geldin</h2>
-    <p>Buradan kendi siteni NetSearch arama motoruna ekleyebilirsin.</p>
+  <div class="card">
+    <h2>Hoş Geldin 👋</h2>
+    <p id="welcomeText"></p>
   </div>
 
-  <div class="box">
-    <h2>Site Ekle</h2>
+  <div class="section">
+    <h2>Profesyonel İşletme / Site Kartı Oluştur</h2>
 
-    <input id="title" placeholder="Site Başlığı">
-    <input id="url" placeholder="Site Linki">
-    <input id="keywords" placeholder="Anahtar Kelimeler">
+    <div class="grid">
+      <input id="title" placeholder="İşletme / Site Başlığı">
+      <input id="url" placeholder="Site Linki">
+
+      <select id="category">
+        <option value="Genel">Genel</option>
+        <option value="Teknik Servis">Teknik Servis</option>
+        <option value="E-Ticaret">E-Ticaret</option>
+        <option value="Resmi Kurum">Resmi Kurum</option>
+        <option value="Çiçekçi">Çiçekçi</option>
+        <option value="Bakkal / Market">Bakkal / Market</option>
+        <option value="Restoran">Restoran</option>
+        <option value="Sağlık">Sağlık</option>
+        <option value="Eğitim">Eğitim</option>
+      </select>
+
+      <input id="phone" placeholder="Telefon">
+      <input id="city" placeholder="Şehir">
+      <input id="district" placeholder="İlçe">
+
+      <input id="logoUrl" placeholder="Logo URL">
+      <input id="imageUrl" placeholder="İşletme Görseli URL">
+    </div>
+
+    <textarea id="address" placeholder="Adres"></textarea>
+    <textarea id="keywords" placeholder="Anahtar Kelimeler"></textarea>
     <textarea id="desc" placeholder="Açıklama"></textarea>
 
-    <button class="btn" onclick="addSite()">Siteyi Gönder</button>
+    <h3>SEO Bilgileri</h3>
+
+    <input id="seoTitle" placeholder="SEO Başlık">
+    <textarea id="seoDescription" placeholder="SEO Açıklama"></textarea>
+
+    <button class="btn green" onclick="addSite()">Siteyi Gönder</button>
 
     <p class="small">
-      Eklediğin site önce admin onayına düşer. Onaylandıktan sonra arama sonuçlarında görünür.
+      Gönderilen siteler admin onayından sonra arama sonuçlarında görünür.
     </p>
   </div>
 
-  <div class="box">
+  <div class="section">
     <h2>Benim Sitelerim</h2>
     <div id="mySites"></div>
   </div>
@@ -183,26 +189,53 @@ if(!user){
   window.location.href = "/login.html";
 }
 
-if(user.role === "admin"){
-  window.location.href = "/admin.html";
-}
-
-document.getElementById("welcome").innerText =
-`Hoş geldin, ${user.name || user.username}`;
+document.getElementById("welcomeText").innerText =
+`${user.name || user.username} (${user.company || "Kullanıcı"})`;
 
 function logout(){
   localStorage.removeItem("user");
   window.location.href = "/login.html";
 }
 
-async function addSite(){
-  const title = document.getElementById("title").value.trim();
-  const url = document.getElementById("url").value.trim();
-  const keywords = document.getElementById("keywords").value.trim();
-  const desc = document.getElementById("desc").value.trim();
+function statusBadge(status){
+  if(status === "approved"){
+    return `<span class="badge approved">Onaylı</span>`;
+  }
 
-  if(!title || !url || !keywords || !desc){
-    alert("Tüm alanları doldur.");
+  if(status === "rejected"){
+    return `<span class="badge rejected">Reddedildi</span>`;
+  }
+
+  return `<span class="badge pending">Onay Bekliyor</span>`;
+}
+
+function logoFallback(site){
+  return site.logoUrl || "https://via.placeholder.com/120x120.png?text=NS";
+}
+
+async function addSite(){
+
+  const body = {
+    title: document.getElementById("title").value.trim(),
+    url: document.getElementById("url").value.trim(),
+    category: document.getElementById("category").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    district: document.getElementById("district").value.trim(),
+    logoUrl: document.getElementById("logoUrl").value.trim(),
+    imageUrl: document.getElementById("imageUrl").value.trim(),
+    address: document.getElementById("address").value.trim(),
+    keywords: document.getElementById("keywords").value.trim(),
+    desc: document.getElementById("desc").value.trim(),
+    seoTitle: document.getElementById("seoTitle").value.trim(),
+    seoDescription: document.getElementById("seoDescription").value.trim(),
+
+    ownerId: user.id,
+    ownerName: user.company || user.username
+  };
+
+  if(!body.title || !body.url || !body.keywords || !body.desc){
+    alert("Başlık, link, anahtar kelime ve açıklama zorunlu.");
     return;
   }
 
@@ -211,104 +244,98 @@ async function addSite(){
     headers:{
       "Content-Type":"application/json"
     },
-    body:JSON.stringify({
-      title,
-      url,
-      keywords,
-      desc,
-      ownerId:user.id,
-      ownerName:user.name || user.username
-    })
+    body:JSON.stringify(body)
   });
 
   const data = await res.json();
 
-  alert(data.message || "Site gönderildi.");
+  alert(data.message || "Gönderildi.");
 
-  document.getElementById("title").value = "";
-  document.getElementById("url").value = "";
-  document.getElementById("keywords").value = "";
-  document.getElementById("desc").value = "";
+  document.querySelectorAll("input, textarea").forEach(el => {
+    el.value = "";
+  });
 
   loadMySites();
 }
 
 async function loadMySites(){
+
   const res = await fetch("/api/sites");
   const sites = await res.json();
 
   const mine = sites.filter(site => site.ownerId === user.id);
 
   const box = document.getElementById("mySites");
+
   box.innerHTML = "";
 
   if(mine.length === 0){
-    box.innerHTML = "<p class='small'>Henüz site eklemedin.</p>";
+    box.innerHTML = `
+      <p class="small">
+        Henüz gönderilmiş site yok.
+      </p>
+    `;
     return;
   }
 
   mine.forEach(site => {
-    const statusClass =
-      site.status === "approved" ? "approved" :
-      site.status === "rejected" ? "rejected" :
-      "pending";
-
-    const statusText =
-      site.status === "approved" ? "Onaylandı" :
-      site.status === "rejected" ? "Reddedildi" :
-      "Onay Bekliyor";
 
     box.innerHTML += `
       <div class="site">
-        <h3>${site.title}</h3>
 
-        <span class="badge ${statusClass}">
-          ${statusText}
-        </span>
+        <div class="siteTop">
 
-        ${site.adActive ? `
-          <span class="badge sponsor">Sponsorlu Reklam Aktif</span>
-        ` : ""}
+          <img
+            class="siteLogo"
+            src="${logoFallback(site)}"
+            onerror="this.src='https://via.placeholder.com/120x120.png?text=NS'"
+          >
 
-        <p><b>Link:</b> ${site.url}</p>
-        <p><b>Açıklama:</b> ${site.desc}</p>
-        <p><b>Anahtar Kelimeler:</b> ${site.keywords}</p>
+          <div>
+            <h3>${site.title}</h3>
 
-        <div class="stats">
-          <div class="stat">
-            <b>Bakiye</b>
-            ${site.balance || 0} TL
+            ${statusBadge(site.status)}
+
+            <span class="badge">
+              ${site.category || "Genel"}
+            </span>
+
+            <p><b>Link:</b> ${site.url}</p>
+
+            <p>
+              <b>Konum:</b>
+              ${site.city || "-"} ${site.district || ""}
+            </p>
+
+            <p><b>Telefon:</b> ${site.phone || "-"}</p>
           </div>
 
-          <div class="stat">
-            <b>Tıklama</b>
-            ${site.clicks || 0}
-          </div>
-
-          <div class="stat">
-            <b>Ücretli Tıklama</b>
-            ${site.paidClicks || 0}
-          </div>
-
-          <div class="stat">
-            <b>Görüntülenme</b>
-            ${site.views || 0}
-          </div>
-
-          <div class="stat">
-            <b>CPC</b>
-            ${site.costPerClick || 0} TL
-          </div>
-
-          <div class="stat">
-            <b>Günlük Limit</b>
-            ${site.dailyLimit || 0} TL
-          </div>
         </div>
 
-        <p class="small">
-          Reklam bakiyesi ve reklam ayarları şu anda admin tarafından yönetiliyor.
+        ${site.imageUrl ? `
+          <img
+            class="preview"
+            src="${site.imageUrl}"
+            onerror="this.style.display='none'"
+          >
+        ` : ""}
+
+        <p><b>Açıklama:</b> ${site.desc}</p>
+
+        <p><b>Adres:</b> ${site.address || "-"}</p>
+
+        <p><b>Anahtar Kelimeler:</b> ${site.keywords}</p>
+
+        <p><b>SEO Başlık:</b> ${site.seoTitle || "-"}</p>
+
+        <p><b>SEO Açıklama:</b> ${site.seoDescription || "-"}</p>
+
+        <p>
+          <b>Görüntülenme:</b> ${site.views || 0}
+          |
+          <b>Tıklama:</b> ${site.clicks || 0}
         </p>
+
       </div>
     `;
   });
