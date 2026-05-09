@@ -7,7 +7,7 @@ const path = require("path");
 const cors = require("cors");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -35,6 +35,16 @@ const siteSchema = new mongoose.Schema({
   url: String,
   keywords: String,
   desc: String,
+
+  category: String,
+  logoUrl: String,
+  imageUrl: String,
+  phone: String,
+  address: String,
+
+  seoTitle: String,
+  seoDescription: String,
+
   ownerId: String,
   ownerName: String,
   status: { type: String, default: "pending" },
@@ -251,10 +261,26 @@ app.get("/api/sites", async (req, res) => {
 
 app.post("/api/sites", async (req, res) => {
   try{
-    const { title, url, keywords, desc, ownerId, ownerName, city, district } = req.body;
+    const {
+      title,
+      url,
+      keywords,
+      desc,
+      category,
+      logoUrl,
+      imageUrl,
+      phone,
+      address,
+      seoTitle,
+      seoDescription,
+      ownerId,
+      ownerName,
+      city,
+      district
+    } = req.body;
 
     if(!title || !url || !keywords || !desc){
-      return res.status(400).json({ message:"Tüm alanlar zorunlu." });
+      return res.status(400).json({ message:"Başlık, link, anahtar kelime ve açıklama zorunlu." });
     }
 
     const site = await Site.create({
@@ -262,6 +288,13 @@ app.post("/api/sites", async (req, res) => {
       url,
       keywords,
       desc,
+      category: category || "Genel",
+      logoUrl: logoUrl || "",
+      imageUrl: imageUrl || "",
+      phone: phone || "",
+      address: address || "",
+      seoTitle: seoTitle || title,
+      seoDescription: seoDescription || desc,
       ownerId: ownerId || null,
       ownerName: ownerName || "Admin",
       status: ownerId ? "pending" : "approved",
@@ -304,6 +337,35 @@ app.put("/api/sites/:id/status", async (req, res) => {
   }
 
   res.json({ message:"Site durumu güncellendi.", site:safeSite(site) });
+});
+
+app.put("/api/sites/:id", async (req, res) => {
+  try{
+    const allowed = [
+      "title","url","keywords","desc","category","logoUrl","imageUrl",
+      "phone","address","seoTitle","seoDescription","city","district","negativeKeywords"
+    ];
+
+    const update = {};
+
+    allowed.forEach(field => {
+      if(req.body[field] !== undefined){
+        update[field] = req.body[field];
+      }
+    });
+
+    const site = await Site.findByIdAndUpdate(req.params.id, update, { new:true });
+
+    if(!site){
+      return res.status(404).json({ message:"Site bulunamadı." });
+    }
+
+    res.json({ message:"Site güncellendi.", site:safeSite(site) });
+
+  }catch(err){
+    console.log(err);
+    res.status(500).json({ message:"Sunucu hatası." });
+  }
 });
 
 app.put("/api/sites/:id/ad", async (req, res) => {
@@ -405,6 +467,35 @@ app.post("/api/sites/:id/click", async (req, res) => {
     charged:true,
     site:safeSite(site)
   });
+});
+
+/* SEO */
+
+app.get("/robots.txt", (req, res) => {
+  res.type("text/plain");
+  res.send(`User-agent: *
+Allow: /
+Sitemap: https://netsearch.onrender.com/sitemap.xml`);
+});
+
+app.get("/sitemap.xml", async (req, res) => {
+  const sites = await Site.find({ status:"approved" }).sort({ createdAt:-1 });
+
+  const urls = sites.map(site => `
+  <url>
+    <loc>https://netsearch.onrender.com/</loc>
+    <lastmod>${new Date(site.createdAt).toISOString()}</lastmod>
+  </url>`).join("");
+
+  res.type("application/xml");
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://netsearch.onrender.com/</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+  </url>
+  ${urls}
+</urlset>`);
 });
 
 /* PAGES */
