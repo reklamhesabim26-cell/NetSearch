@@ -18,6 +18,10 @@ mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB bağlandı 🔥"))
 .catch(err => console.log("MongoDB hata:", err));
 
+/* =========================
+   MODELLER
+========================= */
+
 const userSchema = new mongoose.Schema({
   name: String,
   company: String,
@@ -71,9 +75,23 @@ const clickSchema = new mongoose.Schema({
   time: Number
 });
 
+const reviewSchema = new mongoose.Schema({
+  siteId: String,
+  userName: String,
+  rating: { type: Number, default: 5 },
+  comment: String,
+  approved: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model("User", userSchema);
 const Site = mongoose.model("Site", siteSchema);
 const Click = mongoose.model("Click", clickSchema);
+const Review = mongoose.model("Review", reviewSchema);
+
+/* =========================
+   YARDIMCI FONKSİYONLAR
+========================= */
 
 function safeUser(user){
   return {
@@ -93,6 +111,16 @@ function safeSite(site){
   obj.id = obj._id.toString();
   return obj;
 }
+
+function safeReview(review){
+  const obj = review.toObject();
+  obj.id = obj._id.toString();
+  return obj;
+}
+
+/* =========================
+   ADMIN HESABI
+========================= */
 
 async function createAdmin(){
   const hashedPassword = await bcrypt.hash("123456", 10);
@@ -117,7 +145,9 @@ async function createAdmin(){
 
 createAdmin();
 
-/* AUTH */
+/* =========================
+   AUTH
+========================= */
 
 async function registerHandler(req, res){
   try{
@@ -198,7 +228,9 @@ app.post("/api/register", registerHandler);
 app.post("/login", loginHandler);
 app.post("/api/login", loginHandler);
 
-/* USERS */
+/* =========================
+   USERS
+========================= */
 
 app.get("/api/users", async (req, res) => {
   const users = await User.find().sort({ createdAt:-1 });
@@ -252,7 +284,9 @@ app.delete("/api/users/:id", async (req, res) => {
   res.json({ message:"Kullanıcı silindi." });
 });
 
-/* SITES */
+/* =========================
+   SITES
+========================= */
 
 app.get("/api/sites", async (req, res) => {
   const sites = await Site.find().sort({ createdAt:-1 });
@@ -316,7 +350,8 @@ app.post("/api/sites", async (req, res) => {
 
 app.delete("/api/sites/:id", async (req, res) => {
   await Site.findByIdAndDelete(req.params.id);
-  res.json({ message:"Site silindi." });
+  await Review.deleteMany({ siteId: req.params.id });
+  res.json({ message:"Site ve yorumları silindi." });
 });
 
 app.put("/api/sites/:id/status", async (req, res) => {
@@ -469,7 +504,65 @@ app.post("/api/sites/:id/click", async (req, res) => {
   });
 });
 
-/* SEO */
+/* =========================
+   REVIEWS / YORUMLAR
+========================= */
+
+app.get("/api/sites/:id/reviews", async (req, res) => {
+  const reviews = await Review.find({
+    siteId: req.params.id,
+    approved: true
+  }).sort({ createdAt:-1 });
+
+  res.json(reviews.map(safeReview));
+});
+
+app.post("/api/sites/:id/reviews", async (req, res) => {
+  try{
+    const { userName, rating, comment } = req.body;
+
+    if(!comment){
+      return res.status(400).json({ message:"Yorum boş olamaz." });
+    }
+
+    const site = await Site.findById(req.params.id);
+
+    if(!site){
+      return res.status(404).json({ message:"Site bulunamadı." });
+    }
+
+    const review = await Review.create({
+      siteId: req.params.id,
+      userName: userName || "Ziyaretçi",
+      rating: Number(rating || 5),
+      comment,
+      approved: true
+    });
+
+    res.json({
+      message:"Yorum eklendi.",
+      review:safeReview(review)
+    });
+
+  }catch(err){
+    console.log(err);
+    res.status(500).json({ message:"Sunucu hatası." });
+  }
+});
+
+app.get("/api/reviews", async (req, res) => {
+  const reviews = await Review.find().sort({ createdAt:-1 });
+  res.json(reviews.map(safeReview));
+});
+
+app.delete("/api/reviews/:id", async (req, res) => {
+  await Review.findByIdAndDelete(req.params.id);
+  res.json({ message:"Yorum silindi." });
+});
+
+/* =========================
+   SEO
+========================= */
 
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
@@ -498,7 +591,9 @@ app.get("/sitemap.xml", async (req, res) => {
 </urlset>`);
 });
 
-/* PAGES */
+/* =========================
+   SAYFALAR
+========================= */
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
