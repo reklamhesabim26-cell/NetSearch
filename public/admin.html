@@ -6,105 +6,320 @@
 <title>NetSearch Admin</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#020817;color:white;min-height:100vh}
-.header{padding:22px 40px;background:#0f172a;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:28px;font-weight:bold;color:#38bdf8}
-.btn{padding:10px 15px;border:none;border-radius:10px;background:#2563eb;color:white;cursor:pointer;margin:4px}
-.green{background:#16a34a}.yellow{background:#ca8a04}.red{background:#dc2626}.purple{background:#9333ea}.orange{background:#ea580c}
-.container{max-width:1250px;margin:auto;padding:35px 20px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:25px}
-.card,.section{background:#0f172a;border:1px solid #1e293b;border-radius:18px;padding:22px;margin-bottom:25px}
-.card h2{font-size:34px;color:#38bdf8}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-input,textarea,select{width:100%;padding:13px;margin:7px 0;background:#020817;border:1px solid #334155;border-radius:10px;color:white}
-.site,.review{background:#111827;border:1px solid #1e293b;border-radius:15px;padding:18px;margin-top:14px}
-.siteTop{display:flex;gap:15px;align-items:flex-start}
-.siteLogo{width:58px;height:58px;border-radius:14px;object-fit:cover;background:#020817;border:1px solid #334155}
-.site h3,.review h3{color:#38bdf8;margin-bottom:8px}
-.site p,.review p{color:#cbd5e1;margin:6px 0}
-.badge{display:inline-block;padding:5px 10px;border-radius:20px;background:#334155;margin:5px 5px 5px 0;font-size:13px}
-.sponsor{background:#9333ea}
-.small{color:#94a3b8;font-size:14px;margin-top:10px}
-hr{border:none;border-top:1px solid #1e293b;margin:16px 0}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#020817;
+  color:white;
+  min-height:100vh;
+}
+
+.header{
+  background:#0f172a;
+  border-bottom:1px solid #1e293b;
+  padding:20px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:30px;
+  font-weight:bold;
+  color:#38bdf8;
+}
+
+.btn{
+  border:none;
+  border-radius:12px;
+  padding:12px 18px;
+  cursor:pointer;
+  color:white;
+  font-size:14px;
+}
+
+.blue{background:#2563eb}
+.green{background:#16a34a}
+.red{background:#dc2626}
+.yellow{background:#ca8a04}
+.purple{background:#9333ea}
+
+.container{
+  max-width:1300px;
+  margin:auto;
+  padding:35px 20px;
+}
+
+.section{
+  background:#0f172a;
+  border:1px solid #1e293b;
+  border-radius:24px;
+  padding:25px;
+  margin-bottom:25px;
+}
+
+.section h2{
+  margin-bottom:20px;
+  color:#38bdf8;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:12px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  padding:14px;
+  background:#020817;
+  border:1px solid #334155;
+  border-radius:12px;
+  color:white;
+}
+
+textarea{
+  min-height:100px;
+}
+
+.uploadBox{
+  background:#111827;
+  border:2px dashed #334155;
+  border-radius:18px;
+  padding:18px;
+  text-align:center;
+}
+
+.preview{
+  width:120px;
+  height:120px;
+  border-radius:18px;
+  object-fit:cover;
+  background:#020817;
+  border:1px solid #334155;
+  margin:12px auto;
+  display:block;
+}
+
+.coverPreview{
+  width:100%;
+  max-width:320px;
+  height:170px;
+  object-fit:cover;
+  border-radius:18px;
+  background:#020817;
+  border:1px solid #334155;
+  margin:12px auto;
+  display:block;
+}
+
+.siteCard{
+  background:#111827;
+  border:1px solid #1e293b;
+  border-radius:22px;
+  overflow:hidden;
+  margin-bottom:20px;
+}
+
+.siteCover{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  background:#111827;
+}
+
+.siteContent{
+  padding:22px;
+}
+
+.top{
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+}
+
+.logoBox{
+  width:72px;
+  height:72px;
+  border-radius:18px;
+  overflow:hidden;
+  background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  font-weight:bold;
+}
+
+.logoBox img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#1e293b;
+  margin-right:8px;
+  margin-top:10px;
+  color:#38bdf8;
+  font-size:13px;
+}
+
+.sponsor{
+  background:#9333ea;
+  color:white;
+}
+
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+
+.small{
+  color:#94a3b8;
+  margin-top:10px;
+}
+
+@media(max-width:700px){
+  .header{
+    flex-direction:column;
+    gap:14px;
+  }
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <div class="logo">NetSearch Admin</div>
-  <div>
-    <button class="btn" onclick="location.href='/'">Ana Sayfa</button>
-    <button class="btn red" onclick="logout()">Çıkış</button>
+
+  <div class="logo">
+    NetSearch Admin
   </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn blue" onclick="location.href='/'">
+      Ana Sayfa
+    </button>
+
+    <button class="btn red" onclick="logout()">
+      Çıkış
+    </button>
+  </div>
+
 </div>
 
 <div class="container">
 
-  <div class="cards">
-    <div class="card"><h2 id="totalCount">0</h2><p>Toplam Site</p></div>
-    <div class="card"><h2 id="pendingCount">0</h2><p>Onay Bekleyen</p></div>
-    <div class="card"><h2 id="approvedCount">0</h2><p>Onaylı Site</p></div>
-    <div class="card"><h2 id="adCount">0</h2><p>Aktif Reklam</p></div>
-    <div class="card"><h2 id="reviewCount">0</h2><p>Toplam Yorum</p></div>
-  </div>
+  <!-- SITE ADD -->
 
   <div class="section">
-    <h2>Profesyonel İşletme / Site Ekle</h2>
+
+    <h2>Yeni İşletme / Site Ekle</h2>
 
     <div class="grid">
-      <input id="title" placeholder="İşletme / Site Başlığı">
+
+      <input id="title" placeholder="İşletme Başlığı">
+
       <input id="url" placeholder="Site Linki">
 
       <select id="category">
         <option value="Genel">Genel</option>
         <option value="Teknik Servis">Teknik Servis</option>
-        <option value="E-Ticaret">E-Ticaret</option>
-        <option value="Resmi Kurum">Resmi Kurum</option>
         <option value="Çiçekçi">Çiçekçi</option>
         <option value="Bakkal / Market">Bakkal / Market</option>
         <option value="Restoran">Restoran</option>
+        <option value="Resmi Kurum">Resmi Kurum</option>
         <option value="Sağlık">Sağlık</option>
         <option value="Eğitim">Eğitim</option>
       </select>
 
       <input id="phone" placeholder="Telefon">
+
       <input id="city" placeholder="Şehir">
+
       <input id="district" placeholder="İlçe">
-      <input id="logoUrl" placeholder="Logo URL">
-      <input id="imageUrl" placeholder="Görsel URL">
+
     </div>
 
     <textarea id="address" placeholder="Adres"></textarea>
-    <textarea id="keywords" placeholder="Anahtar Kelimeler"></textarea>
+
+    <textarea id="keywords" placeholder="Anahtar kelimeler"></textarea>
+
     <textarea id="desc" placeholder="Açıklama"></textarea>
 
-    <h3>SEO Bilgileri</h3>
-    <input id="seoTitle" placeholder="SEO Başlık">
+    <!-- LOGO -->
+
+    <div class="uploadBox" style="margin-top:20px">
+
+      <h3>Logo Yükle</h3>
+
+      <img id="logoPreview" class="preview" style="display:none">
+
+      <input
+        type="file"
+        id="logoFile"
+        accept="image/*"
+        onchange="uploadLogo()"
+      >
+
+      <div class="small" id="logoStatus">
+        Logo seçilmedi
+      </div>
+
+    </div>
+
+    <!-- COVER -->
+
+    <div class="uploadBox" style="margin-top:20px">
+
+      <h3>Kapak Görseli Yükle (İsteğe Bağlı)</h3>
+
+      <img id="coverPreview" class="coverPreview" style="display:none">
+
+      <input
+        type="file"
+        id="coverFile"
+        accept="image/*"
+        onchange="uploadCover()"
+      >
+
+      <div class="small" id="coverStatus">
+        Görsel seçilmedi
+      </div>
+
+    </div>
+
+    <input id="seoTitle" placeholder="SEO Başlık" style="margin-top:20px">
+
     <textarea id="seoDescription" placeholder="SEO Açıklama"></textarea>
 
-    <button class="btn green" onclick="addSite()">Siteyi Kaydet</button>
+    <button class="btn green" onclick="addSite()">
+      Siteyi Kaydet
+    </button>
+
   </div>
 
-  <div class="section">
-    <h2>Onay Bekleyen Siteler</h2>
-    <div id="pendingSites"></div>
-  </div>
+  <!-- SITE LIST -->
 
   <div class="section">
-    <h2>Onaylı Siteler / Reklam ve Kart Yönetimi</h2>
-    <div id="approvedSites"></div>
-  </div>
 
-  <div class="section">
-    <h2>Reddedilen Siteler</h2>
-    <div id="rejectedSites"></div>
-  </div>
+    <h2>Siteler</h2>
 
-  <div class="section">
-    <h2>Yorum Yönetimi</h2>
-    <div id="reviewList"></div>
+    <div id="siteList"></div>
+
   </div>
 
 </div>
@@ -113,304 +328,276 @@ hr{border:none;border-top:1px solid #1e293b;margin:16px 0}
 const user = JSON.parse(localStorage.getItem("user"));
 
 if(!user){
-  window.location.href = "/login.html";
+  location.href = "/login.html";
 }
 
 if(user.role !== "admin"){
-  window.location.href = "/";
+  location.href = "/";
 }
 
-let allSites = [];
+let logoUrl = "";
+let imageUrl = "";
 
 function logout(){
   localStorage.removeItem("user");
-  window.location.href = "/login.html";
+  location.href = "/";
 }
 
-function logoFallback(site){
-  return site.logoUrl || "https://via.placeholder.com/120x120.png?text=NS";
-}
+async function uploadImage(file){
 
-function findSiteName(siteId){
-  const site = allSites.find(s => s.id === siteId);
-  return site ? site.title : "Bilinmeyen Site";
-}
+  const formData = new FormData();
 
-async function loadSites(){
-  const res = await fetch("/api/sites");
-  const sites = await res.json();
+  formData.append("image", file);
 
-  allSites = sites;
-
-  const pending = sites.filter(s => s.status === "pending");
-  const approved = sites.filter(s => s.status === "approved");
-  const rejected = sites.filter(s => s.status === "rejected");
-  const ads = sites.filter(s => s.adActive === true);
-
-  document.getElementById("totalCount").innerText = sites.length;
-  document.getElementById("pendingCount").innerText = pending.length;
-  document.getElementById("approvedCount").innerText = approved.length;
-  document.getElementById("adCount").innerText = ads.length;
-
-  renderPending(pending);
-  renderApproved(approved);
-  renderRejected(rejected);
-
-  loadReviews();
-}
-
-async function loadReviews(){
-  const res = await fetch("/api/reviews");
-  const reviews = await res.json();
-
-  document.getElementById("reviewCount").innerText = reviews.length;
-
-  const box = document.getElementById("reviewList");
-  box.innerHTML = "";
-
-  if(reviews.length === 0){
-    box.innerHTML = "<p class='small'>Henüz yorum yok.</p>";
-    return;
-  }
-
-  reviews.forEach(review => {
-    box.innerHTML += `
-      <div class="review">
-        <h3>${findSiteName(review.siteId)}</h3>
-        <span class="badge">⭐ ${review.rating || 5}</span>
-        <span class="badge">${review.userName || "Ziyaretçi"}</span>
-        <p><b>Yorum:</b> ${review.comment}</p>
-        <p><b>Tarih:</b> ${new Date(review.createdAt).toLocaleString("tr-TR")}</p>
-        <button class="btn red" onclick="deleteReview('${review.id}')">Yorumu Sil</button>
-      </div>
-    `;
+  const res = await fetch("/api/upload", {
+    method:"POST",
+    body:formData
   });
+
+  return await res.json();
 }
 
-function siteHeader(site){
-  return `
-    <div class="siteTop">
-      <img class="siteLogo" src="${logoFallback(site)}" onerror="this.src='https://via.placeholder.com/120x120.png?text=NS'">
-      <div>
-        <h3>${site.title}</h3>
-        <span class="badge">${site.category || "Genel"}</span>
-        ${site.adActive ? "<span class='badge sponsor'>Sponsorlu</span>" : ""}
-        <p><b>Link:</b> ${site.url}</p>
-        <p><b>Telefon:</b> ${site.phone || "-"}</p>
-        <p><b>Konum:</b> ${site.city || "-"} ${site.district || ""}</p>
-      </div>
-    </div>
-  `;
-}
+async function uploadLogo(){
 
-function renderPending(list){
-  const box = document.getElementById("pendingSites");
-  box.innerHTML = "";
+  const file =
+    document.getElementById("logoFile").files[0];
 
-  if(list.length === 0){
-    box.innerHTML = "<p class='small'>Onay bekleyen site yok.</p>";
-    return;
+  if(!file) return;
+
+  document.getElementById("logoStatus")
+    .innerText = "Logo yükleniyor...";
+
+  const data = await uploadImage(file);
+
+  if(data.success){
+
+    logoUrl = data.url;
+
+    const preview =
+      document.getElementById("logoPreview");
+
+    preview.src = data.url;
+    preview.style.display = "block";
+
+    document.getElementById("logoStatus")
+      .innerText = "Logo yüklendi ✅";
+
+  }else{
+
+    document.getElementById("logoStatus")
+      .innerText = data.message || "Hata oluştu";
   }
-
-  list.forEach(site => {
-    box.innerHTML += `
-      <div class="site">
-        ${siteHeader(site)}
-        <p><b>Açıklama:</b> ${site.desc}</p>
-        <p><b>Anahtar Kelimeler:</b> ${site.keywords}</p>
-        <p><b>Ekleyen:</b> ${site.ownerName || "Admin"}</p>
-        <button class="btn green" onclick="updateStatus('${site.id}', 'approved')">Onayla</button>
-        <button class="btn yellow" onclick="updateStatus('${site.id}', 'rejected')">Reddet</button>
-        <button class="btn red" onclick="deleteSite('${site.id}')">Sil</button>
-      </div>
-    `;
-  });
 }
 
-function renderApproved(list){
-  const box = document.getElementById("approvedSites");
-  box.innerHTML = "";
+async function uploadCover(){
 
-  if(list.length === 0){
-    box.innerHTML = "<p class='small'>Onaylı site yok.</p>";
-    return;
+  const file =
+    document.getElementById("coverFile").files[0];
+
+  if(!file) return;
+
+  document.getElementById("coverStatus")
+    .innerText = "Görsel yükleniyor...";
+
+  const data = await uploadImage(file);
+
+  if(data.success){
+
+    imageUrl = data.url;
+
+    const preview =
+      document.getElementById("coverPreview");
+
+    preview.src = data.url;
+    preview.style.display = "block";
+
+    document.getElementById("coverStatus")
+      .innerText = "Görsel yüklendi ✅";
+
+  }else{
+
+    document.getElementById("coverStatus")
+      .innerText = data.message || "Hata oluştu";
   }
-
-  list.forEach(site => {
-    box.innerHTML += `
-      <div class="site">
-        ${siteHeader(site)}
-
-        <p><b>Açıklama:</b> ${site.desc}</p>
-        <p><b>Adres:</b> ${site.address || "-"}</p>
-        <p><b>Anahtar Kelimeler:</b> ${site.keywords}</p>
-        <p><b>SEO Başlık:</b> ${site.seoTitle || "-"}</p>
-        <p><b>SEO Açıklama:</b> ${site.seoDescription || "-"}</p>
-        <p><b>Görüntülenme:</b> ${site.views || 0} | <b>Tıklama:</b> ${site.clicks || 0} | <b>Ücretli Tıklama:</b> ${site.paidClicks || 0}</p>
-        <p><b>Bakiye:</b> ${site.balance || 0} TL | <b>CPC:</b> ${site.costPerClick || 0} TL | <b>Günlük Limit:</b> ${site.dailyLimit || 0} TL</p>
-
-        <hr>
-
-        <h3>İşletme Kartı Düzenle</h3>
-
-        <div class="grid">
-          <input id="title-${site.id}" value="${site.title || ""}" placeholder="Başlık">
-          <input id="url-${site.id}" value="${site.url || ""}" placeholder="URL">
-          <input id="category-${site.id}" value="${site.category || ""}" placeholder="Kategori">
-          <input id="phone-${site.id}" value="${site.phone || ""}" placeholder="Telefon">
-          <input id="city-${site.id}" value="${site.city || ""}" placeholder="Şehir">
-          <input id="district-${site.id}" value="${site.district || ""}" placeholder="İlçe">
-          <input id="logo-${site.id}" value="${site.logoUrl || ""}" placeholder="Logo URL">
-          <input id="image-${site.id}" value="${site.imageUrl || ""}" placeholder="Görsel URL">
-        </div>
-
-        <textarea id="address-${site.id}" placeholder="Adres">${site.address || ""}</textarea>
-        <textarea id="keywords-${site.id}" placeholder="Anahtar Kelimeler">${site.keywords || ""}</textarea>
-        <textarea id="desc-${site.id}" placeholder="Açıklama">${site.desc || ""}</textarea>
-        <input id="seoTitle-${site.id}" value="${site.seoTitle || ""}" placeholder="SEO Başlık">
-        <textarea id="seoDesc-${site.id}" placeholder="SEO Açıklama">${site.seoDescription || ""}</textarea>
-
-        <button class="btn green" onclick="updateSite('${site.id}')">Kartı Güncelle</button>
-
-        <hr>
-
-        <h3>Reklam Ayarları</h3>
-
-        <div class="grid">
-          <input id="balance-${site.id}" type="number" value="${site.balance || 0}" placeholder="Bakiye">
-          <input id="cpc-${site.id}" type="number" value="${site.costPerClick || 5}" placeholder="CPC">
-          <input id="limit-${site.id}" type="number" value="${site.dailyLimit || 100}" placeholder="Günlük Limit">
-          <input id="negative-${site.id}" value="${site.negativeKeywords || ""}" placeholder="Negatif Kelimeler">
-        </div>
-
-        <button class="btn purple" onclick="saveAd('${site.id}', true)">Reklamı Aç / Güncelle</button>
-        <button class="btn yellow" onclick="saveAd('${site.id}', false)">Reklamı Kapat</button>
-        <button class="btn red" onclick="deleteSite('${site.id}')">Sil</button>
-      </div>
-    `;
-  });
-}
-
-function renderRejected(list){
-  const box = document.getElementById("rejectedSites");
-  box.innerHTML = "";
-
-  if(list.length === 0){
-    box.innerHTML = "<p class='small'>Reddedilen site yok.</p>";
-    return;
-  }
-
-  list.forEach(site => {
-    box.innerHTML += `
-      <div class="site">
-        ${siteHeader(site)}
-        <p><b>Açıklama:</b> ${site.desc}</p>
-        <button class="btn green" onclick="updateStatus('${site.id}', 'approved')">Tekrar Onayla</button>
-        <button class="btn red" onclick="deleteSite('${site.id}')">Sil</button>
-      </div>
-    `;
-  });
 }
 
 async function addSite(){
+
   const body = {
-    title: document.getElementById("title").value.trim(),
-    url: document.getElementById("url").value.trim(),
-    category: document.getElementById("category").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    city: document.getElementById("city").value.trim(),
-    district: document.getElementById("district").value.trim(),
-    logoUrl: document.getElementById("logoUrl").value.trim(),
-    imageUrl: document.getElementById("imageUrl").value.trim(),
-    address: document.getElementById("address").value.trim(),
-    keywords: document.getElementById("keywords").value.trim(),
-    desc: document.getElementById("desc").value.trim(),
-    seoTitle: document.getElementById("seoTitle").value.trim(),
-    seoDescription: document.getElementById("seoDescription").value.trim()
+    title:document.getElementById("title").value.trim(),
+    url:document.getElementById("url").value.trim(),
+    category:document.getElementById("category").value,
+    phone:document.getElementById("phone").value.trim(),
+    city:document.getElementById("city").value.trim(),
+    district:document.getElementById("district").value.trim(),
+    address:document.getElementById("address").value.trim(),
+    keywords:document.getElementById("keywords").value.trim(),
+    desc:document.getElementById("desc").value.trim(),
+    logoUrl,
+    imageUrl,
+    seoTitle:document.getElementById("seoTitle").value.trim(),
+    seoDescription:document.getElementById("seoDescription").value.trim()
   };
 
-  if(!body.title || !body.url || !body.keywords || !body.desc){
+  if(
+    !body.title ||
+    !body.url ||
+    !body.keywords ||
+    !body.desc
+  ){
     alert("Başlık, link, anahtar kelime ve açıklama zorunlu.");
     return;
   }
 
   const res = await fetch("/api/sites", {
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
+    headers:{
+      "Content-Type":"application/json"
+    },
     body:JSON.stringify(body)
   });
 
   const data = await res.json();
+
   alert(data.message || "Kaydedildi.");
 
-  document.querySelectorAll(".section input, .section textarea").forEach(el => {
-    if(!el.id.includes("-")) el.value = "";
-  });
-
-  loadSites();
+  location.reload();
 }
 
-async function updateSite(id){
-  const body = {
-    title: document.getElementById(`title-${id}`).value,
-    url: document.getElementById(`url-${id}`).value,
-    category: document.getElementById(`category-${id}`).value,
-    phone: document.getElementById(`phone-${id}`).value,
-    city: document.getElementById(`city-${id}`).value,
-    district: document.getElementById(`district-${id}`).value,
-    logoUrl: document.getElementById(`logo-${id}`).value,
-    imageUrl: document.getElementById(`image-${id}`).value,
-    address: document.getElementById(`address-${id}`).value,
-    keywords: document.getElementById(`keywords-${id}`).value,
-    desc: document.getElementById(`desc-${id}`).value,
-    seoTitle: document.getElementById(`seoTitle-${id}`).value,
-    seoDescription: document.getElementById(`seoDesc-${id}`).value
-  };
-
-  const res = await fetch(`/api/sites/${id}`, {
-    method:"PUT",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify(body)
-  });
-
-  const data = await res.json();
-  alert(data.message || "Güncellendi.");
-  loadSites();
+function letterLogo(title){
+  return (title || "N")
+    .charAt(0)
+    .toUpperCase();
 }
 
-async function updateStatus(id, status){
-  await fetch(`/api/sites/${id}/status`, {
-    method:"PUT",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ status })
+async function loadSites(){
+
+  const res = await fetch("/api/sites");
+
+  const sites = await res.json();
+
+  const box =
+    document.getElementById("siteList");
+
+  box.innerHTML = "";
+
+  if(sites.length === 0){
+
+    box.innerHTML = `
+      <div class="small">
+        Henüz site yok.
+      </div>
+    `;
+
+    return;
+  }
+
+  sites.forEach(site => {
+
+    const showCover =
+      site.imageUrl &&
+      site.imageUrl.trim() !== "";
+
+    box.innerHTML += `
+
+      <div class="siteCard">
+
+        ${
+          showCover
+          ? `
+            <img
+              class="siteCover"
+              src="${site.imageUrl}"
+            >
+          `
+          : ""
+        }
+
+        <div class="siteContent">
+
+          <div class="top">
+
+            <div class="logoBox">
+
+              ${
+                site.logoUrl
+                ? `<img src="${site.logoUrl}">`
+                : letterLogo(site.title)
+              }
+
+            </div>
+
+            <div>
+
+              <h2 style="color:#38bdf8">
+                ${site.title}
+              </h2>
+
+              <div style="margin-top:10px">
+
+                <span class="badge">
+                  ${site.category || "Genel"}
+                </span>
+
+                ${
+                  site.adActive
+                  ? `<span class="badge sponsor">Sponsorlu</span>`
+                  : `<span class="badge">Organik</span>`
+                }
+
+                ${
+                  site.city
+                  ? `<span class="badge">📍 ${site.city}</span>`
+                  : ""
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="small">
+            ${site.desc || ""}
+          </div>
+
+          <div class="actions">
+
+            <a
+              class="btn blue"
+              href="/site.html?id=${site.id}"
+              target="_blank"
+            >
+              Detay Sayfası
+            </a>
+
+            <a
+              class="btn green"
+              href="${site.url}"
+              target="_blank"
+            >
+              Siteye Git
+            </a>
+
+            <button
+              class="btn red"
+              onclick="deleteSite('${site.id}')"
+            >
+              Sil
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
   });
-
-  loadSites();
-}
-
-async function saveAd(id, active){
-  const body = {
-    adActive: active,
-    balance: document.getElementById(`balance-${id}`).value,
-    costPerClick: document.getElementById(`cpc-${id}`).value,
-    dailyLimit: document.getElementById(`limit-${id}`).value,
-    city: document.getElementById(`city-${id}`).value,
-    district: document.getElementById(`district-${id}`).value,
-    negativeKeywords: document.getElementById(`negative-${id}`).value
-  };
-
-  const res = await fetch(`/api/sites/${id}/ad`, {
-    method:"PUT",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify(body)
-  });
-
-  const data = await res.json();
-  alert(data.message || "Güncellendi.");
-  loadSites();
 }
 
 async function deleteSite(id){
+
   if(!confirm("Bu site silinsin mi?")) return;
 
   await fetch(`/api/sites/${id}`, {
@@ -418,18 +605,6 @@ async function deleteSite(id){
   });
 
   loadSites();
-}
-
-async function deleteReview(id){
-  if(!confirm("Bu yorum silinsin mi?")) return;
-
-  const res = await fetch(`/api/reviews/${id}`, {
-    method:"DELETE"
-  });
-
-  const data = await res.json();
-  alert(data.message || "Yorum silindi.");
-  loadReviews();
 }
 
 loadSites();
