@@ -11,18 +11,18 @@ body{background:#020817;color:white;min-height:100vh}
 .header{padding:22px 40px;background:#0f172a;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:28px;font-weight:bold;color:#38bdf8}
 .btn{padding:10px 15px;border:none;border-radius:10px;background:#2563eb;color:white;cursor:pointer;margin:4px}
-.green{background:#16a34a}.yellow{background:#ca8a04}.red{background:#dc2626}.purple{background:#9333ea}
+.green{background:#16a34a}.yellow{background:#ca8a04}.red{background:#dc2626}.purple{background:#9333ea}.orange{background:#ea580c}
 .container{max-width:1250px;margin:auto;padding:35px 20px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:25px}
 .card,.section{background:#0f172a;border:1px solid #1e293b;border-radius:18px;padding:22px;margin-bottom:25px}
 .card h2{font-size:34px;color:#38bdf8}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
 input,textarea,select{width:100%;padding:13px;margin:7px 0;background:#020817;border:1px solid #334155;border-radius:10px;color:white}
-.site{background:#111827;border:1px solid #1e293b;border-radius:15px;padding:18px;margin-top:14px}
+.site,.review{background:#111827;border:1px solid #1e293b;border-radius:15px;padding:18px;margin-top:14px}
 .siteTop{display:flex;gap:15px;align-items:flex-start}
 .siteLogo{width:58px;height:58px;border-radius:14px;object-fit:cover;background:#020817;border:1px solid #334155}
-.site h3{color:#38bdf8;margin-bottom:8px}
-.site p{color:#cbd5e1;margin:6px 0}
+.site h3,.review h3{color:#38bdf8;margin-bottom:8px}
+.site p,.review p{color:#cbd5e1;margin:6px 0}
 .badge{display:inline-block;padding:5px 10px;border-radius:20px;background:#334155;margin:5px 5px 5px 0;font-size:13px}
 .sponsor{background:#9333ea}
 .small{color:#94a3b8;font-size:14px;margin-top:10px}
@@ -47,6 +47,7 @@ hr{border:none;border-top:1px solid #1e293b;margin:16px 0}
     <div class="card"><h2 id="pendingCount">0</h2><p>Onay Bekleyen</p></div>
     <div class="card"><h2 id="approvedCount">0</h2><p>Onaylı Site</p></div>
     <div class="card"><h2 id="adCount">0</h2><p>Aktif Reklam</p></div>
+    <div class="card"><h2 id="reviewCount">0</h2><p>Toplam Yorum</p></div>
   </div>
 
   <div class="section">
@@ -55,6 +56,7 @@ hr{border:none;border-top:1px solid #1e293b;margin:16px 0}
     <div class="grid">
       <input id="title" placeholder="İşletme / Site Başlığı">
       <input id="url" placeholder="Site Linki">
+
       <select id="category">
         <option value="Genel">Genel</option>
         <option value="Teknik Servis">Teknik Servis</option>
@@ -66,6 +68,7 @@ hr{border:none;border-top:1px solid #1e293b;margin:16px 0}
         <option value="Sağlık">Sağlık</option>
         <option value="Eğitim">Eğitim</option>
       </select>
+
       <input id="phone" placeholder="Telefon">
       <input id="city" placeholder="Şehir">
       <input id="district" placeholder="İlçe">
@@ -76,8 +79,6 @@ hr{border:none;border-top:1px solid #1e293b;margin:16px 0}
     <textarea id="address" placeholder="Adres"></textarea>
     <textarea id="keywords" placeholder="Anahtar Kelimeler"></textarea>
     <textarea id="desc" placeholder="Açıklama"></textarea>
-
-    <hr>
 
     <h3>SEO Bilgileri</h3>
     <input id="seoTitle" placeholder="SEO Başlık">
@@ -101,6 +102,11 @@ hr{border:none;border-top:1px solid #1e293b;margin:16px 0}
     <div id="rejectedSites"></div>
   </div>
 
+  <div class="section">
+    <h2>Yorum Yönetimi</h2>
+    <div id="reviewList"></div>
+  </div>
+
 </div>
 
 <script>
@@ -114,6 +120,8 @@ if(user.role !== "admin"){
   window.location.href = "/";
 }
 
+let allSites = [];
+
 function logout(){
   localStorage.removeItem("user");
   window.location.href = "/login.html";
@@ -123,9 +131,16 @@ function logoFallback(site){
   return site.logoUrl || "https://via.placeholder.com/120x120.png?text=NS";
 }
 
+function findSiteName(siteId){
+  const site = allSites.find(s => s.id === siteId);
+  return site ? site.title : "Bilinmeyen Site";
+}
+
 async function loadSites(){
   const res = await fetch("/api/sites");
   const sites = await res.json();
+
+  allSites = sites;
 
   const pending = sites.filter(s => s.status === "pending");
   const approved = sites.filter(s => s.status === "approved");
@@ -140,6 +155,36 @@ async function loadSites(){
   renderPending(pending);
   renderApproved(approved);
   renderRejected(rejected);
+
+  loadReviews();
+}
+
+async function loadReviews(){
+  const res = await fetch("/api/reviews");
+  const reviews = await res.json();
+
+  document.getElementById("reviewCount").innerText = reviews.length;
+
+  const box = document.getElementById("reviewList");
+  box.innerHTML = "";
+
+  if(reviews.length === 0){
+    box.innerHTML = "<p class='small'>Henüz yorum yok.</p>";
+    return;
+  }
+
+  reviews.forEach(review => {
+    box.innerHTML += `
+      <div class="review">
+        <h3>${findSiteName(review.siteId)}</h3>
+        <span class="badge">⭐ ${review.rating || 5}</span>
+        <span class="badge">${review.userName || "Ziyaretçi"}</span>
+        <p><b>Yorum:</b> ${review.comment}</p>
+        <p><b>Tarih:</b> ${new Date(review.createdAt).toLocaleString("tr-TR")}</p>
+        <button class="btn red" onclick="deleteReview('${review.id}')">Yorumu Sil</button>
+      </div>
+    `;
+  });
 }
 
 function siteHeader(site){
@@ -207,6 +252,7 @@ function renderApproved(list){
         <hr>
 
         <h3>İşletme Kartı Düzenle</h3>
+
         <div class="grid">
           <input id="title-${site.id}" value="${site.title || ""}" placeholder="Başlık">
           <input id="url-${site.id}" value="${site.url || ""}" placeholder="URL">
@@ -229,6 +275,7 @@ function renderApproved(list){
         <hr>
 
         <h3>Reklam Ayarları</h3>
+
         <div class="grid">
           <input id="balance-${site.id}" type="number" value="${site.balance || 0}" placeholder="Bakiye">
           <input id="cpc-${site.id}" type="number" value="${site.costPerClick || 5}" placeholder="CPC">
@@ -371,6 +418,18 @@ async function deleteSite(id){
   });
 
   loadSites();
+}
+
+async function deleteReview(id){
+  if(!confirm("Bu yorum silinsin mi?")) return;
+
+  const res = await fetch(`/api/reviews/${id}`, {
+    method:"DELETE"
+  });
+
+  const data = await res.json();
+  alert(data.message || "Yorum silindi.");
+  loadReviews();
 }
 
 loadSites();
