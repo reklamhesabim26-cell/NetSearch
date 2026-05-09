@@ -726,11 +726,13 @@ async function searchSite(){
     results.innerHTML += `
       <div class="resultCard ${sponsored ? "sponsored" : ""}">
 
-        <img
-          class="cardCover"
-          src="${site.imageUrl || 'https://via.placeholder.com/1200x400.png?text=NetSearch'}"
-          onerror="this.src='https://via.placeholder.com/1200x400.png?text=NetSearch'"
-        >
+        ${site.imageUrl ? `
+  <img
+    class="cardCover"
+    src="${site.imageUrl}"
+    onerror="this.style.display='none'"
+  >
+` : ""}
 
         <div class="cardContent">
 
