@@ -5,17 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NetSearch AI</title>
-
-<meta name="description" content="Türkiye'nin yeni nesil yapay zeka destekli arama motoru">
+<meta name="description" content="NetSearch AI - yapay zeka destekli sponsorlu ve organik arama motoru">
 
 <style>
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial,sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 
 body{
   background:#020817;
@@ -23,20 +16,18 @@ body{
   min-height:100vh;
 }
 
-/* HEADER */
-
 .header{
   width:100%;
-  padding:20px 30px;
+  padding:20px 34px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  border-bottom:1px solid #1e293b;
   background:#0f172a;
+  border-bottom:1px solid #1e293b;
 }
 
 .logoText{
-  font-size:34px;
+  font-size:32px;
   font-weight:bold;
   color:#38bdf8;
 }
@@ -44,96 +35,127 @@ body{
 .headerButtons{
   display:flex;
   gap:10px;
+  flex-wrap:wrap;
 }
 
 .headerButtons a{
-  text-decoration:none;
   color:white;
+  text-decoration:none;
   background:#1e293b;
-  padding:10px 18px;
+  padding:10px 16px;
   border-radius:999px;
-  transition:.3s;
 }
 
 .headerButtons a:hover{
   background:#2563eb;
 }
 
-/* HERO */
-
 .hero{
   width:100%;
+  padding:70px 20px 30px;
   display:flex;
   flex-direction:column;
-  justify-content:center;
   align-items:center;
-  padding:70px 20px 30px;
 }
 
 .hero h1{
   font-size:90px;
   color:#38bdf8;
-  margin-bottom:10px;
   text-align:center;
 }
 
 .hero p{
-  font-size:28px;
+  font-size:25px;
   color:#cbd5e1;
-  margin-bottom:40px;
   text-align:center;
+  margin:12px 0 35px;
 }
 
-/* SEARCH */
+.searchWrapper{
+  width:100%;
+  max-width:900px;
+  position:relative;
+}
 
 .searchBox{
   width:100%;
-  max-width:900px;
   display:flex;
   background:#0f172a;
+  border:2px solid #1e293b;
   border-radius:999px;
   overflow:hidden;
-  border:2px solid #1e293b;
+  box-shadow:0 0 40px rgba(56,189,248,.12);
 }
 
 .searchBox input{
   flex:1;
   border:none;
   outline:none;
-  padding:25px;
-  font-size:22px;
   background:transparent;
   color:white;
+  padding:24px 28px;
+  font-size:22px;
 }
 
 .searchBox button{
+  width:180px;
   border:none;
   background:linear-gradient(90deg,#0ea5e9,#2563eb);
   color:white;
-  width:180px;
-  font-size:24px;
+  font-size:22px;
   cursor:pointer;
 }
 
-/* CATEGORY */
+.suggestions{
+  display:none;
+  position:absolute;
+  left:0;
+  right:0;
+  top:78px;
+  background:#0f172a;
+  border:1px solid #1e293b;
+  border-radius:22px;
+  overflow:hidden;
+  z-index:99;
+  text-align:left;
+  box-shadow:0 25px 50px rgba(0,0,0,.35);
+}
+
+.suggestion{
+  padding:15px 22px;
+  border-bottom:1px solid #1e293b;
+  cursor:pointer;
+  color:#cbd5e1;
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+}
+
+.suggestion:hover{
+  background:#1e293b;
+  color:white;
+}
+
+.suggestion small{
+  color:#38bdf8;
+}
 
 .categories{
   display:flex;
-  gap:12px;
   flex-wrap:wrap;
   justify-content:center;
-  margin-top:30px;
+  gap:12px;
+  margin-top:28px;
 }
 
 .categoryBtn{
   border:none;
   background:#0f172a;
   color:#38bdf8;
-  padding:12px 20px;
+  border:1px solid #1e293b;
+  padding:11px 18px;
   border-radius:999px;
   cursor:pointer;
-  border:1px solid #1e293b;
-  transition:.3s;
 }
 
 .categoryBtn:hover,
@@ -142,7 +164,23 @@ body{
   color:white;
 }
 
-/* RESULTS */
+.quick{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin-top:18px;
+}
+
+.quick button{
+  border:none;
+  background:#111827;
+  color:#cbd5e1;
+  border:1px solid #1e293b;
+  padding:9px 15px;
+  border-radius:999px;
+  cursor:pointer;
+}
 
 .results{
   width:100%;
@@ -157,17 +195,22 @@ body{
   border-radius:28px;
   overflow:hidden;
   margin-bottom:25px;
-  transition:.3s;
+  transition:.25s;
 }
 
 .resultCard:hover{
   transform:translateY(-3px);
-  border-color:#2563eb;
+  border-color:#38bdf8;
+}
+
+.resultCard.sponsored{
+  border-color:#9333ea;
+  box-shadow:0 0 30px rgba(147,51,234,.18);
 }
 
 .cardCover{
   width:100%;
-  height:230px;
+  height:220px;
   object-fit:cover;
   background:#111827;
 }
@@ -184,8 +227,8 @@ body{
 }
 
 .cardLogo{
-  width:85px;
-  height:85px;
+  width:84px;
+  height:84px;
   border-radius:20px;
   object-fit:cover;
   border:1px solid #334155;
@@ -193,15 +236,13 @@ body{
 }
 
 .siteTitle{
-  font-size:34px;
+  font-size:32px;
   color:#38bdf8;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 .siteLink{
   color:#22c55e;
-  margin-bottom:15px;
-  display:block;
   text-decoration:none;
   word-break:break-all;
 }
@@ -209,10 +250,8 @@ body{
 .siteDesc{
   color:#cbd5e1;
   line-height:1.7;
-  margin-top:10px;
+  margin-top:14px;
 }
-
-/* BADGES */
 
 .badges{
   margin-top:15px;
@@ -224,308 +263,473 @@ body{
 .badge{
   background:#1e293b;
   color:#38bdf8;
-  padding:8px 14px;
+  padding:7px 13px;
   border-radius:999px;
   font-size:14px;
 }
 
-.sponsor{
-  background:#9333ea;
-  color:white;
-}
-
-.score{
-  background:#0f766e;
-  color:white;
-}
-
-.rating{
-  background:#ca8a04;
-  color:white;
-}
-
-/* BUTTONS */
+.sponsor{background:#9333ea;color:white}
+.score{background:#0f766e;color:white}
+.rating{background:#ca8a04;color:white}
 
 .cardButtons{
   display:flex;
   flex-wrap:wrap;
   gap:12px;
-  margin-top:25px;
+  margin-top:24px;
 }
 
 .btn{
-  text-decoration:none;
   border:none;
-  cursor:pointer;
+  text-decoration:none;
+  color:white;
   padding:12px 18px;
   border-radius:999px;
-  color:white;
+  cursor:pointer;
   font-size:15px;
 }
 
-.btnBlue{
-  background:#2563eb;
-}
-
-.btnGreen{
-  background:#16a34a;
-}
-
-.btnPurple{
-  background:#9333ea;
-}
-
-/* EMPTY */
+.btnBlue{background:#2563eb}
+.btnGreen{background:#16a34a}
+.btnPurple{background:#9333ea}
+.btnOrange{background:#ea580c}
 
 .empty{
   text-align:center;
-  padding:80px 20px;
   color:#94a3b8;
   font-size:24px;
+  padding:70px 20px;
 }
 
-/* MOBILE */
-
 @media(max-width:700px){
+  .header{
+    flex-direction:column;
+    gap:14px;
+    padding:18px;
+  }
 
   .hero h1{
-    font-size:55px;
+    font-size:56px;
   }
 
   .hero p{
-    font-size:20px;
+    font-size:19px;
   }
 
   .searchBox{
     flex-direction:column;
-    border-radius:30px;
+    border-radius:28px;
   }
 
   .searchBox input{
-    width:100%;
-    padding:20px;
     font-size:18px;
+    padding:20px;
   }
 
   .searchBox button{
     width:100%;
-    padding:20px;
+    padding:18px;
+  }
+
+  .suggestions{
+    top:130px;
   }
 
   .siteTitle{
-    font-size:26px;
+    font-size:25px;
   }
 
   .cardCover{
     height:180px;
   }
-
-  .header{
-    flex-direction:column;
-    gap:15px;
-  }
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-
 <div class="header">
+  <div class="logoText">NetSearch AI</div>
 
-  <div class="logoText">
-    NetSearch
-  </div>
-
-  <div class="headerButtons">
-    <a href="/login.html">Giriş Yap</a>
-    <a href="/register.html">Kayıt Ol</a>
-  </div>
-
+  <div class="headerButtons" id="navMenu"></div>
 </div>
-
-<!-- HERO -->
 
 <div class="hero">
 
   <h1>NetSearch</h1>
 
-  <p>
-    AI destekli sponsorlu ve organik arama motoru
-  </p>
+  <p>Google benzeri autocomplete destekli AI arama motoru</p>
 
-  <div class="searchBox">
+  <div class="searchWrapper">
 
-    <input
-      id="searchInput"
-      placeholder="Kombi servisi, çiçekçi, market..."
-    >
+    <div class="searchBox">
+      <input
+        id="searchInput"
+        placeholder="Kombi servisi, çiçekçi, e-devlet, market..."
+        autocomplete="off"
+        oninput="showSuggestions()"
+      >
 
-    <button onclick="searchSite()">
-      Ara
-    </button>
+      <button
+        ontouchstart="hideKeyboard()"
+        onmousedown="hideKeyboard()"
+        onclick="searchSite()"
+      >
+        Ara
+      </button>
+    </div>
+
+    <div class="suggestions" id="suggestions"></div>
 
   </div>
 
-  <!-- CATEGORY -->
-
   <div class="categories">
+    <button class="categoryBtn active" onclick="setCategory('', this)">Tümü</button>
+    <button class="categoryBtn" onclick="setCategory('Teknik Servis', this)">Teknik Servis</button>
+    <button class="categoryBtn" onclick="setCategory('Çiçekçi', this)">Çiçekçi</button>
+    <button class="categoryBtn" onclick="setCategory('Bakkal / Market', this)">Market</button>
+    <button class="categoryBtn" onclick="setCategory('Resmi Kurum', this)">Resmi Kurum</button>
+    <button class="categoryBtn" onclick="setCategory('Restoran', this)">Restoran</button>
+    <button class="categoryBtn" onclick="setCategory('Sağlık', this)">Sağlık</button>
+    <button class="categoryBtn" onclick="setCategory('Eğitim', this)">Eğitim</button>
+  </div>
 
-    <button class="categoryBtn active" onclick="setCategory('')">
-      Tümü
-    </button>
-
-    <button class="categoryBtn" onclick="setCategory('Teknik Servis')">
-      Teknik Servis
-    </button>
-
-    <button class="categoryBtn" onclick="setCategory('Çiçekçi')">
-      Çiçekçi
-    </button>
-
-    <button class="categoryBtn" onclick="setCategory('Market')">
-      Market
-    </button>
-
-    <button class="categoryBtn" onclick="setCategory('Resmi Kurum')">
-      Resmi Kurum
-    </button>
-
-    <button class="categoryBtn" onclick="setCategory('Haber')">
-      Haber
-    </button>
-
+  <div class="quick">
+    <button onclick="quickSearch('eskişehir kombi servisi')">Eskişehir kombi servisi</button>
+    <button onclick="quickSearch('çiçekçi')">Çiçekçi</button>
+    <button onclick="quickSearch('e devlet')">E-Devlet</button>
+    <button onclick="quickSearch('yakınımdaki teknik servis')">Yakınımdaki servis</button>
+    <button onclick="quickSearch('yorumları iyi firma')">Yorumları iyi firma</button>
   </div>
 
 </div>
 
-<!-- RESULTS -->
-
 <div class="results" id="results"></div>
 
 <script>
-
 let sites = [];
-
 let selectedCategory = "";
+let reviewsCache = {};
 
-function setCategory(category){
+const navMenu = document.getElementById("navMenu");
+const user = JSON.parse(localStorage.getItem("user"));
 
+if(!user){
+  navMenu.innerHTML = `
+    <a href="/login.html">Giriş Yap</a>
+    <a href="/register.html">Kayıt Ol</a>
+  `;
+}else if(user.role === "admin"){
+  navMenu.innerHTML = `
+    <a href="/admin.html">Admin Panel</a>
+    <a href="/settings.html">Ayarlar</a>
+    <a href="#" onclick="logout()">Çıkış</a>
+  `;
+}else{
+  navMenu.innerHTML = `
+    <a href="/user-panel.html">Panelim</a>
+    <a href="/settings.html">Ayarlar</a>
+    <a href="#" onclick="logout()">Çıkış</a>
+  `;
+}
+
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href = "/";
+}
+
+function hideKeyboard(){
+  const input = document.getElementById("searchInput");
+  input.blur();
+
+  setTimeout(() => {
+    if(document.activeElement){
+      document.activeElement.blur();
+    }
+  }, 50);
+}
+
+function normalize(text){
+  return (text || "")
+    .toLowerCase()
+    .replaceAll("ı","i")
+    .replaceAll("ğ","g")
+    .replaceAll("ü","u")
+    .replaceAll("ş","s")
+    .replaceAll("ö","o")
+    .replaceAll("ç","c");
+}
+
+async function loadSites(){
+  const res = await fetch("/api/sites");
+  const data = await res.json();
+  sites = data.filter(site => site.status === "approved");
+}
+
+loadSites();
+
+function setCategory(category, btn){
   selectedCategory = category;
 
   document.querySelectorAll(".categoryBtn")
-  .forEach(btn => btn.classList.remove("active"));
+    .forEach(b => b.classList.remove("active"));
 
-  event.target.classList.add("active");
+  btn.classList.add("active");
 
   searchSite();
 }
 
-async function loadSites(){
-
-  const res = await fetch("/api/sites");
-
-  const data = await res.json();
-
-  sites = data.filter(site => site.status === "approved");
+function quickSearch(text){
+  document.getElementById("searchInput").value = text;
+  searchSite();
 }
 
-function calculateAIScore(site,input){
+function isSponsored(site){
+  return site.adActive &&
+  Number(site.balance || 0) > 0 &&
+  Number(site.todaySpent || 0) < Number(site.dailyLimit || 0);
+}
 
+function buildAutocomplete(){
+  const set = new Map();
+
+  function add(text, type){
+    if(!text) return;
+    const clean = text.trim();
+    if(clean.length < 2) return;
+
+    const key = normalize(clean);
+    if(!set.has(key)){
+      set.set(key, { text: clean, type });
+    }
+  }
+
+  sites.forEach(site => {
+    add(site.title, "Site");
+    add(site.category, "Kategori");
+    add(site.city, "Şehir");
+    add(site.district, "İlçe");
+
+    if(site.city && site.category){
+      add(`${site.city} ${site.category}`, "Şehir + Kategori");
+    }
+
+    if(site.city && site.title){
+      add(`${site.city} ${site.title}`, "Şehir + Site");
+    }
+
+    if(site.keywords){
+      site.keywords.split(",").forEach(k => add(k, "Anahtar kelime"));
+      site.keywords.split(" ").forEach(k => add(k, "Kelime"));
+    }
+  });
+
+  [
+    ["kombi servisi", "Popüler"],
+    ["eskişehir kombi servisi", "Popüler"],
+    ["çamaşır makinesi servisi", "Popüler"],
+    ["buzdolabı tamiri", "Popüler"],
+    ["klima servisi", "Popüler"],
+    ["çiçekçi", "Popüler"],
+    ["bakkal", "Popüler"],
+    ["market", "Popüler"],
+    ["e devlet", "Resmi"],
+    ["yakınımdaki teknik servis", "AI öneri"],
+    ["yorumları iyi firma", "AI öneri"],
+    ["güvenilir teknik servis", "AI öneri"]
+  ].forEach(x => add(x[0], x[1]));
+
+  return Array.from(set.values());
+}
+
+function showSuggestions(){
+  const input = document.getElementById("searchInput").value.trim();
+  const box = document.getElementById("suggestions");
+
+  box.innerHTML = "";
+
+  if(input.length < 1){
+    box.style.display = "none";
+    return;
+  }
+
+  const cleanInput = normalize(input);
+
+  const suggestions = buildAutocomplete()
+    .map(item => {
+      const cleanText = normalize(item.text);
+      let score = 0;
+
+      if(cleanText.startsWith(cleanInput)) score += 50;
+      if(cleanText.includes(cleanInput)) score += 25;
+
+      cleanInput.split(" ").forEach(word => {
+        if(word.length > 1 && cleanText.includes(word)) score += 10;
+      });
+
+      return { ...item, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a,b) => b.score - a.score)
+    .slice(0,10);
+
+  if(suggestions.length === 0){
+    box.style.display = "none";
+    return;
+  }
+
+  suggestions.forEach(item => {
+    box.innerHTML += `
+      <div class="suggestion" onclick="selectSuggestion('${item.text.replace(/'/g,"\\'")}')">
+        <span>🔎 ${item.text}</span>
+        <small>${item.type}</small>
+      </div>
+    `;
+  });
+
+  box.style.display = "block";
+}
+
+function selectSuggestion(text){
+  document.getElementById("searchInput").value = text;
+  document.getElementById("suggestions").style.display = "none";
+  searchSite();
+}
+
+function calculateAIScore(site, input){
   let score = 0;
 
-  input = input.toLowerCase();
+  const query = normalize(input);
+  const words = query.split(" ").filter(w => w.length > 1);
 
-  const title =
-    (site.title || "").toLowerCase();
+  const title = normalize(site.title || "");
+  const keywords = normalize(site.keywords || "");
+  const desc = normalize(site.desc || "");
+  const category = normalize(site.category || "");
+  const city = normalize(site.city || "");
+  const district = normalize(site.district || "");
+  const address = normalize(site.address || "");
+  const negative = normalize(site.negativeKeywords || "");
 
-  const keywords =
-    (site.keywords || "").toLowerCase();
+  const fullText = `${title} ${keywords} ${desc} ${category} ${city} ${district} ${address}`;
 
-  const desc =
-    (site.desc || "").toLowerCase();
+  if(!query){
+    score += 1;
+  }
 
-  if(title.includes(input)) score += 40;
+  words.forEach(word => {
+    if(title.includes(word)) score += 12;
+    if(keywords.includes(word)) score += 10;
+    if(category.includes(word)) score += 8;
+    if(city.includes(word)) score += 5;
+    if(district.includes(word)) score += 5;
+    if(desc.includes(word)) score += 4;
+    if(address.includes(word)) score += 3;
+    if(fullText.includes(word)) score += 2;
+    if(negative.includes(word)) score -= 40;
+  });
 
-  if(keywords.includes(input)) score += 35;
+  if(title === query) score += 40;
+  if(category === query) score += 25;
+  if(keywords.includes(query)) score += 20;
+  if(title.includes(query)) score += 18;
 
-  if(desc.includes(input)) score += 20;
+  if(selectedCategory && site.category === selectedCategory){
+    score += 30;
+  }
 
-  if(site.adActive) score += 15;
+  if(isSponsored(site)){
+    score += 18;
+  }
 
-  score += Math.min(site.clicks || 0, 50);
+  score += Math.min(Number(site.clicks || 0), 30);
+  score += Math.min(Number(site.views || 0) / 10, 20);
 
-  return score;
+  return Math.round(score);
+}
+
+async function getReviews(siteId){
+  if(reviewsCache[siteId]) return reviewsCache[siteId];
+
+  try{
+    const res = await fetch(`/api/sites/${siteId}/reviews`);
+    const reviews = await res.json();
+    reviewsCache[siteId] = reviews;
+    return reviews;
+  }catch(err){
+    return [];
+  }
+}
+
+function averageRating(reviews){
+  if(!reviews || reviews.length === 0) return "Yeni";
+  const avg = reviews.reduce((sum,r) => sum + Number(r.rating || 5), 0) / reviews.length;
+  return avg.toFixed(1);
 }
 
 async function searchSite(){
-
-  document.getElementById("searchInput").blur();
+  hideKeyboard();
 
   await loadSites();
 
-  const input =
-    document.getElementById("searchInput")
-    .value
-    .toLowerCase()
-    .trim();
+  const input = document.getElementById("searchInput").value.trim();
+  const results = document.getElementById("results");
 
-  const resultsBox =
-    document.getElementById("results");
+  document.getElementById("suggestions").style.display = "none";
+  results.innerHTML = "";
 
-  let filtered = sites.filter(site => {
+  let filtered = sites
+    .filter(site => {
+      if(selectedCategory && site.category !== selectedCategory){
+        return false;
+      }
 
-    const text = `
-      ${site.title}
-      ${site.keywords}
-      ${site.desc}
-      ${site.category}
-    `.toLowerCase();
+      if(!input) return true;
 
-    const searchMatch =
-      !input || text.includes(input);
+      const text = normalize(`
+        ${site.title}
+        ${site.keywords}
+        ${site.desc}
+        ${site.category}
+        ${site.city}
+        ${site.district}
+        ${site.address}
+      `);
 
-    const categoryMatch =
-      !selectedCategory ||
-      site.category === selectedCategory;
+      const words = normalize(input).split(" ").filter(w => w.length > 1);
 
-    return searchMatch && categoryMatch;
-  });
-
-  filtered = filtered.map(site => ({
-    ...site,
-    aiScore:calculateAIScore(site,input)
-  }));
-
-  filtered.sort((a,b) => b.aiScore - a.aiScore);
-
-  resultsBox.innerHTML = "";
+      return words.some(word => text.includes(word));
+    })
+    .map(site => ({
+      ...site,
+      aiScore: calculateAIScore(site, input)
+    }))
+    .filter(site => site.aiScore > 0)
+    .sort((a,b) => b.aiScore - a.aiScore);
 
   if(filtered.length === 0){
-
-    resultsBox.innerHTML = `
+    results.innerHTML = `
       <div class="empty">
         Sonuç bulunamadı.
       </div>
     `;
-
     return;
   }
 
-  filtered.forEach(site => {
+  for(const site of filtered){
+    const reviews = await getReviews(site.id);
+    const avg = averageRating(reviews);
+    const sponsored = isSponsored(site);
 
-    resultsBox.innerHTML += `
+    fetch(`/api/sites/${site.id}/view`, { method:"POST" });
 
-      <div class="resultCard">
+    results.innerHTML += `
+      <div class="resultCard ${sponsored ? "sponsored" : ""}">
 
         <img
           class="cardCover"
-          src="${
-            site.imageUrl ||
-            'https://via.placeholder.com/1200x400.png?text=NetSearch'
-          }"
+          src="${site.imageUrl || 'https://via.placeholder.com/1200x400.png?text=NetSearch'}"
+          onerror="this.src='https://via.placeholder.com/1200x400.png?text=NetSearch'"
         >
 
         <div class="cardContent">
@@ -534,26 +738,16 @@ async function searchSite(){
 
             <img
               class="cardLogo"
-              src="${
-                site.logoUrl ||
-                'https://via.placeholder.com/200x200.png?text=NS'
-              }"
+              src="${site.logoUrl || 'https://via.placeholder.com/200x200.png?text=NS'}"
+              onerror="this.src='https://via.placeholder.com/200x200.png?text=NS'"
             >
 
             <div>
+              <div class="siteTitle">${site.title}</div>
 
-              <div class="siteTitle">
-                ${site.title}
-              </div>
-
-              <a
-                class="siteLink"
-                href="${site.url}"
-                target="_blank"
-              >
+              <a class="siteLink" href="${site.url}" target="_blank" onclick="registerClick('${site.id}')">
                 ${site.url}
               </a>
-
             </div>
 
           </div>
@@ -563,31 +757,18 @@ async function searchSite(){
           </div>
 
           <div class="badges">
+            <div class="badge">${site.category || "Genel"}</div>
 
-            <div class="badge">
-              ${site.category || "Genel"}
-            </div>
-
-            ${
-              site.adActive
+            ${sponsored
               ? `<div class="badge sponsor">Sponsorlu</div>`
               : `<div class="badge">Organik Sonuç</div>`
             }
 
-            <div class="badge score">
-              AI Skor: ${site.aiScore}
-            </div>
+            <div class="badge score">AI Skor: ${site.aiScore}</div>
+            <div class="badge rating">⭐ ${avg} (${reviews.length} yorum)</div>
 
-            <div class="badge rating">
-              ⭐ ${(Math.random()*1+4).toFixed(1)}
-            </div>
-
-            ${
-              site.city
-              ? `<div class="badge">📍 ${site.city}</div>`
-              : ""
-            }
-
+            ${site.city ? `<div class="badge">📍 ${site.city} ${site.district || ""}</div>` : ""}
+            ${site.phone ? `<div class="badge">📞 ${site.phone}</div>` : ""}
           </div>
 
           <div class="cardButtons">
@@ -596,21 +777,28 @@ async function searchSite(){
               class="btn btnGreen"
               href="${site.url}"
               target="_blank"
-              onclick="registerClick('${site._id}')"
+              onclick="registerClick('${site.id}')"
             >
               Siteye Git
             </a>
 
             <a
               class="btn btnBlue"
-              href="/site.html?id=${site._id}"
+              href="/site.html?id=${site.id}"
             >
               Detay Sayfası
             </a>
 
             <button
+              class="btn btnOrange"
+              onclick="googleSearch('${site.title.replace(/'/g,"\\'")}')"
+            >
+              Google’da Ara
+            </button>
+
+            <button
               class="btn btnPurple"
-              onclick="shareSite('${site.title}','/site.html?id=${site._id}')"
+              onclick="shareSite('${site.title.replace(/'/g,"\\'")}', '/site.html?id=${site.id}')"
             >
               Paylaş
             </button>
@@ -620,54 +808,49 @@ async function searchSite(){
         </div>
 
       </div>
-
     `;
-  });
+  }
 }
 
 async function registerClick(id){
-
   try{
-
-    await fetch(`/api/sites/${id}/click`,{
-      method:"POST"
-    });
-
+    await fetch(`/api/sites/${id}/click`, { method:"POST" });
   }catch(err){
     console.log(err);
   }
 }
 
+function googleSearch(title){
+  const q = encodeURIComponent(title + " yorumları güvenilir mi");
+  window.open(`https://www.google.com/search?q=${q}`, "_blank");
+}
+
 function shareSite(title,url){
+  const fullUrl = location.origin + url;
 
   if(navigator.share){
-
-    navigator.share({
-      title,
-      url:location.origin + url
-    });
-
+    navigator.share({ title, url: fullUrl });
   }else{
-
-    navigator.clipboard.writeText(
-      location.origin + url
-    );
-
+    navigator.clipboard.writeText(fullUrl);
     alert("Link kopyalandı.");
   }
 }
 
-document
-.getElementById("searchInput")
-.addEventListener("keypress",e=>{
-
+document.getElementById("searchInput").addEventListener("keydown", function(e){
   if(e.key === "Enter"){
     searchSite();
   }
+
+  if(e.key === "Escape"){
+    document.getElementById("suggestions").style.display = "none";
+  }
 });
 
-loadSites();
-
+document.addEventListener("click", function(e){
+  if(!e.target.closest(".searchWrapper")){
+    document.getElementById("suggestions").style.display = "none";
+  }
+});
 </script>
 
 </body>
