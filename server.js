@@ -5,116 +5,135 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const path = require("path");
 const cors = require("cors");
+const multer = require("multer");
+const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const uploadDir = path.join(__dirname, "public", "uploads");
+
+if(!fs.existsSync(uploadDir)){
+  fs.mkdirSync(uploadDir, { recursive:true });
+}
+
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended:true }));
 app.use(express.static(path.join(__dirname, "public")));
-
-/* =========================
-   MONGODB
-========================= */
+app.use("/uploads", express.static(uploadDir));
 
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB bağlandı 🔥"))
 .catch(err => console.log("MongoDB hata:", err));
 
-/* =========================
-   SCHEMAS
-========================= */
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const safeName = Date.now() + "-" + Math.round(Math.random() * 1e9) + ext;
+    cb(null, safeName);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+  if(allowed.includes(file.mimetype)){
+    cb(null, true);
+  }else{
+    cb(new Error("Sadece görsel dosyası yüklenebilir."), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits:{
+    fileSize: 5 * 1024 * 1024
+  }
+});
 
 const userSchema = new mongoose.Schema({
-  name: String,
-  company: String,
-  email: String,
-  phone: String,
-  username: String,
-  password: String,
-  role: { type: String, default: "user" },
-  banned: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
+  name:String,
+  company:String,
+  email:String,
+  phone:String,
+  username:String,
+  password:String,
+  role:{ type:String, default:"user" },
+  banned:{ type:Boolean, default:false },
+  createdAt:{ type:Date, default:Date.now }
 });
 
 const siteSchema = new mongoose.Schema({
-  title: String,
-  url: String,
-  keywords: String,
-  desc: String,
+  title:String,
+  url:String,
+  keywords:String,
+  desc:String,
 
-  category: String,
-  logoUrl: String,
-  imageUrl: String,
-  phone: String,
-  address: String,
+  category:String,
+  logoUrl:String,
+  imageUrl:String,
+  phone:String,
+  address:String,
 
-  seoTitle: String,
-  seoDescription: String,
+  seoTitle:String,
+  seoDescription:String,
 
-  ownerId: String,
-  ownerName: String,
+  ownerId:String,
+  ownerName:String,
+  status:{ type:String, default:"pending" },
 
-  status: { type: String, default: "pending" },
+  adActive:{ type:Boolean, default:false },
+  isAd:{ type:Boolean, default:false },
+  balance:{ type:Number, default:0 },
+  costPerClick:{ type:Number, default:5 },
+  dailyLimit:{ type:Number, default:100 },
+  todaySpent:{ type:Number, default:0 },
+  clicks:{ type:Number, default:0 },
+  paidClicks:{ type:Number, default:0 },
+  views:{ type:Number, default:0 },
 
-  adActive: { type: Boolean, default: false },
-  isAd: { type: Boolean, default: false },
+  city:String,
+  district:String,
+  negativeKeywords:String,
 
-  balance: { type: Number, default: 0 },
-  costPerClick: { type: Number, default: 5 },
-  dailyLimit: { type: Number, default: 100 },
-  todaySpent: { type: Number, default: 0 },
-
-  clicks: { type: Number, default: 0 },
-  paidClicks: { type: Number, default: 0 },
-  views: { type: Number, default: 0 },
-
-  city: String,
-  district: String,
-  negativeKeywords: String,
-
-  createdAt: { type: Date, default: Date.now }
+  createdAt:{ type:Date, default:Date.now }
 });
 
 const clickSchema = new mongoose.Schema({
-  siteId: String,
-  userKey: String,
-  time: Number
+  siteId:String,
+  userKey:String,
+  time:Number
 });
 
 const reviewSchema = new mongoose.Schema({
-  siteId: String,
-  userName: String,
-  rating: { type: Number, default: 5 },
-  comment: String,
-  approved: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  siteId:String,
+  userName:String,
+  rating:{ type:Number, default:5 },
+  comment:String,
+  approved:{ type:Boolean, default:true },
+  createdAt:{ type:Date, default:Date.now }
 });
-
-/* =========================
-   MODELS
-========================= */
 
 const User = mongoose.model("User", userSchema);
 const Site = mongoose.model("Site", siteSchema);
 const Click = mongoose.model("Click", clickSchema);
 const Review = mongoose.model("Review", reviewSchema);
 
-/* =========================
-   HELPERS
-========================= */
-
 function safeUser(user){
   return {
-    id: user._id.toString(),
-    name: user.name,
-    company: user.company,
-    email: user.email,
-    phone: user.phone,
-    username: user.username,
-    role: user.role,
-    banned: user.banned
+    id:user._id.toString(),
+    name:user.name,
+    company:user.company,
+    email:user.email,
+    phone:user.phone,
+    username:user.username,
+    role:user.role,
+    banned:user.banned
   };
 }
 
@@ -130,27 +149,22 @@ function safeReview(review){
   return obj;
 }
 
-/* =========================
-   ADMIN
-========================= */
-
 async function createAdmin(){
-
   const hashedPassword = await bcrypt.hash("123456", 10);
 
   await User.findOneAndUpdate(
-    { username: "enderadmin" },
+    { username:"enderadmin" },
     {
-      name: "Ender Admin",
-      company: "NetSearch",
-      email: "admin@netsearch.com",
-      phone: "05331310226",
-      username: "enderadmin",
-      password: hashedPassword,
-      role: "admin",
-      banned: false
+      name:"Ender Admin",
+      company:"NetSearch",
+      email:"admin@netsearch.com",
+      phone:"05331310226",
+      username:"enderadmin",
+      password:hashedPassword,
+      role:"admin",
+      banned:false
     },
-    { upsert: true, new: true }
+    { upsert:true, new:true }
   );
 
   console.log("Ender admin hesabı hazır ✅");
@@ -158,22 +172,40 @@ async function createAdmin(){
 
 createAdmin();
 
-/* =========================
-   AUTH
-========================= */
+/* UPLOAD */
+
+app.post("/api/upload", upload.single("image"), (req, res) => {
+  try{
+    if(!req.file){
+      return res.status(400).json({
+        success:false,
+        message:"Dosya yüklenmedi."
+      });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+
+    res.json({
+      success:true,
+      message:"Görsel yüklendi.",
+      url:fileUrl
+    });
+
+  }catch(err){
+    console.log(err);
+
+    res.status(500).json({
+      success:false,
+      message:"Yükleme hatası."
+    });
+  }
+});
+
+/* AUTH */
 
 async function registerHandler(req, res){
-
   try{
-
-    const {
-      name,
-      company,
-      email,
-      phone,
-      username,
-      password
-    } = req.body;
+    const { name, company, email, phone, username, password } = req.body;
 
     if(!username || !password){
       return res.status(400).json({
@@ -183,10 +215,7 @@ async function registerHandler(req, res){
     }
 
     const exists = await User.findOne({
-      $or:[
-        { username },
-        { email }
-      ]
+      $or:[{ username }, { email }]
     });
 
     if(exists){
@@ -204,7 +233,7 @@ async function registerHandler(req, res){
       email,
       phone,
       username,
-      password: hashedPassword,
+      password:hashedPassword,
       role:"user"
     });
 
@@ -215,7 +244,6 @@ async function registerHandler(req, res){
     });
 
   }catch(err){
-
     console.log(err);
 
     res.status(500).json({
@@ -226,13 +254,8 @@ async function registerHandler(req, res){
 }
 
 async function loginHandler(req, res){
-
   try{
-
-    const {
-      username,
-      password
-    } = req.body;
+    const { username, password } = req.body;
 
     const user = await User.findOne({ username });
 
@@ -268,7 +291,6 @@ async function loginHandler(req, res){
     });
 
   }catch(err){
-
     console.log(err);
 
     res.status(500).json({
@@ -280,66 +302,91 @@ async function loginHandler(req, res){
 
 app.post("/register", registerHandler);
 app.post("/api/register", registerHandler);
-
 app.post("/login", loginHandler);
 app.post("/api/login", loginHandler);
 
-/* =========================
-   USERS
-========================= */
+/* USERS */
 
 app.get("/api/users", async (req, res) => {
-
-  const users = await User.find().sort({
-    createdAt:-1
-  });
-
+  const users = await User.find().sort({ createdAt:-1 });
   res.json(users.map(safeUser));
 });
 
-/* =========================
-   SITES
-========================= */
+app.put("/api/users/:id", async (req, res) => {
+  try{
+    const { name, company, email, phone, username, password, role, banned } = req.body;
+
+    const update = {};
+
+    if(name !== undefined) update.name = name;
+    if(company !== undefined) update.company = company;
+    if(email !== undefined) update.email = email;
+    if(phone !== undefined) update.phone = phone;
+    if(username !== undefined) update.username = username;
+    if(role !== undefined) update.role = role;
+    if(banned !== undefined) update.banned = banned;
+
+    if(password){
+      update.password = await bcrypt.hash(password, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, update, { new:true });
+
+    if(!user){
+      return res.status(404).json({ message:"Kullanıcı bulunamadı." });
+    }
+
+    res.json({
+      message:"Kullanıcı güncellendi.",
+      user:safeUser(user)
+    });
+
+  }catch(err){
+    console.log(err);
+    res.status(500).json({ message:"Sunucu hatası." });
+  }
+});
+
+app.delete("/api/users/:id", async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if(!user){
+    return res.status(404).json({ message:"Kullanıcı bulunamadı." });
+  }
+
+  if(user.role === "admin"){
+    return res.status(403).json({ message:"Admin hesabı silinemez." });
+  }
+
+  await User.findByIdAndDelete(req.params.id);
+
+  res.json({ message:"Kullanıcı silindi." });
+});
+
+/* SITES */
 
 app.get("/api/sites", async (req, res) => {
-
-  const sites = await Site.find().sort({
-    createdAt:-1
-  });
-
+  const sites = await Site.find().sort({ createdAt:-1 });
   res.json(sites.map(safeSite));
 });
 
-/* SITE DETAIL API */
-
 app.get("/api/sites/:id", async (req, res) => {
-
   try{
-
     const site = await Site.findById(req.params.id);
 
     if(!site){
-      return res.status(404).json({
-        message:"Site bulunamadı."
-      });
+      return res.status(404).json({ message:"Site bulunamadı." });
     }
 
     res.json(safeSite(site));
 
   }catch(err){
-
-    console.log(err);
-
-    res.status(500).json({
-      message:"Sunucu hatası."
-    });
+    res.status(500).json({ message:"Sunucu hatası." });
   }
 });
 
 app.post("/api/sites", async (req, res) => {
-
   try{
-
     const {
       title,
       url,
@@ -369,48 +416,34 @@ app.post("/api/sites", async (req, res) => {
       url,
       keywords,
       desc,
-
-      category: category || "Genel",
-      logoUrl: logoUrl || "",
-      imageUrl: imageUrl || "",
-      phone: phone || "",
-      address: address || "",
-
-      seoTitle: seoTitle || title,
-      seoDescription: seoDescription || desc,
-
-      ownerId: ownerId || null,
-      ownerName: ownerName || "Admin",
-
-      status: ownerId ? "pending" : "approved",
-
-      city: city || "",
-      district: district || "",
-
+      category:category || "Genel",
+      logoUrl:logoUrl || "",
+      imageUrl:imageUrl || "",
+      phone:phone || "",
+      address:address || "",
+      seoTitle:seoTitle || title,
+      seoDescription:seoDescription || desc,
+      ownerId:ownerId || null,
+      ownerName:ownerName || "Admin",
+      status:ownerId ? "pending" : "approved",
+      city:city || "",
+      district:district || "",
       negativeKeywords:""
     });
 
     res.json({
-      message: ownerId
-        ? "Site onay bekliyor."
-        : "Site kaydedildi.",
+      message:ownerId ? "Site onay bekliyor." : "Site kaydedildi.",
       site:safeSite(site)
     });
 
   }catch(err){
-
     console.log(err);
-
-    res.status(500).json({
-      message:"Sunucu hatası."
-    });
+    res.status(500).json({ message:"Sunucu hatası." });
   }
 });
 
 app.put("/api/sites/:id", async (req, res) => {
-
   try{
-
     const allowed = [
       "title",
       "url",
@@ -436,16 +469,10 @@ app.put("/api/sites/:id", async (req, res) => {
       }
     });
 
-    const site = await Site.findByIdAndUpdate(
-      req.params.id,
-      update,
-      { new:true }
-    );
+    const site = await Site.findByIdAndUpdate(req.params.id, update, { new:true });
 
     if(!site){
-      return res.status(404).json({
-        message:"Site bulunamadı."
-      });
+      return res.status(404).json({ message:"Site bulunamadı." });
     }
 
     res.json({
@@ -454,31 +481,24 @@ app.put("/api/sites/:id", async (req, res) => {
     });
 
   }catch(err){
-
     console.log(err);
-
-    res.status(500).json({
-      message:"Sunucu hatası."
-    });
+    res.status(500).json({ message:"Sunucu hatası." });
   }
 });
 
 app.delete("/api/sites/:id", async (req, res) => {
-
   await Site.findByIdAndDelete(req.params.id);
+  await Review.deleteMany({ siteId:req.params.id });
 
-  await Review.deleteMany({
-    siteId:req.params.id
-  });
-
-  res.json({
-    message:"Site ve yorumlar silindi."
-  });
+  res.json({ message:"Site ve yorumları silindi." });
 });
 
 app.put("/api/sites/:id/status", async (req, res) => {
-
   const { status } = req.body;
+
+  if(!["pending", "approved", "rejected"].includes(status)){
+    return res.status(400).json({ message:"Geçersiz durum." });
+  }
 
   const site = await Site.findByIdAndUpdate(
     req.params.id,
@@ -486,27 +506,20 @@ app.put("/api/sites/:id/status", async (req, res) => {
     { new:true }
   );
 
+  if(!site){
+    return res.status(404).json({ message:"Site bulunamadı." });
+  }
+
   res.json({
-    message:"Durum güncellendi.",
+    message:"Site durumu güncellendi.",
     site:safeSite(site)
   });
 });
 
-/* =========================
-   ADS
-========================= */
+/* ADS */
 
 app.put("/api/sites/:id/ad", async (req, res) => {
-
-  const {
-    adActive,
-    balance,
-    costPerClick,
-    dailyLimit,
-    city,
-    district,
-    negativeKeywords
-  } = req.body;
+  const { adActive, balance, costPerClick, dailyLimit, city, district, negativeKeywords } = req.body;
 
   const update = {};
 
@@ -515,35 +528,18 @@ app.put("/api/sites/:id/ad", async (req, res) => {
     update.isAd = adActive;
   }
 
-  if(balance !== undefined){
-    update.balance = Number(balance);
-  }
+  if(balance !== undefined) update.balance = Number(balance);
+  if(costPerClick !== undefined) update.costPerClick = Number(costPerClick);
+  if(dailyLimit !== undefined) update.dailyLimit = Number(dailyLimit);
+  if(city !== undefined) update.city = city;
+  if(district !== undefined) update.district = district;
+  if(negativeKeywords !== undefined) update.negativeKeywords = negativeKeywords;
 
-  if(costPerClick !== undefined){
-    update.costPerClick = Number(costPerClick);
-  }
+  const site = await Site.findByIdAndUpdate(req.params.id, update, { new:true });
 
-  if(dailyLimit !== undefined){
-    update.dailyLimit = Number(dailyLimit);
+  if(!site){
+    return res.status(404).json({ message:"Site bulunamadı." });
   }
-
-  if(city !== undefined){
-    update.city = city;
-  }
-
-  if(district !== undefined){
-    update.district = district;
-  }
-
-  if(negativeKeywords !== undefined){
-    update.negativeKeywords = negativeKeywords;
-  }
-
-  const site = await Site.findByIdAndUpdate(
-    req.params.id,
-    update,
-    { new:true }
-  );
 
   res.json({
     message:"Reklam ayarları güncellendi.",
@@ -551,57 +547,43 @@ app.put("/api/sites/:id/ad", async (req, res) => {
   });
 });
 
-/* =========================
-   VIEWS
-========================= */
+/* VIEWS / CLICKS */
 
 app.post("/api/sites/:id/view", async (req, res) => {
-
   const site = await Site.findByIdAndUpdate(
     req.params.id,
     { $inc:{ views:1 } },
     { new:true }
   );
 
-  res.json({
-    message:"Görüntülenme kaydedildi.",
-    site:safeSite(site)
-  });
+  if(!site){
+    return res.status(404).json({ message:"Site bulunamadı." });
+  }
+
+  res.json({ message:"Görüntülenme kaydedildi." });
 });
 
-/* =========================
-   CLICKS
-========================= */
-
 app.post("/api/sites/:id/click", async (req, res) => {
-
   const id = req.params.id;
-
-  const userKey =
-    req.ip + "-" + (req.headers["user-agent"] || "unknown");
-
+  const userKey = req.ip + "-" + (req.headers["user-agent"] || "unknown");
   const now = Date.now();
-
   const protectionMs = 60 * 1000;
 
   const site = await Site.findById(id);
 
   if(!site){
-    return res.status(404).json({
-      message:"Site bulunamadı."
-    });
+    return res.status(404).json({ message:"Site bulunamadı." });
   }
 
   const recentClick = await Click.findOne({
     siteId:id,
     userKey,
-    time:{ $gt: now - protectionMs }
+    time:{ $gt:now - protectionMs }
   });
 
   site.clicks += 1;
 
   if(!recentClick){
-
     await Click.create({
       siteId:id,
       userKey,
@@ -609,20 +591,16 @@ app.post("/api/sites/:id/click", async (req, res) => {
     });
 
     if(site.adActive){
-
       const cpc = Number(site.costPerClick || 0);
 
       if(
         Number(site.balance || 0) >= cpc &&
         Number(site.todaySpent || 0) + cpc <= Number(site.dailyLimit || 0)
       ){
-
         site.balance -= cpc;
         site.todaySpent += cpc;
         site.paidClicks += 1;
-
       }else{
-
         site.adActive = false;
         site.isAd = false;
       }
@@ -637,36 +615,29 @@ app.post("/api/sites/:id/click", async (req, res) => {
   });
 });
 
-/* =========================
-   REVIEWS
-========================= */
+/* REVIEWS */
 
 app.get("/api/sites/:id/reviews", async (req, res) => {
-
   const reviews = await Review.find({
     siteId:req.params.id,
     approved:true
-  }).sort({
-    createdAt:-1
-  });
+  }).sort({ createdAt:-1 });
 
   res.json(reviews.map(safeReview));
 });
 
 app.post("/api/sites/:id/reviews", async (req, res) => {
-
   try{
-
-    const {
-      userName,
-      rating,
-      comment
-    } = req.body;
+    const { userName, rating, comment } = req.body;
 
     if(!comment){
-      return res.status(400).json({
-        message:"Yorum boş olamaz."
-      });
+      return res.status(400).json({ message:"Yorum boş olamaz." });
+    }
+
+    const site = await Site.findById(req.params.id);
+
+    if(!site){
+      return res.status(404).json({ message:"Site bulunamadı." });
     }
 
     const review = await Review.create({
@@ -683,77 +654,51 @@ app.post("/api/sites/:id/reviews", async (req, res) => {
     });
 
   }catch(err){
-
     console.log(err);
-
-    res.status(500).json({
-      message:"Sunucu hatası."
-    });
+    res.status(500).json({ message:"Sunucu hatası." });
   }
 });
 
 app.get("/api/reviews", async (req, res) => {
-
-  const reviews = await Review.find().sort({
-    createdAt:-1
-  });
-
+  const reviews = await Review.find().sort({ createdAt:-1 });
   res.json(reviews.map(safeReview));
 });
 
 app.delete("/api/reviews/:id", async (req, res) => {
-
   await Review.findByIdAndDelete(req.params.id);
-
-  res.json({
-    message:"Yorum silindi."
-  });
+  res.json({ message:"Yorum silindi." });
 });
 
-/* =========================
-   SEO
-========================= */
+/* SEO */
 
 app.get("/robots.txt", (req, res) => {
-
   res.type("text/plain");
-
   res.send(`User-agent: *
 Allow: /
 Sitemap: https://netsearch.onrender.com/sitemap.xml`);
 });
 
 app.get("/sitemap.xml", async (req, res) => {
-
-  const sites = await Site.find({
-    status:"approved"
-  });
+  const sites = await Site.find({ status:"approved" }).sort({ createdAt:-1 });
 
   const urls = sites.map(site => `
   <url>
     <loc>https://netsearch.onrender.com/site.html?id=${site._id}</loc>
     <lastmod>${new Date(site.createdAt).toISOString()}</lastmod>
-  </url>
-  `).join("");
+  </url>`).join("");
 
   res.type("application/xml");
-
   res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-<url>
-<loc>https://netsearch.onrender.com/</loc>
-<lastmod>${new Date().toISOString()}</lastmod>
-</url>
-
-${urls}
-
+  <url>
+    <loc>https://netsearch.onrender.com/</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+  </url>
+  ${urls}
 </urlset>`);
 });
 
-/* =========================
-   PAGES
-========================= */
+/* PAGES */
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -762,10 +707,6 @@ app.get("/", (req, res) => {
 app.get("/site.html", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "site.html"));
 });
-
-/* =========================
-   START
-========================= */
 
 app.listen(PORT, () => {
   console.log(`NetSearch çalışıyor 🚀 http://localhost:${PORT}`);
