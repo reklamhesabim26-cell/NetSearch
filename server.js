@@ -613,7 +613,7 @@ app.delete("/api/reviews/:id", async (req, res) => {
   res.json({ message: "Yorum silindi." });
 });
 
-/* AI FALLBACK SEARCH */
+/* REAL AI SEARCH */
 
 app.post("/api/ai-search", async (req, res) => {
   try {
@@ -626,24 +626,55 @@ app.post("/api/ai-search", async (req, res) => {
       });
     }
 
-    const q = query.toLowerCase();
-    let answer = "";
-
-    if (q.includes("hava durumu")) {
-      answer = "Hava durumu araması için şehir adını net yazmalısın. Örnek: Eskişehir hava durumu. NetSearch yakında canlı hava durumu sonucunu direkt burada gösterecek.";
-    } else if (q.includes("yapay zeka") || q.includes("ai")) {
-      answer = "Yapay zeka; bilgisayarların öğrenme, anlama, karar verme ve içerik üretme gibi insan benzeri görevleri yapmasını sağlayan teknolojidir. Arama motorları, öneri sistemleri, ChatGPT ve görsel üretim araçları buna örnektir.";
-    } else if (q.includes("tarih")) {
-      answer = "Tarih; geçmişte yaşanan olayları, toplumları, devletleri, savaşları ve kültürleri inceleyen bilim dalıdır. Daha net sonuç için konuyu detaylandırabilirsin. Örnek: Osmanlı Devleti kuruluş dönemi.";
-    } else if (q.includes("matematik")) {
-      answer = "Matematik; sayı, işlem, şekil, ölçü ve mantık ilişkilerini inceleyen bilimdir. Problem ya da konu yazarsan NetSearch seni daha doğru yönlendirebilir.";
-    } else if (q.includes("e devlet") || q.includes("edevlet")) {
-      answer = "E-Devlet işlemleri için resmi adres turkiye.gov.tr sitesidir. Güvenlik için yalnızca resmi bağlantıları kullanmalısın.";
-    } else if (q.includes("haber")) {
-      answer = "Haber aramaları için yakında NetSearch içinde güncel haber kaynakları gösterilecek. Şimdilik daha net arama yapabilirsin. Örnek: ekonomi haberleri, spor haberleri.";
-    } else {
-      answer = `"${query}" için kayıtlı sonuç bulunamadı. NetSearch bu konuda henüz yeterli veriye sahip değil. Daha kısa kelimelerle tekrar deneyebilir veya bu konuda bir site/işletme ekleyebilirsin.`;
+    if (!process.env.OPENAI_API_KEY) {
+      return res.json({
+        success: true,
+        query,
+        answer: "AI sistemi henüz aktif değil. OPENAI_API_KEY Render ortam değişkenlerine eklenmeli."
+      });
     }
+
+    const aiRes = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        input: `
+Sen NetSearch AI adlı yeni nesil arama motorunun cevap motorusun.
+
+Kullanıcı araması:
+${query}
+
+Kurallar:
+- Türkçe cevap ver.
+- Kısa, anlaşılır ve faydalı cevap ver.
+- Kullanıcı ders soruyorsa öğretici anlat.
+- Kullanıcı hava durumu, döviz, haber gibi güncel bilgi istiyorsa canlı veriye erişemediğini açıkça söyle.
+- Kullanıcı işletme/hizmet arıyorsa NetSearch içindeki işletme sonuçlarına bakmasını öner.
+- Gereksiz uzun yazma.
+`
+      })
+    });
+
+    const data = await aiRes.json();
+
+    if (!aiRes.ok) {
+      console.log("OpenAI hata:", data);
+
+      return res.json({
+        success: true,
+        query,
+        answer: "AI şu anda cevap veremedi. OpenAI API anahtarı, kredi/bakiye veya model erişimi kontrol edilmeli."
+      });
+    }
+
+    const answer =
+      data.output_text ||
+      data.output?.[0]?.content?.[0]?.text ||
+      "AI cevap oluşturamadı.";
 
     res.json({
       success: true,
@@ -652,7 +683,7 @@ app.post("/api/ai-search", async (req, res) => {
     });
 
   } catch (err) {
-    console.log(err);
+    console.log("AI hata:", err);
 
     res.status(500).json({
       success: false,
