@@ -4,38 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetSearch AI</title>
-<meta name="description" content="NetSearch AI - konum destekli yapay zeka arama motoru">
+<meta name="description" content="NetSearch AI - yapay zeka destekli yeni nesil arama motoru">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f172a">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#020817;color:white;min-height:100vh}
-.header{width:100%;padding:20px 34px;display:flex;justify-content:space-between;align-items:center;background:#0f172a;border-bottom:1px solid #1e293b}
+.header{padding:20px 34px;display:flex;justify-content:space-between;align-items:center;background:#0f172a;border-bottom:1px solid #1e293b}
 .logoText{font-size:32px;font-weight:bold;color:#38bdf8}
 .headerButtons{display:flex;gap:10px;flex-wrap:wrap}
 .headerButtons a{color:white;text-decoration:none;background:#1e293b;padding:10px 16px;border-radius:999px}
-.headerButtons a:hover{background:#2563eb}
-.hero{width:100%;padding:65px 20px 30px;display:flex;flex-direction:column;align-items:center}
+.hero{padding:65px 20px 30px;display:flex;flex-direction:column;align-items:center}
 .hero h1{font-size:86px;color:#38bdf8;text-align:center}
 .hero p{font-size:24px;color:#cbd5e1;text-align:center;margin:12px 0 35px}
 .searchWrapper{width:100%;max-width:900px;position:relative}
-.searchBox{width:100%;display:flex;background:#0f172a;border:2px solid #1e293b;border-radius:999px;overflow:hidden;box-shadow:0 0 40px rgba(56,189,248,.12)}
+.searchBox{display:flex;background:#0f172a;border:2px solid #1e293b;border-radius:999px;overflow:hidden}
 .searchBox input{flex:1;border:none;outline:none;background:transparent;color:white;padding:24px 28px;font-size:21px}
 .searchBox button{width:170px;border:none;background:linear-gradient(90deg,#0ea5e9,#2563eb);color:white;font-size:21px;cursor:pointer}
-.suggestions{display:none;position:absolute;left:0;right:0;top:78px;background:#0f172a;border:1px solid #1e293b;border-radius:22px;overflow:hidden;z-index:99;text-align:left;box-shadow:0 25px 50px rgba(0,0,0,.35)}
-.suggestion{padding:15px 22px;border-bottom:1px solid #1e293b;cursor:pointer;color:#cbd5e1;display:flex;justify-content:space-between;gap:15px}
+.suggestions{display:none;position:absolute;left:0;right:0;top:78px;background:#0f172a;border:1px solid #1e293b;border-radius:22px;overflow:hidden;z-index:99}
+.suggestion{padding:15px 22px;border-bottom:1px solid #1e293b;cursor:pointer;color:#cbd5e1;display:flex;justify-content:space-between}
 .suggestion:hover{background:#1e293b;color:white}
 .suggestion small{color:#38bdf8}
 .categories,.quick{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:26px}
 .quick{margin-top:16px}
 .categoryBtn,.quick button{border:none;background:#0f172a;color:#38bdf8;border:1px solid #1e293b;padding:11px 18px;border-radius:999px;cursor:pointer}
 .quick button{background:#111827;color:#cbd5e1;padding:9px 15px}
-.categoryBtn:hover,.categoryBtn.active{background:#2563eb;color:white}
+.categoryBtn.active,.categoryBtn:hover{background:#2563eb;color:white}
 .locationStatus{margin-top:18px;color:#94a3b8;text-align:center;font-size:14px}
-.results{width:100%;max-width:1200px;margin:40px auto;padding:0 20px}
-.resultCard{background:#0f172a;border:1px solid #1e293b;border-radius:28px;overflow:hidden;margin-bottom:25px;transition:.25s}
-.resultCard:hover{transform:translateY(-3px);border-color:#38bdf8}
+.results{max-width:1200px;margin:40px auto;padding:0 20px}
+.resultCard,.aiCard{background:#0f172a;border:1px solid #1e293b;border-radius:28px;overflow:hidden;margin-bottom:25px}
 .resultCard.sponsored{border-color:#9333ea;box-shadow:0 0 30px rgba(147,51,234,.18)}
-.cardCover{width:100%;height:220px;object-fit:cover;background:#111827}
+.aiCard{padding:30px;border-color:#38bdf8;box-shadow:0 0 30px rgba(56,189,248,.16)}
+.aiCard h2{color:#38bdf8;margin-bottom:15px;font-size:30px}
+.aiCard p{color:#dbeafe;font-size:18px;line-height:1.8}
+.cardCover{width:100%;height:220px;object-fit:cover}
 .cardContent{padding:25px}
 .topRow{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
 .cardLogoText{width:76px;height:76px;min-width:76px;border-radius:20px;background:linear-gradient(135deg,#0ea5e9,#2563eb);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:bold;color:white;overflow:hidden}
@@ -52,7 +55,6 @@ body{background:#020817;color:white;min-height:100vh}
 .cardButtons{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
 .btn{border:none;text-decoration:none;color:white;padding:12px 18px;border-radius:999px;cursor:pointer;font-size:15px}
 .btnBlue{background:#2563eb}.btnGreen{background:#16a34a}.btnPurple{background:#9333ea}.btnOrange{background:#ea580c}
-.empty{text-align:center;color:#94a3b8;font-size:24px;padding:70px 20px}
 @media(max-width:700px){
 .header{flex-direction:column;gap:14px;padding:18px}
 .hero h1{font-size:54px}
@@ -62,7 +64,6 @@ body{background:#020817;color:white;min-height:100vh}
 .searchBox button{width:100%;padding:18px}
 .suggestions{top:130px}
 .siteTitle{font-size:25px}
-.cardCover{height:180px}
 }
 </style>
 </head>
@@ -76,12 +77,12 @@ body{background:#020817;color:white;min-height:100vh}
 
 <div class="hero">
   <h1>NetSearch</h1>
-  <p>Konum destekli Google/Yandex tarzı AI arama motoru</p>
+  <p>Yapay zeka destekli yeni nesil arama motoru</p>
 
   <div class="searchWrapper">
     <div class="searchBox">
-      <input id="searchInput" placeholder="Kombi servisi, çiçekçi, market, e-devlet..." autocomplete="off" oninput="showSuggestions()">
-      <button ontouchstart="hideKeyboard()" onmousedown="hideKeyboard()" onclick="searchSite()">Ara</button>
+      <input id="searchInput" placeholder="Kombi servisi, yapay zeka, tarih dersi, hava durumu..." autocomplete="off" oninput="showSuggestions()">
+      <button onclick="searchSite()">Ara</button>
     </div>
     <div class="suggestions" id="suggestions"></div>
   </div>
@@ -99,10 +100,11 @@ body{background:#020817;color:white;min-height:100vh}
 
   <div class="quick">
     <button onclick="quickSearch('eskişehir kombi servisi')">Eskişehir kombi servisi</button>
-    <button onclick="quickSearch('çiçekçi')">Çiçekçi</button>
+    <button onclick="quickSearch('yapay zeka')">Yapay zeka</button>
+    <button onclick="quickSearch('tarih dersi')">Tarih dersi</button>
+    <button onclick="quickSearch('hava durumu')">Hava durumu</button>
     <button onclick="quickSearch('e devlet')">E-Devlet</button>
     <button onclick="nearbySearch()">📍 Yakınımdaki İşletmeler</button>
-    <button onclick="quickSearch('yorumları iyi firma')">Yorumları iyi firma</button>
   </div>
 
   <div class="locationStatus" id="locationStatus">
@@ -132,15 +134,11 @@ if(!user){
 
 function logout(){
   localStorage.removeItem("user");
-  window.location.href = "/";
+  location.href = "/";
 }
 
 function hideKeyboard(){
-  const input = document.getElementById("searchInput");
-  input.blur();
-  setTimeout(() => {
-    if(document.activeElement) document.activeElement.blur();
-  }, 50);
+  document.getElementById("searchInput").blur();
 }
 
 function normalize(text){
@@ -164,6 +162,7 @@ loadSites();
 
 function setCategory(category, btn){
   selectedCategory = category;
+  nearbyMode = false;
   document.querySelectorAll(".categoryBtn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   searchSite();
@@ -186,7 +185,7 @@ function getUserLocation(callback){
 
   if(!navigator.geolocation){
     status.innerText = "Tarayıcın konum özelliğini desteklemiyor.";
-    if(callback) callback();
+    callback();
     return;
   }
 
@@ -198,38 +197,27 @@ function getUserLocation(callback){
         lat: pos.coords.latitude,
         lng: pos.coords.longitude
       };
-
       status.innerText = "Konum alındı ✅ Yakın işletmeler öne çıkarılacak.";
-
-      if(callback) callback();
+      callback();
     },
     () => {
-      status.innerText = "Konum izni verilmedi. Şehir/ilçe bilgisine göre arama devam eder.";
-      if(callback) callback();
-    },
-    {
-      enableHighAccuracy:true,
-      timeout:10000,
-      maximumAge:60000
+      status.innerText = "Konum izni verilmedi.";
+      callback();
     }
   );
 }
 
 function distanceKm(lat1, lon1, lat2, lon2){
   if(!lat1 || !lon1 || !lat2 || !lon2) return null;
-
   const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-
+  const dLat = (lat2-lat1) * Math.PI / 180;
+  const dLon = (lon2-lon1) * Math.PI / 180;
   const a =
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+    Math.sin(dLat/2) ** 2 +
+    Math.cos(lat1 * Math.PI/180) *
+    Math.cos(lat2 * Math.PI/180) *
+    Math.sin(dLon/2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 }
 
 function isSponsored(site){
@@ -245,48 +233,35 @@ function letterLogo(title){
 function buildAutocomplete(){
   const set = new Map();
 
-  function add(text, type){
+  function add(text,type){
     if(!text) return;
     const clean = text.trim();
     if(clean.length < 2) return;
-
     const key = normalize(clean);
-
-    if(!set.has(key)){
-      set.set(key, { text: clean, type });
-    }
+    if(!set.has(key)) set.set(key,{text:clean,type});
   }
 
   sites.forEach(site => {
-    add(site.title, "Site");
-    add(site.category, "Kategori");
-    add(site.city, "Şehir");
-    add(site.district, "İlçe");
-
-    if(site.city && site.category) add(`${site.city} ${site.category}`, "Şehir + Kategori");
-    if(site.city && site.title) add(`${site.city} ${site.title}`, "Şehir + Site");
+    add(site.title,"Site");
+    add(site.category,"Kategori");
+    add(site.city,"Şehir");
+    add(site.district,"İlçe");
 
     if(site.keywords){
-      site.keywords.split(",").forEach(k => add(k, "Anahtar kelime"));
-      site.keywords.split(" ").forEach(k => add(k, "Kelime"));
+      site.keywords.split(",").forEach(k => add(k,"Anahtar kelime"));
+      site.keywords.split(" ").forEach(k => add(k,"Kelime"));
     }
   });
 
   [
-    ["kombi servisi", "Popüler"],
-    ["eskişehir kombi servisi", "Popüler"],
-    ["çamaşır makinesi servisi", "Popüler"],
-    ["buzdolabı tamiri", "Popüler"],
-    ["klima servisi", "Popüler"],
-    ["çiçekçi", "Popüler"],
-    ["bakkal", "Popüler"],
-    ["market", "Popüler"],
-    ["e devlet", "Resmi"],
-    ["yakınımdaki teknik servis", "Konum"],
-    ["yakınımdaki çiçekçi", "Konum"],
-    ["yakınımdaki market", "Konum"],
-    ["yorumları iyi firma", "AI öneri"]
-  ].forEach(x => add(x[0], x[1]));
+    ["yapay zeka","AI"],
+    ["hava durumu","Bilgi"],
+    ["tarih dersi","Eğitim"],
+    ["matematik","Eğitim"],
+    ["kombi servisi","Popüler"],
+    ["çiçekçi","Popüler"],
+    ["e devlet","Resmi"]
+  ].forEach(x => add(x[0],x[1]));
 
   return Array.from(set.values());
 }
@@ -312,11 +287,7 @@ function showSuggestions(){
       if(cleanText.startsWith(cleanInput)) score += 50;
       if(cleanText.includes(cleanInput)) score += 25;
 
-      cleanInput.split(" ").forEach(word => {
-        if(word.length > 1 && cleanText.includes(word)) score += 10;
-      });
-
-      return { ...item, score };
+      return {...item, score};
     })
     .filter(item => item.score > 0)
     .sort((a,b) => b.score - a.score)
@@ -340,53 +311,32 @@ function showSuggestions(){
 }
 
 function selectSuggestion(text){
-  nearbyMode = normalize(text).includes("yakinim") || normalize(text).includes("yakınım");
-
   document.getElementById("searchInput").value = text;
   document.getElementById("suggestions").style.display = "none";
-
-  if(nearbyMode){
-    getUserLocation(() => searchSite());
-  }else{
-    searchSite();
-  }
+  nearbyMode = false;
+  searchSite();
 }
 
-function calculateAIScore(site, input, km){
+function calculateAIScore(site,input,km){
   let score = 0;
-
   const query = normalize(input);
   const words = query.split(" ").filter(w => w.length > 1);
 
-  const title = normalize(site.title || "");
-  const keywords = normalize(site.keywords || "");
-  const desc = normalize(site.desc || "");
-  const category = normalize(site.category || "");
-  const city = normalize(site.city || "");
-  const district = normalize(site.district || "");
-  const address = normalize(site.address || "");
-  const negative = normalize(site.negativeKeywords || "");
-
-  const fullText = `${title} ${keywords} ${desc} ${category} ${city} ${district} ${address}`;
+  const fullText = normalize(`
+    ${site.title}
+    ${site.keywords}
+    ${site.desc}
+    ${site.category}
+    ${site.city}
+    ${site.district}
+    ${site.address}
+  `);
 
   if(!query) score += 1;
 
   words.forEach(word => {
-    if(title.includes(word)) score += 12;
-    if(keywords.includes(word)) score += 10;
-    if(category.includes(word)) score += 8;
-    if(city.includes(word)) score += 5;
-    if(district.includes(word)) score += 5;
-    if(desc.includes(word)) score += 4;
-    if(address.includes(word)) score += 3;
-    if(fullText.includes(word)) score += 2;
-    if(negative.includes(word)) score -= 40;
+    if(fullText.includes(word)) score += 10;
   });
-
-  if(title === query) score += 40;
-  if(category === query) score += 25;
-  if(keywords.includes(query)) score += 20;
-  if(title.includes(query)) score += 18;
 
   if(selectedCategory && site.category === selectedCategory) score += 30;
   if(isSponsored(site)) score += 18;
@@ -395,7 +345,7 @@ function calculateAIScore(site, input, km){
     if(km <= 2) score += 60;
     else if(km <= 5) score += 45;
     else if(km <= 10) score += 30;
-    else if(km <= 25) score += 15;
+    else score += 10;
   }
 
   score += Math.min(Number(site.clicks || 0), 30);
@@ -412,7 +362,7 @@ async function getReviews(siteId){
     const reviews = await res.json();
     reviewsCache[siteId] = reviews;
     return reviews;
-  }catch(err){
+  }catch{
     return [];
   }
 }
@@ -423,9 +373,46 @@ function averageRating(reviews){
   return avg.toFixed(1);
 }
 
+async function showAIAnswer(query){
+  const results = document.getElementById("results");
+
+  try{
+    const res = await fetch("/api/ai-search", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ query })
+    });
+
+    const data = await res.json();
+
+    results.innerHTML = `
+      <div class="aiCard">
+        <h2>🤖 NetSearch AI Cevabı</h2>
+        <p>${data.answer || "Bu arama için henüz cevap oluşturulamadı."}</p>
+
+        <div class="cardButtons">
+          <button class="btn btnBlue" onclick="googleSearch('${query.replace(/'/g,"\\'")}')">
+            Web’de Ara
+          </button>
+
+          <button class="btn btnGreen" onclick="location.href='/register.html'">
+            Site / İşletme Ekle
+          </button>
+        </div>
+      </div>
+    `;
+  }catch(err){
+    results.innerHTML = `
+      <div class="aiCard">
+        <h2>NetSearch AI</h2>
+        <p>AI cevabı alınamadı. Daha sonra tekrar deneyin.</p>
+      </div>
+    `;
+  }
+}
+
 async function searchSite(){
   hideKeyboard();
-
   await loadSites();
 
   const input = document.getElementById("searchInput").value.trim();
@@ -437,7 +424,6 @@ async function searchSite(){
   let filtered = sites
     .filter(site => {
       if(selectedCategory && site.category !== selectedCategory) return false;
-
       if(nearbyMode) return true;
       if(!input) return true;
 
@@ -452,7 +438,6 @@ async function searchSite(){
       `);
 
       const words = normalize(input).split(" ").filter(w => w.length > 1);
-
       return words.some(word => text.includes(word));
     })
     .map(site => {
@@ -469,8 +454,8 @@ async function searchSite(){
 
       return {
         ...site,
-        distanceKm: km,
-        aiScore: calculateAIScore(site, input, km)
+        distanceKm:km,
+        aiScore:calculateAIScore(site,input,km)
       };
     })
     .filter(site => site.aiScore > 0)
@@ -478,12 +463,11 @@ async function searchSite(){
       if(nearbyMode && a.distanceKm !== null && b.distanceKm !== null){
         return a.distanceKm - b.distanceKm;
       }
-
       return b.aiScore - a.aiScore;
     });
 
   if(filtered.length === 0){
-    results.innerHTML = `<div class="empty">Sonuç bulunamadı.</div>`;
+    await showAIAnswer(input || "Genel arama");
     return;
   }
 
@@ -498,65 +482,41 @@ async function searchSite(){
     results.innerHTML += `
       <div class="resultCard ${sponsored ? "sponsored" : ""}">
 
-        ${showCover ? `
-          <img class="cardCover" src="${site.imageUrl}" onerror="this.style.display='none'">
-        ` : ""}
+        ${showCover ? `<img class="cardCover" src="${site.imageUrl}" onerror="this.style.display='none'">` : ""}
 
         <div class="cardContent">
 
           <div class="topRow">
-
             <div class="cardLogoText">
               ${site.logoUrl ? `<img src="${site.logoUrl}" onerror="this.parentElement.innerHTML='${letterLogo(site.title)}'">` : letterLogo(site.title)}
             </div>
 
             <div>
               <div class="siteTitle">${site.title}</div>
-
-              <a class="siteLink" href="${site.url}" target="_blank" onclick="registerClick('${site.id}')">
-                ${site.url}
-              </a>
+              <a class="siteLink" href="${site.url}" target="_blank" onclick="registerClick('${site.id}')">${site.url}</a>
             </div>
-
           </div>
 
           <div class="siteDesc">${site.desc || ""}</div>
 
           <div class="badges">
             <div class="badge">${site.category || "Genel"}</div>
-
             ${sponsored ? `<div class="badge sponsor">Sponsorlu</div>` : `<div class="badge">Organik Sonuç</div>`}
-
             <div class="badge score">AI Skor: ${site.aiScore}</div>
             <div class="badge rating">⭐ ${avg} (${reviews.length} yorum)</div>
-
             ${site.city ? `<div class="badge">📍 ${site.city} ${site.district || ""}</div>` : ""}
             ${site.phone ? `<div class="badge">📞 ${site.phone}</div>` : ""}
             ${site.distanceKm !== null ? `<div class="badge distance">📌 ${site.distanceKm.toFixed(1)} km uzakta</div>` : ""}
           </div>
 
           <div class="cardButtons">
-
-            <a class="btn btnGreen" href="${site.url}" target="_blank" onclick="registerClick('${site.id}')">
-              Siteye Git
-            </a>
-
-            <a class="btn btnBlue" href="/site.html?id=${site.id}">
-              Detay Sayfası
-            </a>
-
-            <button class="btn btnOrange" onclick="googleSearch('${site.title.replace(/'/g,"\\'")}')">
-              Google’da Ara
-            </button>
-
-            <button class="btn btnPurple" onclick="shareSite('${site.title.replace(/'/g,"\\'")}', '/site.html?id=${site.id}')">
-              Paylaş
-            </button>
-
+            <a class="btn btnGreen" href="${site.url}" target="_blank" onclick="registerClick('${site.id}')">Siteye Git</a>
+            <a class="btn btnBlue" href="/site.html?id=${site.id}">Detay Sayfası</a>
+            <button class="btn btnOrange" onclick="googleSearch('${site.title.replace(/'/g,"\\'")}')">Web’de Ara</button>
+            <button class="btn btnPurple" onclick="shareSite('${site.title.replace(/'/g,"\\'")}', '/site.html?id=${site.id}')">Paylaş</button>
           </div>
 
         </div>
-
       </div>
     `;
   }
@@ -565,13 +525,11 @@ async function searchSite(){
 async function registerClick(id){
   try{
     await fetch(`/api/sites/${id}/click`, { method:"POST" });
-  }catch(err){
-    console.log(err);
-  }
+  }catch{}
 }
 
 function googleSearch(title){
-  const q = encodeURIComponent(title + " yorumları güvenilir mi");
+  const q = encodeURIComponent(title);
   window.open(`https://www.google.com/search?q=${q}`, "_blank");
 }
 
@@ -579,7 +537,7 @@ function shareSite(title,url){
   const fullUrl = location.origin + url;
 
   if(navigator.share){
-    navigator.share({ title, url: fullUrl });
+    navigator.share({ title, url:fullUrl });
   }else{
     navigator.clipboard.writeText(fullUrl);
     alert("Link kopyalandı.");
@@ -591,10 +549,6 @@ document.getElementById("searchInput").addEventListener("keydown", function(e){
     nearbyMode = false;
     searchSite();
   }
-
-  if(e.key === "Escape"){
-    document.getElementById("suggestions").style.display = "none";
-  }
 });
 
 document.addEventListener("click", function(e){
@@ -602,6 +556,12 @@ document.addEventListener("click", function(e){
     document.getElementById("suggestions").style.display = "none";
   }
 });
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/service-worker.js")
+    .then(() => console.log("PWA aktif 🚀"))
+    .catch(err => console.log(err));
+}
 </script>
 
 </body>
