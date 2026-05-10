@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NetSearch - Yeni Nesil AI Arama Motoru</title>
 
-  <meta name="description" content="NetSearch ile web sitelerini, işletmeleri ve AI destekli cevapları hızlıca keşfedin.">
-  <meta name="keywords" content="NetSearch, arama motoru, yapay zeka arama, işletme arama, sponsorlu sonuçlar">
+  <title>NetSearch - Yapay Zeka Destekli Arama Motoru</title>
+
+  <meta name="description" content="NetSearch ile işletmeleri, web sitelerini ve yapay zeka destekli arama sonuçlarını keşfedin.">
+  <meta name="keywords" content="NetSearch, arama motoru, yapay zeka arama, işletme arama, teknik servis, Eskişehir">
   <meta name="robots" content="index, follow">
 
   <style>
@@ -17,249 +18,246 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f4f6fb;
-      color: #111827;
+      background: #020817;
+      color: #fff;
     }
 
     header {
-      background: linear-gradient(135deg, #111827, #2563eb);
-      color: white;
-      padding: 18px 16px 28px;
-      border-radius: 0 0 28px 28px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
+      text-align: center;
+      padding: 50px 16px 30px;
     }
 
     .logo {
-      font-size: 26px;
-      font-weight: 800;
+      font-size: 56px;
+      font-weight: 900;
+      color: #38bdf8;
+      letter-spacing: 1px;
     }
 
-    .logo span {
-      color: #93c5fd;
-    }
-
-    .top-actions a {
-      color: white;
-      text-decoration: none;
-      background: rgba(255,255,255,.16);
-      padding: 9px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-    }
-
-    .hero {
-      margin-top: 28px;
-      text-align: center;
-    }
-
-    .hero h1 {
-      font-size: 28px;
-      margin: 0 0 10px;
-      line-height: 1.2;
-    }
-
-    .hero p {
-      margin: 0;
+    .subtitle {
+      margin-top: 12px;
+      font-size: 20px;
       color: #dbeafe;
-      font-size: 15px;
+    }
+
+    .search-area {
+      max-width: 900px;
+      margin: 30px auto 20px;
+      padding: 0 16px;
     }
 
     .search-box {
-      margin: -22px 14px 18px;
-      background: white;
-      border-radius: 22px;
-      box-shadow: 0 14px 35px rgba(0,0,0,.16);
-      padding: 14px;
-      position: relative;
-    }
-
-    .search-row {
       display: flex;
-      gap: 8px;
+      background: #111827;
+      border: 1px solid #243044;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
     }
 
-    input {
+    .search-box input {
       flex: 1;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 16px;
+      padding: 22px 28px;
+      background: transparent;
+      border: none;
       outline: none;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
     }
 
-    button {
+    .search-box button {
+      width: 170px;
       border: none;
-      border-radius: 14px;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .categories,
+    .quick-searches {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .chip {
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #111827;
+      border: 1px solid #243044;
+      color: #7dd3fc;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .chip.active {
       background: #2563eb;
       color: white;
-      padding: 0 18px;
+    }
+
+    .location-note {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+      margin-top: 16px;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 60px auto;
+      padding: 0 16px;
+    }
+
+    .ai-box {
+      display: none;
+      background: linear-gradient(135deg, #111827, #172554);
+      border: 1px solid #1e40af;
+      border-radius: 24px;
+      padding: 22px;
+      margin-bottom: 30px;
+    }
+
+    .ai-box h2 {
+      margin: 0 0 12px;
+      color: #38bdf8;
+      font-size: 22px;
+    }
+
+    .ai-box p {
+      margin: 0;
+      color: #e5e7eb;
+      line-height: 1.7;
+    }
+
+    .section-title {
+      display: none;
+      margin: 28px 0 18px;
+      font-size: 22px;
+      color: #fff;
+    }
+
+    .result-card {
+      background: #111827;
+      border: 1px solid #243044;
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 26px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.25);
+    }
+
+    .cover {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #1f2937;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    .head {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .logo-img {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      object-fit: cover;
+      background: white;
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: 28px;
+      color: #38bdf8;
+      margin-bottom: 6px;
+    }
+
+    .url {
+      color: #22c55e;
+      font-size: 15px;
+      word-break: break-all;
+    }
+
+    .desc {
+      color: #e5e7eb;
+      margin: 22px 0;
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .badge {
+      background: #172033;
+      color: #7dd3fc;
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    .badge.sponsored {
+      background: #f59e0b;
+      color: #111827;
+      font-weight: bold;
+    }
+
+    .badge.ai {
+      background: #10b981;
+      color: white;
+      font-weight: bold;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .actions a,
+    .actions button {
+      border: none;
+      text-decoration: none;
+      color: white;
+      padding: 13px 20px;
+      border-radius: 999px;
       font-size: 15px;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .filters {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      margin-top: 12px;
-      padding-bottom: 4px;
-    }
-
-    .filter {
-      white-space: nowrap;
-      background: #eef2ff;
-      color: #1e40af;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .suggestions {
-      position: absolute;
-      left: 14px;
-      right: 14px;
-      top: 68px;
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      box-shadow: 0 12px 24px rgba(0,0,0,.12);
-      overflow: hidden;
-      z-index: 99;
-      display: none;
-    }
-
-    .suggestions div {
-      padding: 12px 14px;
-      border-bottom: 1px solid #f3f4f6;
-      cursor: pointer;
-    }
-
-    .suggestions div:hover {
-      background: #f3f4f6;
-    }
-
-    main {
-      padding: 0 14px 32px;
-      max-width: 1000px;
-      margin: auto;
-    }
-
-    .ai-card {
-      display: none;
-      background: #111827;
-      color: white;
-      border-radius: 20px;
-      padding: 18px;
-      margin-bottom: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.14);
-    }
-
-    .ai-card h2 {
-      font-size: 18px;
-      margin: 0 0 10px;
-    }
-
-    .ai-card p {
-      line-height: 1.6;
-      color: #e5e7eb;
-      margin: 0;
-    }
-
-    .section-title {
-      font-size: 18px;
-      margin: 18px 0 12px;
-      font-weight: 800;
-    }
-
-    .result-card {
-      background: white;
-      border-radius: 20px;
-      padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 8px 24px rgba(15,23,42,.08);
-      border: 1px solid #eef2f7;
-    }
-
-    .sponsored {
-      border: 2px solid #facc15;
-      background: #fffbeb;
-    }
-
-    .sponsor-label {
-      display: inline-block;
-      font-size: 12px;
-      background: #facc15;
-      color: #713f12;
-      padding: 5px 9px;
-      border-radius: 999px;
-      margin-bottom: 8px;
-      font-weight: bold;
-    }
-
-    .result-head {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .result-logo {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
-      object-fit: cover;
-      background: #e5e7eb;
-      flex-shrink: 0;
-    }
-
-    .result-title {
-      font-size: 17px;
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .result-url {
-      color: #16a34a;
-      font-size: 13px;
-      word-break: break-all;
-    }
-
-    .result-desc {
-      margin: 12px 0;
-      color: #4b5563;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .result-actions {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .result-actions a {
-      text-align: center;
-      text-decoration: none;
-      padding: 10px 8px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: bold;
-      color: white;
-    }
-
     .visit {
+      background: #16a34a;
+    }
+
+    .detail {
       background: #2563eb;
     }
 
+    .web {
+      background: #ea580c;
+    }
+
+    .share {
+      background: #9333ea;
+    }
+
     .phone {
-      background: #16a34a;
+      background: #0f766e;
     }
 
     .whatsapp {
@@ -269,45 +267,68 @@
     .empty {
       display: none;
       text-align: center;
-      padding: 28px 12px;
-      color: #6b7280;
+      color: #94a3b8;
+      margin-top: 50px;
+      font-size: 18px;
     }
 
     .loader {
       display: none;
       text-align: center;
-      margin: 20px 0;
-      color: #2563eb;
-      font-weight: bold;
+      color: #38bdf8;
+      font-size: 18px;
+      margin-top: 40px;
     }
 
     footer {
       text-align: center;
-      color: #6b7280;
-      padding: 24px;
-      font-size: 13px;
+      color: #64748b;
+      padding: 40px 16px;
     }
 
-    @media (min-width: 768px) {
-      header {
-        padding: 24px 40px 52px;
+    @media (max-width: 700px) {
+      .logo {
+        font-size: 40px;
       }
 
-      .hero h1 {
-        font-size: 44px;
+      .subtitle {
+        font-size: 16px;
       }
 
       .search-box {
-        max-width: 760px;
-        margin: -34px auto 24px;
+        border-radius: 24px;
+        flex-direction: column;
       }
 
-      .result-actions {
-        display: flex;
+      .search-box input {
+        padding: 18px;
       }
 
-      .result-actions a {
-        min-width: 120px;
+      .search-box button {
+        width: 100%;
+        padding: 16px;
+      }
+
+      main {
+        margin-top: 36px;
+      }
+
+      .cover {
+        height: 160px;
+      }
+
+      .head {
+        align-items: flex-start;
+      }
+
+      .title {
+        font-size: 22px;
+      }
+
+      .actions a,
+      .actions button {
+        width: 100%;
+        text-align: center;
       }
     }
   </style>
@@ -316,49 +337,53 @@
 <body>
 
 <header>
-  <div class="topbar">
-    <div class="logo">Net<span>Search</span></div>
-    <div class="top-actions">
-      <a href="/login.html">Giriş</a>
-      <a href="/add-site.html">Site Ekle</a>
+  <div class="logo">NetSearch</div>
+  <div class="subtitle">Yapay zeka destekli yeni nesil arama motoru</div>
+
+  <div class="search-area">
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="Ne aramak istiyorsun? Örn: kombi servisi">
+      <button onclick="search()">Ara</button>
+    </div>
+
+    <div class="categories">
+      <div class="chip active" onclick="quickSearch('')">Tümü</div>
+      <div class="chip" onclick="quickSearch('Teknik Servis')">Teknik Servis</div>
+      <div class="chip" onclick="quickSearch('Çiçekçi')">Çiçekçi</div>
+      <div class="chip" onclick="quickSearch('Market')">Market</div>
+      <div class="chip" onclick="quickSearch('Resmi Kurum')">Resmi Kurum</div>
+      <div class="chip" onclick="quickSearch('Restoran')">Restoran</div>
+      <div class="chip" onclick="quickSearch('Sağlık')">Sağlık</div>
+      <div class="chip" onclick="quickSearch('Eğitim')">Eğitim</div>
+    </div>
+
+    <div class="quick-searches">
+      <div class="chip" onclick="quickSearch('Eskişehir kombi servisi')">Eskişehir kombi servisi</div>
+      <div class="chip" onclick="quickSearch('Yapay zeka')">Yapay zeka</div>
+      <div class="chip" onclick="quickSearch('Tarih dersi')">Tarih dersi</div>
+      <div class="chip" onclick="quickSearch('Hava durumu')">Hava durumu</div>
+      <div class="chip" onclick="quickSearch('E-Devlet')">E-Devlet</div>
+      <div class="chip" onclick="quickSearch('Yakınımdaki işletmeler')">📍 Yakınımdaki İşletmeler</div>
+    </div>
+
+    <div class="location-note">
+      Konum izni verirsen yakındaki işletmeleri öne çıkarabiliriz.
     </div>
   </div>
-
-  <div class="hero">
-    <h1>AI Destekli Yeni Nesil Arama</h1>
-    <p>Web sitelerini, işletmeleri ve akıllı cevapları tek ekranda keşfet.</p>
-  </div>
 </header>
-
-<div class="search-box">
-  <div class="search-row">
-    <input id="searchInput" type="text" placeholder="Ne aramak istiyorsun? Örn: kombi servisi" autocomplete="off">
-    <button onclick="search()">Ara</button>
-  </div>
-
-  <div id="suggestions" class="suggestions"></div>
-
-  <div class="filters">
-    <div class="filter" onclick="quickSearch('kombi servisi')">Kombi Servisi</div>
-    <div class="filter" onclick="quickSearch('beyaz eşya servisi')">Beyaz Eşya</div>
-    <div class="filter" onclick="quickSearch('yapay zeka')">Yapay Zeka</div>
-    <div class="filter" onclick="quickSearch('e devlet')">E-Devlet</div>
-    <div class="filter" onclick="quickSearch('Eskişehir')">Eskişehir</div>
-  </div>
-</div>
 
 <main>
   <div id="loader" class="loader">Aranıyor...</div>
 
-  <section id="aiBox" class="ai-card">
+  <section id="aiBox" class="ai-box">
     <h2>NetSearch AI Cevabı</h2>
     <p id="aiAnswer"></p>
   </section>
 
-  <div id="sponsoredTitle" class="section-title" style="display:none;">Sponsorlu Sonuçlar</div>
+  <h2 id="sponsoredTitle" class="section-title">Sponsorlu Sonuçlar</h2>
   <div id="sponsoredResults"></div>
 
-  <div id="organicTitle" class="section-title" style="display:none;">Arama Sonuçları</div>
+  <h2 id="organicTitle" class="section-title">Arama Sonuçları</h2>
   <div id="results"></div>
 
   <div id="empty" class="empty">
@@ -372,51 +397,16 @@
 
 <script>
   const input = document.getElementById("searchInput");
-  const suggestionsBox = document.getElementById("suggestions");
 
   input.addEventListener("keydown", function(e) {
     if (e.key === "Enter") search();
   });
 
-  input.addEventListener("input", async function() {
-    const q = input.value.trim();
-
-    if (q.length < 2) {
-      suggestionsBox.style.display = "none";
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
-
-      suggestionsBox.innerHTML = "";
-
-      if (!data || data.length === 0) {
-        suggestionsBox.style.display = "none";
-        return;
-      }
-
-      data.slice(0, 6).forEach(item => {
-        const div = document.createElement("div");
-        div.textContent = item.keyword || item.title || item.name || item;
-        div.onclick = () => {
-          input.value = div.textContent;
-          suggestionsBox.style.display = "none";
-          search();
-        };
-        suggestionsBox.appendChild(div);
-      });
-
-      suggestionsBox.style.display = "block";
-    } catch (err) {
-      suggestionsBox.style.display = "none";
-    }
-  });
-
   function quickSearch(text) {
-    input.value = text;
-    search();
+    if (text) {
+      input.value = text;
+      search();
+    }
   }
 
   async function search() {
@@ -426,8 +416,6 @@
       alert("Lütfen arama kelimesi yaz.");
       return;
     }
-
-    suggestionsBox.style.display = "none";
 
     document.getElementById("loader").style.display = "block";
     document.getElementById("aiBox").style.display = "none";
@@ -472,50 +460,96 @@
 
     } catch (err) {
       document.getElementById("loader").style.display = "none";
-      alert("Arama sırasında hata oluştu. Server.js API bağlantısını kontrol et.");
+      document.getElementById("empty").style.display = "block";
       console.error(err);
     }
   }
 
   function createCard(site, isSponsored) {
     const card = document.createElement("div");
-    card.className = "result-card" + (isSponsored ? " sponsored" : "");
+    card.className = "result-card";
 
+    const id = site._id || site.id || "";
     const title = site.title || site.name || "İsimsiz Site";
     const url = site.url || site.website || "#";
     const desc = site.description || site.desc || "Bu site hakkında açıklama bulunamadı.";
-    const logo = site.logo || site.image || site.cover || "https://via.placeholder.com/120x120.png?text=NS";
+    const logo = site.logo || site.image || "https://via.placeholder.com/120x120.png?text=NS";
+    const cover = site.cover || site.image || "https://via.placeholder.com/1200x400.png?text=NetSearch";
+    const category = site.category || "Genel";
+    const city = site.city || "";
     const phone = site.phone || site.telefon || "";
-    const whatsapp = site.whatsapp || site.whatsApp || phone;
+    const whatsapp = site.whatsapp || phone;
+    const aiScore = site.searchScore ? Math.round(site.searchScore) : "";
 
     card.innerHTML = `
-      ${isSponsored ? `<div class="sponsor-label">Sponsorlu</div>` : ""}
-      <div class="result-head">
-        <img class="result-logo" src="${logo}" onerror="this.src='https://via.placeholder.com/120x120.png?text=NS'">
-        <div>
-          <div class="result-title">${escapeHtml(title)}</div>
-          <div class="result-url">${escapeHtml(url)}</div>
+      <img class="cover" src="${escapeHtml(cover)}" onerror="this.src='https://via.placeholder.com/1200x400.png?text=NetSearch'">
+
+      <div class="card-body">
+        <div class="head">
+          <img class="logo-img" src="${escapeHtml(logo)}" onerror="this.src='https://via.placeholder.com/120x120.png?text=NS'">
+          <div>
+            <div class="title">${escapeHtml(title)}</div>
+            <div class="url">${escapeHtml(url)}</div>
+          </div>
         </div>
-      </div>
 
-      <div class="result-desc">${escapeHtml(desc)}</div>
+        <div class="desc">${escapeHtml(desc)}</div>
 
-      <div class="result-actions">
-        <a class="visit" href="${url}" target="_blank">Siteye Git</a>
-        ${phone ? `<a class="phone" href="tel:${cleanPhone(phone)}">Ara</a>` : `<a class="phone" href="/detail.html?id=${site._id || site.id}">Detay</a>`}
-        ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : `<a class="whatsapp" href="/detail.html?id=${site._id || site.id}">Profil</a>`}
+        <div class="badges">
+          <span class="badge">${escapeHtml(category)}</span>
+          ${isSponsored ? `<span class="badge sponsored">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
+          ${aiScore ? `<span class="badge ai">AI Skor: ${aiScore}</span>` : ""}
+          ${city ? `<span class="badge">📍 ${escapeHtml(city)}</span>` : ""}
+          ${phone ? `<span class="badge">📞 ${escapeHtml(phone)}</span>` : ""}
+        </div>
+
+        <div class="actions">
+          <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
+          <a class="detail" href="/site.html?id=${id}">Detay Sayfası</a>
+          <a class="web" href="https://www.google.com/search?q=${encodeURIComponent(title)}" target="_blank">Web’de Ara</a>
+          ${phone ? `<a class="phone" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
+          ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
+          <button class="share" onclick="shareSite('${escapeHtml(title)}','${escapeHtml(url)}')">Paylaş</button>
+        </div>
       </div>
     `;
 
     return card;
   }
 
+  async function trackClick(id) {
+    if (!id) return;
+
+    try {
+      await fetch(`/api/sites/${id}/click`, {
+        method: "POST"
+      });
+    } catch (err) {
+      console.log("Tıklama kaydı alınamadı");
+    }
+  }
+
+  function shareSite(title, url) {
+    if (navigator.share) {
+      navigator.share({
+        title,
+        url
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Link kopyalandı.");
+    }
+  }
+
   function cleanPhone(phone) {
-    return String(phone).replace(/\D/g, "").replace(/^0/, "90");
+    let p = String(phone || "").replace(/\D/g, "");
+    if (p.startsWith("0")) p = "90" + p.slice(1);
+    if (!p.startsWith("90") && p.length === 10) p = "90" + p;
+    return p;
   }
 
   function escapeHtml(text) {
-    return String(text)
+    return String(text || "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
