@@ -9,24 +9,21 @@ const OpenAI = require("openai");
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: "20mb" }));
-app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 const PORT = process.env.PORT || 3000;
 
 let openai = null;
-
 if (process.env.OPENAI_API_KEY) {
-  openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-  });
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
 
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB bağlantısı başarılı"))
-  .catch((err) => console.error("MongoDB bağlantı hatası:", err));
+  .catch((err) => console.error("MongoDB bağlantı hatası:", err.message));
 
 const SiteSchema = new mongoose.Schema(
   {
@@ -47,51 +44,33 @@ const SiteSchema = new mongoose.Schema(
     logo: String,
     image: String,
     cover: String,
-    status: {
-      type: String,
-      default: "pending"
-    },
-    isSponsored: {
-      type: Boolean,
-      default: false
-    },
-    sponsorActive: {
-      type: Boolean,
-      default: false
-    },
-    sponsorBudget: {
-      type: Number,
-      default: 0
-    },
-    clicks: {
-      type: Number,
-      default: 0
-    },
-    views: {
-      type: Number,
-      default: 0
-    },
-    rating: {
-      type: Number,
-      default: 0
-    }
+
+    status: { type: String, default: "active" },
+
+    isSponsored: { type: Boolean, default: false },
+    sponsorActive: { type: Boolean, default: false },
+    sponsorBudget: { type: Number, default: 0 },
+    sponsorCpc: { type: Number, default: 0 },
+    sponsorClicks: { type: Number, default: 0 },
+    sponsorViews: { type: Number, default: 0 },
+
+    views: { type: Number, default: 0 },
+    clicks: { type: Number, default: 0 },
+    rating: { type: Number, default: 0 },
+    reviewCount: { type: Number, default: 0 },
+
+    ownerEmail: String
   },
   { timestamps: true }
 );
 
 const CommentSchema = new mongoose.Schema(
   {
-    siteId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Site"
-    },
+    siteId: { type: mongoose.Schema.Types.ObjectId, ref: "Site" },
     name: String,
     comment: String,
     rating: Number,
-    status: {
-      type: String,
-      default: "pending"
-    }
+    status: { type: String, default: "active" }
   },
   { timestamps: true }
 );
@@ -101,10 +80,7 @@ const UserSchema = new mongoose.Schema(
     name: String,
     email: String,
     password: String,
-    role: {
-      type: String,
-      default: "user"
-    }
+    role: { type: String, default: "user" }
   },
   { timestamps: true }
 );
@@ -146,56 +122,71 @@ function calculateScore(site, query) {
 
   let score = 0;
 
-  if (normalize(site.title || site.name).includes(q)) score += 60;
-  if (text.includes(q)) score += 35;
+  const title = normalize(site.title || site.name);
+  const category = normalize(site.category);
+  const city = normalize(site.city);
+  const district = normalize(site.district);
+
+  if (title === q) score += 120;
+  if (title.includes(q)) score += 80;
+  if (text.includes(q)) score += 45;
 
   words.forEach((word) => {
-    if (text.includes(word)) score += 10;
+    if (title.includes(word)) score += 20;
+    if (category.includes(word)) score += 18;
+    if (city.includes(word)) score += 16;
+    if (district.includes(word)) score += 14;
+    if (text.includes(word)) score += 8;
   });
 
-  if (site.isSponsored || site.sponsorActive) score += 25;
-  if (site.rating) score += Number(site.rating) * 3;
-  if (site.views) score += Math.min(site.views / 20, 10);
-  if (site.clicks) score += Math.min(site.clicks / 10, 15);
+  if (site.isSponsored || site.sponsorActive) {
+    score += 70;
+    score += Math.min(Number(site.sponsorBudget || 0) / 10, 40);
+    score += Math.min(Number(site.sponsorCpc || 0) * 5, 30);
+  }
 
-  return score;
+  score += Math.min(Number(site.rating || 0) * 8, 40);
+  score += Math.min(Number(site.reviewCount || 0) * 2, 30);
+  score += Math.min(Number(site.clicks || 0) / 5, 35);
+  score += Math.min(Number(site.views || 0) / 20, 25);
+
+  const ctr =
+    Number(site.views || 0) > 0
+      ? Number(site.clicks || 0) / Number(site.views || 1)
+      : 0;
+
+  score += Math.min(ctr * 100, 30);
+
+  const descLength = String(site.description || site.desc || "").length;
+  if (descLength > 60) score += 10;
+  if (site.logo || site.image) score += 8;
+  if (site.cover) score += 8;
+  if (site.phone || site.telefon || site.whatsapp) score += 10;
+  if (site.updatedAt) score += 5;
+
+  return Math.round(score);
 }
 
-async function getAiAnswer(query, organicResults) {
+async function getAiAnswer(query, results) {
   try {
-    if (!openai) {
-      return "";
-    }
+    if (!openai) return "";
 
-    const siteSummary = organicResults
+    const siteSummary = results
       .slice(0, 5)
-      .map((site, index) => {
-        return `${index + 1}. ${site.title || site.name || "Site"} - ${site.description || site.desc || ""}`;
-      })
+      .map((s, i) => `${i + 1}. ${s.title || s.name} - ${s.description || s.desc || ""}`)
       .join("\n");
 
-    if (!process.env.OPENAI_API_KEY) {
-  return "";
-}
-
-const completion = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "Sen NetSearch adlı yeni nesil arama motorunun AI cevap asistanısın. Kullanıcıya kısa, net ve faydalı Türkçe cevap ver. Kesin olmayan bilgileri kesinmiş gibi söyleme."
+            "Sen NetSearch AI arama asistanısın. Türkçe, kısa, net ve güvenli cevap ver. Kesin olmayan bilgileri kesin gibi anlatma."
         },
         {
           role: "user",
-          content: `
-Kullanıcının araması: ${query}
-
-Veritabanındaki ilgili site sonuçları:
-${siteSummary || "Henüz ilgili site bulunamadı."}
-
-Bu arama için kullanıcıya kısa bir AI cevabı ver.
-`
+          content: `Arama: ${query}\n\nİlgili sonuçlar:\n${siteSummary || "Sonuç yok"}\n\nKullanıcıya kısa bir arama özeti ver.`
         }
       ],
       max_tokens: 220,
@@ -204,9 +195,14 @@ Bu arama için kullanıcıya kısa bir AI cevabı ver.
 
     return completion.choices?.[0]?.message?.content || "";
   } catch (err) {
-    console.log("AI geçici olarak devre dışı:", err.message);
+    console.log("AI geçici kapalı:", err.message);
     return "";
   }
+}
+
+function safeRegex(query) {
+  const clean = String(query || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(clean.split(/\s+/).filter(Boolean).join("|"), "i");
 }
 
 app.get("/", (req, res) => {
@@ -216,7 +212,7 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
-    message: "NetSearch server çalışıyor",
+    message: "NetSearch çalışıyor",
     mongo: mongoose.connection.readyState === 1 ? "connected" : "not connected",
     openai: process.env.OPENAI_API_KEY ? "key var" : "key yok"
   });
@@ -227,14 +223,10 @@ app.get("/api/search", async (req, res) => {
     const q = req.query.q || "";
 
     if (!q.trim()) {
-      return res.json({
-        aiAnswer: "",
-        sponsored: [],
-        results: []
-      });
+      return res.json({ aiAnswer: "", sponsored: [], results: [] });
     }
 
-    const regex = new RegExp(q.split(" ").join("|"), "i");
+    const regex = safeRegex(q);
 
     let sites = await Site.find({
       status: { $ne: "deleted" },
@@ -249,7 +241,7 @@ app.get("/api/search", async (req, res) => {
         { tags: regex },
         { keywords: regex }
       ]
-    }).limit(80);
+    }).limit(150);
 
     sites = sites
       .map((site) => {
@@ -261,22 +253,29 @@ app.get("/api/search", async (req, res) => {
       .sort((a, b) => b.searchScore - a.searchScore);
 
     const sponsored = sites
-      .filter((site) => site.isSponsored || site.sponsorActive)
+      .filter((s) => s.isSponsored || s.sponsorActive)
+      .sort((a, b) => b.searchScore - a.searchScore)
       .slice(0, 5);
 
     const results = sites
-      .filter((site) => !(site.isSponsored || site.sponsorActive))
-      .slice(0, 30);
+      .filter((s) => !(s.isSponsored || s.sponsorActive))
+      .sort((a, b) => b.searchScore - a.searchScore)
+      .slice(0, 40);
+
+    const ids = [...sponsored, ...results].map((s) => s._id);
+    if (ids.length) {
+      await Site.updateMany({ _id: { $in: ids } }, { $inc: { views: 1 } });
+      await Site.updateMany(
+        { _id: { $in: sponsored.map((s) => s._id) } },
+        { $inc: { sponsorViews: 1 } }
+      );
+    }
 
     const aiAnswer = await getAiAnswer(q, results.length ? results : sites);
 
-    res.json({
-      aiAnswer,
-      sponsored,
-      results
-    });
+    res.json({ aiAnswer, sponsored, results });
   } catch (err) {
-    console.error("Arama hatası:", err);
+    console.error("Arama hatası:", err.message);
     res.status(500).json({
       aiAnswer: "",
       sponsored: [],
@@ -289,12 +288,9 @@ app.get("/api/search", async (req, res) => {
 app.get("/api/autocomplete", async (req, res) => {
   try {
     const q = req.query.q || "";
+    if (q.length < 2) return res.json([]);
 
-    if (q.length < 2) {
-      return res.json([]);
-    }
-
-    const regex = new RegExp(q, "i");
+    const regex = safeRegex(q);
 
     const sites = await Site.find({
       status: { $ne: "deleted" },
@@ -308,7 +304,7 @@ app.get("/api/autocomplete", async (req, res) => {
         { keywords: regex }
       ]
     })
-      .limit(10)
+      .limit(20)
       .select("title name category city district tags keywords");
 
     const suggestions = [];
@@ -323,85 +319,60 @@ app.get("/api/autocomplete", async (req, res) => {
       if (Array.isArray(site.keywords)) suggestions.push(...site.keywords);
     });
 
-    const clean = [...new Set(suggestions)]
-      .filter((item) => normalize(item).includes(normalize(q)))
-      .slice(0, 8);
-
-    res.json(clean);
-  } catch (err) {
-    console.error("Autocomplete hata:", err);
+    res.json(
+      [...new Set(suggestions)]
+        .filter((x) => normalize(x).includes(normalize(q)))
+        .slice(0, 10)
+    );
+  } catch {
     res.json([]);
   }
 });
 
 app.post("/api/sites", async (req, res) => {
   try {
-    const body = req.body;
+    const b = req.body;
 
     const site = await Site.create({
-      title: body.title || body.name,
-      name: body.name || body.title,
-      url: body.url || body.website,
-      website: body.website || body.url,
-      description: body.description || body.desc,
-      desc: body.desc || body.description,
-      category: body.category,
-      tags: Array.isArray(body.tags)
-        ? body.tags
-        : String(body.tags || "")
-            .split(",")
-            .map((x) => x.trim())
-            .filter(Boolean),
-      keywords: Array.isArray(body.keywords)
-        ? body.keywords
-        : String(body.keywords || "")
-            .split(",")
-            .map((x) => x.trim())
-            .filter(Boolean),
-      city: body.city,
-      district: body.district,
-      phone: body.phone || body.telefon,
-      telefon: body.telefon || body.phone,
-      whatsapp: body.whatsapp,
-      logo: body.logo,
-      image: body.image,
-      cover: body.cover,
-      status: body.status || "active"
+      title: b.title || b.name,
+      name: b.name || b.title,
+      url: b.url || b.website,
+      website: b.website || b.url,
+      description: b.description || b.desc,
+      desc: b.desc || b.description,
+      category: b.category,
+      tags: Array.isArray(b.tags) ? b.tags : String(b.tags || "").split(",").map(x => x.trim()).filter(Boolean),
+      keywords: Array.isArray(b.keywords) ? b.keywords : String(b.keywords || "").split(",").map(x => x.trim()).filter(Boolean),
+      city: b.city,
+      district: b.district,
+      phone: b.phone || b.telefon,
+      telefon: b.telefon || b.phone,
+      whatsapp: b.whatsapp,
+      logo: b.logo,
+      image: b.image,
+      cover: b.cover,
+      ownerEmail: b.ownerEmail,
+      status: b.status || "active"
     });
 
-    res.json({
-      success: true,
-      message: "Site başarıyla eklendi",
-      site
-    });
+    res.json({ success: true, message: "Site eklendi", site });
   } catch (err) {
-    console.error("Site ekleme hatası:", err);
-    res.status(500).json({
-      success: false,
-      message: "Site eklenirken hata oluştu"
-    });
+    res.status(500).json({ success: false, message: "Site eklenemedi" });
   }
 });
 
 app.get("/api/sites", async (req, res) => {
-  try {
-    const sites = await Site.find({ status: { $ne: "deleted" } })
-      .sort({ createdAt: -1 })
-      .limit(100);
+  const sites = await Site.find({ status: { $ne: "deleted" } })
+    .sort({ createdAt: -1 })
+    .limit(100);
 
-    res.json(sites);
-  } catch (err) {
-    res.status(500).json({ error: "Siteler alınamadı" });
-  }
+  res.json(sites);
 });
 
 app.get("/api/sites/:id", async (req, res) => {
   try {
     const site = await Site.findById(req.params.id);
-
-    if (!site) {
-      return res.status(404).json({ error: "Site bulunamadı" });
-    }
+    if (!site) return res.status(404).json({ error: "Site bulunamadı" });
 
     site.views = Number(site.views || 0) + 1;
     await site.save();
@@ -411,23 +382,31 @@ app.get("/api/sites/:id", async (req, res) => {
       status: { $ne: "deleted" }
     }).sort({ createdAt: -1 });
 
-    res.json({
-      site,
-      comments
-    });
-  } catch (err) {
+    res.json({ site, comments });
+  } catch {
     res.status(500).json({ error: "Detay alınamadı" });
   }
 });
 
 app.post("/api/sites/:id/click", async (req, res) => {
   try {
-    await Site.findByIdAndUpdate(req.params.id, {
-      $inc: { clicks: 1 }
-    });
+    const site = await Site.findById(req.params.id);
+    if (!site) return res.json({ success: false });
+
+    const update = { $inc: { clicks: 1 } };
+
+    if (site.isSponsored || site.sponsorActive) {
+      update.$inc.sponsorClicks = 1;
+
+      if (Number(site.sponsorBudget || 0) > 0 && Number(site.sponsorCpc || 0) > 0) {
+        update.$inc.sponsorBudget = -Math.abs(Number(site.sponsorCpc || 0));
+      }
+    }
+
+    await Site.findByIdAndUpdate(req.params.id, update);
 
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ success: false });
   }
 });
@@ -438,78 +417,73 @@ app.post("/api/comments", async (req, res) => {
       siteId: req.body.siteId,
       name: req.body.name,
       comment: req.body.comment,
-      rating: req.body.rating,
+      rating: Number(req.body.rating || 5),
       status: "active"
     });
 
-    res.json({
-      success: true,
-      message: "Yorum eklendi",
-      comment
+    const comments = await Comment.find({
+      siteId: req.body.siteId,
+      status: { $ne: "deleted" }
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Yorum eklenemedi"
+
+    const avg =
+      comments.reduce((sum, c) => sum + Number(c.rating || 0), 0) /
+      Math.max(comments.length, 1);
+
+    await Site.findByIdAndUpdate(req.body.siteId, {
+      rating: Math.round(avg * 10) / 10,
+      reviewCount: comments.length
     });
+
+    res.json({ success: true, message: "Yorum eklendi", comment });
+  } catch {
+    res.status(500).json({ success: false, message: "Yorum eklenemedi" });
   }
 });
 
 app.get("/api/admin/sites", async (req, res) => {
-  try {
-    const sites = await Site.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
-    res.json(sites);
-  } catch (err) {
-    res.status(500).json({ error: "Admin siteleri alınamadı" });
-  }
+  const sites = await Site.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
+  res.json(sites);
 });
 
 app.put("/api/admin/sites/:id", async (req, res) => {
   try {
-    const updated = await Site.findByIdAndUpdate(req.params.id, req.body, {
-      new: true
-    });
-
-    res.json({
-      success: true,
-      site: updated
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Site güncellenemedi"
-    });
+    const updated = await Site.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, site: updated });
+  } catch {
+    res.status(500).json({ success: false });
   }
 });
 
 app.delete("/api/admin/sites/:id", async (req, res) => {
   try {
-    await Site.findByIdAndUpdate(req.params.id, {
-      status: "deleted"
-    });
+    await Site.findByIdAndUpdate(req.params.id, { status: "deleted" });
+    res.json({ success: true, message: "Site silindi" });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
 
-    res.json({
-      success: true,
-      message: "Site silindi"
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Site silinemedi"
-    });
+app.get("/api/owner/stats", async (req, res) => {
+  try {
+    const email = req.query.email;
+    if (!email) return res.status(400).json({ error: "email gerekli" });
+
+    const sites = await Site.find({
+      ownerEmail: email,
+      status: { $ne: "deleted" }
+    }).select("title name views clicks sponsorViews sponsorClicks sponsorBudget sponsorCpc rating reviewCount");
+
+    res.json({ success: true, sites });
+  } catch {
+    res.status(500).json({ success: false });
   }
 });
 
 app.post("/api/register", async (req, res) => {
   try {
     const exists = await User.findOne({ email: req.body.email });
-
-    if (exists) {
-      return res.status(400).json({
-        success: false,
-        message: "Bu e-posta zaten kayıtlı"
-      });
-    }
+    if (exists) return res.status(400).json({ success: false, message: "Bu e-posta kayıtlı" });
 
     const user = await User.create({
       name: req.body.name,
@@ -520,19 +494,10 @@ app.post("/api/register", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Kayıt başarılı",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Kayıt hatası"
-    });
+  } catch {
+    res.status(500).json({ success: false });
   }
 });
 
@@ -543,28 +508,14 @@ app.post("/api/login", async (req, res) => {
       password: req.body.password
     });
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "E-posta veya şifre hatalı"
-      });
-    }
+    if (!user) return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
 
     res.json({
       success: true,
-      message: "Giriş başarılı",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Giriş hatası"
-    });
+  } catch {
+    res.status(500).json({ success: false });
   }
 });
 
@@ -578,21 +529,15 @@ Sitemap: https://netsearch.com.tr/sitemap.xml`);
 
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const sites = await Site.find({
-      status: { $ne: "deleted" }
-    }).select("_id updatedAt");
+    const sites = await Site.find({ status: { $ne: "deleted" } }).select("_id updatedAt");
 
-    const urls = sites
-      .map((site) => {
-        return `
+    const urls = sites.map(site => `
   <url>
-    <loc>https://netsearch.com.tr/detail.html?id=${site._id}</loc>
+    <loc>https://netsearch.com.tr/site.html?id=${site._id}</loc>
     <lastmod>${new Date(site.updatedAt).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>`;
-      })
-      .join("");
+  </url>`).join("");
 
     res.type("application/xml");
     res.send(`<?xml version="1.0" encoding="UTF-8"?>
@@ -604,7 +549,7 @@ app.get("/sitemap.xml", async (req, res) => {
   </url>
   ${urls}
 </urlset>`);
-  } catch (err) {
+  } catch {
     res.status(500).send("Sitemap oluşturulamadı");
   }
 });
