@@ -61,23 +61,18 @@ const siteSchema = new mongoose.Schema({
   url: String,
   keywords: String,
   desc: String,
-
   category: String,
   logoUrl: String,
   imageUrl: String,
   phone: String,
   address: String,
-
   latitude: { type: Number, default: null },
   longitude: { type: Number, default: null },
-
   seoTitle: String,
   seoDescription: String,
-
   ownerId: String,
   ownerName: String,
   status: { type: String, default: "pending" },
-
   adActive: { type: Boolean, default: false },
   isAd: { type: Boolean, default: false },
   balance: { type: Number, default: 0 },
@@ -87,11 +82,9 @@ const siteSchema = new mongoose.Schema({
   clicks: { type: Number, default: 0 },
   paidClicks: { type: Number, default: 0 },
   views: { type: Number, default: 0 },
-
   city: String,
   district: String,
   negativeKeywords: String,
-
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -167,7 +160,10 @@ createAdmin();
 
 app.post("/api/upload", upload.single("image"), (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ success: false, message: "Dosya yüklenmedi." });
+    return res.status(400).json({
+      success: false,
+      message: "Dosya yüklenmedi."
+    });
   }
 
   res.json({
@@ -184,13 +180,21 @@ async function registerHandler(req, res) {
     const { name, company, email, phone, username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ success: false, message: "Kullanıcı adı ve şifre zorunlu." });
+      return res.status(400).json({
+        success: false,
+        message: "Kullanıcı adı ve şifre zorunlu."
+      });
     }
 
-    const exists = await User.findOne({ $or: [{ username }, { email }] });
+    const exists = await User.findOne({
+      $or: [{ username }, { email }]
+    });
 
     if (exists) {
-      return res.status(400).json({ success: false, message: "Bu kullanıcı adı veya e-posta zaten kayıtlı." });
+      return res.status(400).json({
+        success: false,
+        message: "Bu kullanıcı adı veya e-posta zaten kayıtlı."
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -205,11 +209,18 @@ async function registerHandler(req, res) {
       role: "user"
     });
 
-    res.json({ success: true, message: "Kayıt başarılı.", user: safeUser(user) });
+    res.json({
+      success: true,
+      message: "Kayıt başarılı.",
+      user: safeUser(user)
+    });
 
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: false, message: "Sunucu hatası." });
+    res.status(500).json({
+      success: false,
+      message: "Sunucu hatası."
+    });
   }
 }
 
@@ -220,17 +231,26 @@ async function loginHandler(req, res) {
     const user = await User.findOne({ username });
 
     if (!user) {
-      return res.status(401).json({ success: false, message: "Kullanıcı bulunamadı." });
+      return res.status(401).json({
+        success: false,
+        message: "Kullanıcı bulunamadı."
+      });
     }
 
     if (user.banned) {
-      return res.status(403).json({ success: false, message: "Hesabınız engellenmiş." });
+      return res.status(403).json({
+        success: false,
+        message: "Hesabınız engellenmiş."
+      });
     }
 
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
-      return res.status(401).json({ success: false, message: "Şifre yanlış." });
+      return res.status(401).json({
+        success: false,
+        message: "Şifre yanlış."
+      });
     }
 
     res.json({
@@ -243,7 +263,10 @@ async function loginHandler(req, res) {
 
   } catch (err) {
     console.log(err);
-    res.status(500).json({ success: false, message: "Sunucu hatası." });
+    res.status(500).json({
+      success: false,
+      message: "Sunucu hatası."
+    });
   }
 }
 
@@ -262,10 +285,16 @@ app.get("/api/users", async (req, res) => {
 app.delete("/api/users/:id", async (req, res) => {
   const user = await User.findById(req.params.id);
 
-  if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı." });
-  if (user.role === "admin") return res.status(403).json({ message: "Admin hesabı silinemez." });
+  if (!user) {
+    return res.status(404).json({ message: "Kullanıcı bulunamadı." });
+  }
+
+  if (user.role === "admin") {
+    return res.status(403).json({ message: "Admin hesabı silinemez." });
+  }
 
   await User.findByIdAndDelete(req.params.id);
+
   res.json({ message: "Kullanıcı silindi." });
 });
 
@@ -279,9 +308,14 @@ app.get("/api/sites", async (req, res) => {
 app.get("/api/sites/:id", async (req, res) => {
   try {
     const site = await Site.findById(req.params.id);
-    if (!site) return res.status(404).json({ message: "Site bulunamadı." });
+
+    if (!site) {
+      return res.status(404).json({ message: "Site bulunamadı." });
+    }
+
     res.json(safeSite(site));
-  } catch {
+
+  } catch (err) {
     res.status(500).json({ message: "Sunucu hatası." });
   }
 });
@@ -289,13 +323,29 @@ app.get("/api/sites/:id", async (req, res) => {
 app.post("/api/sites", async (req, res) => {
   try {
     const {
-      title, url, keywords, desc, category, logoUrl, imageUrl,
-      phone, address, latitude, longitude, seoTitle, seoDescription,
-      ownerId, ownerName, city, district
+      title,
+      url,
+      keywords,
+      desc,
+      category,
+      logoUrl,
+      imageUrl,
+      phone,
+      address,
+      latitude,
+      longitude,
+      seoTitle,
+      seoDescription,
+      ownerId,
+      ownerName,
+      city,
+      district
     } = req.body;
 
     if (!title || !url || !keywords || !desc) {
-      return res.status(400).json({ message: "Başlık, link, anahtar kelime ve açıklama zorunlu." });
+      return res.status(400).json({
+        message: "Başlık, link, anahtar kelime ve açıklama zorunlu."
+      });
     }
 
     const site = await Site.create({
@@ -334,9 +384,22 @@ app.post("/api/sites", async (req, res) => {
 app.put("/api/sites/:id", async (req, res) => {
   try {
     const allowed = [
-      "title", "url", "keywords", "desc", "category", "logoUrl", "imageUrl",
-      "phone", "address", "latitude", "longitude", "seoTitle", "seoDescription",
-      "city", "district", "negativeKeywords"
+      "title",
+      "url",
+      "keywords",
+      "desc",
+      "category",
+      "logoUrl",
+      "imageUrl",
+      "phone",
+      "address",
+      "latitude",
+      "longitude",
+      "seoTitle",
+      "seoDescription",
+      "city",
+      "district",
+      "negativeKeywords"
     ];
 
     const update = {};
@@ -351,11 +414,20 @@ app.put("/api/sites/:id", async (req, res) => {
       }
     });
 
-    const site = await Site.findByIdAndUpdate(req.params.id, update, { new: true });
+    const site = await Site.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true }
+    );
 
-    if (!site) return res.status(404).json({ message: "Site bulunamadı." });
+    if (!site) {
+      return res.status(404).json({ message: "Site bulunamadı." });
+    }
 
-    res.json({ message: "Site güncellendi.", site: safeSite(site) });
+    res.json({
+      message: "Site güncellendi.",
+      site: safeSite(site)
+    });
 
   } catch (err) {
     console.log(err);
@@ -366,6 +438,7 @@ app.put("/api/sites/:id", async (req, res) => {
 app.delete("/api/sites/:id", async (req, res) => {
   await Site.findByIdAndDelete(req.params.id);
   await Review.deleteMany({ siteId: req.params.id });
+
   res.json({ message: "Site ve yorumları silindi." });
 });
 
@@ -376,17 +449,34 @@ app.put("/api/sites/:id/status", async (req, res) => {
     return res.status(400).json({ message: "Geçersiz durum." });
   }
 
-  const site = await Site.findByIdAndUpdate(req.params.id, { status }, { new: true });
+  const site = await Site.findByIdAndUpdate(
+    req.params.id,
+    { status },
+    { new: true }
+  );
 
-  if (!site) return res.status(404).json({ message: "Site bulunamadı." });
+  if (!site) {
+    return res.status(404).json({ message: "Site bulunamadı." });
+  }
 
-  res.json({ message: "Site durumu güncellendi.", site: safeSite(site) });
+  res.json({
+    message: "Site durumu güncellendi.",
+    site: safeSite(site)
+  });
 });
 
 /* ADS */
 
 app.put("/api/sites/:id/ad", async (req, res) => {
-  const { adActive, balance, costPerClick, dailyLimit, city, district, negativeKeywords } = req.body;
+  const {
+    adActive,
+    balance,
+    costPerClick,
+    dailyLimit,
+    city,
+    district,
+    negativeKeywords
+  } = req.body;
 
   const update = {};
 
@@ -402,17 +492,30 @@ app.put("/api/sites/:id/ad", async (req, res) => {
   if (district !== undefined) update.district = district;
   if (negativeKeywords !== undefined) update.negativeKeywords = negativeKeywords;
 
-  const site = await Site.findByIdAndUpdate(req.params.id, update, { new: true });
+  const site = await Site.findByIdAndUpdate(
+    req.params.id,
+    update,
+    { new: true }
+  );
 
-  if (!site) return res.status(404).json({ message: "Site bulunamadı." });
+  if (!site) {
+    return res.status(404).json({ message: "Site bulunamadı." });
+  }
 
-  res.json({ message: "Reklam ayarları güncellendi.", site: safeSite(site) });
+  res.json({
+    message: "Reklam ayarları güncellendi.",
+    site: safeSite(site)
+  });
 });
 
 /* VIEWS / CLICKS */
 
 app.post("/api/sites/:id/view", async (req, res) => {
-  await Site.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
+  await Site.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { views: 1 } }
+  );
+
   res.json({ message: "Görüntülenme kaydedildi." });
 });
 
@@ -424,7 +527,9 @@ app.post("/api/sites/:id/click", async (req, res) => {
 
   const site = await Site.findById(id);
 
-  if (!site) return res.status(404).json({ message: "Site bulunamadı." });
+  if (!site) {
+    return res.status(404).json({ message: "Site bulunamadı." });
+  }
 
   const recentClick = await Click.findOne({
     siteId: id,
@@ -435,7 +540,11 @@ app.post("/api/sites/:id/click", async (req, res) => {
   site.clicks += 1;
 
   if (!recentClick) {
-    await Click.create({ siteId: id, userKey, time: now });
+    await Click.create({
+      siteId: id,
+      userKey,
+      time: now
+    });
 
     if (site.adActive) {
       const cpc = Number(site.costPerClick || 0);
@@ -456,7 +565,10 @@ app.post("/api/sites/:id/click", async (req, res) => {
 
   await site.save();
 
-  res.json({ message: "Tıklama kaydedildi.", site: safeSite(site) });
+  res.json({
+    message: "Tıklama kaydedildi.",
+    site: safeSite(site)
+  });
 });
 
 /* REVIEWS */
@@ -473,7 +585,9 @@ app.get("/api/sites/:id/reviews", async (req, res) => {
 app.post("/api/sites/:id/reviews", async (req, res) => {
   const { userName, rating, comment } = req.body;
 
-  if (!comment) return res.status(400).json({ message: "Yorum boş olamaz." });
+  if (!comment) {
+    return res.status(400).json({ message: "Yorum boş olamaz." });
+  }
 
   const review = await Review.create({
     siteId: req.params.id,
@@ -483,7 +597,10 @@ app.post("/api/sites/:id/reviews", async (req, res) => {
     approved: true
   });
 
-  res.json({ message: "Yorum eklendi.", review: safeReview(review) });
+  res.json({
+    message: "Yorum eklendi.",
+    review: safeReview(review)
+  });
 });
 
 app.get("/api/reviews", async (req, res) => {
@@ -496,13 +613,61 @@ app.delete("/api/reviews/:id", async (req, res) => {
   res.json({ message: "Yorum silindi." });
 });
 
+/* AI FALLBACK SEARCH */
+
+app.post("/api/ai-search", async (req, res) => {
+  try {
+    const { query } = req.body;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        answer: "Arama metni boş olamaz."
+      });
+    }
+
+    const q = query.toLowerCase();
+    let answer = "";
+
+    if (q.includes("hava durumu")) {
+      answer = "Hava durumu araması için şehir adını net yazmalısın. Örnek: Eskişehir hava durumu. NetSearch yakında canlı hava durumu sonucunu direkt burada gösterecek.";
+    } else if (q.includes("yapay zeka") || q.includes("ai")) {
+      answer = "Yapay zeka; bilgisayarların öğrenme, anlama, karar verme ve içerik üretme gibi insan benzeri görevleri yapmasını sağlayan teknolojidir. Arama motorları, öneri sistemleri, ChatGPT ve görsel üretim araçları buna örnektir.";
+    } else if (q.includes("tarih")) {
+      answer = "Tarih; geçmişte yaşanan olayları, toplumları, devletleri, savaşları ve kültürleri inceleyen bilim dalıdır. Daha net sonuç için konuyu detaylandırabilirsin. Örnek: Osmanlı Devleti kuruluş dönemi.";
+    } else if (q.includes("matematik")) {
+      answer = "Matematik; sayı, işlem, şekil, ölçü ve mantık ilişkilerini inceleyen bilimdir. Problem ya da konu yazarsan NetSearch seni daha doğru yönlendirebilir.";
+    } else if (q.includes("e devlet") || q.includes("edevlet")) {
+      answer = "E-Devlet işlemleri için resmi adres turkiye.gov.tr sitesidir. Güvenlik için yalnızca resmi bağlantıları kullanmalısın.";
+    } else if (q.includes("haber")) {
+      answer = "Haber aramaları için yakında NetSearch içinde güncel haber kaynakları gösterilecek. Şimdilik daha net arama yapabilirsin. Örnek: ekonomi haberleri, spor haberleri.";
+    } else {
+      answer = `"${query}" için kayıtlı sonuç bulunamadı. NetSearch bu konuda henüz yeterli veriye sahip değil. Daha kısa kelimelerle tekrar deneyebilir veya bu konuda bir site/işletme ekleyebilirsin.`;
+    }
+
+    res.json({
+      success: true,
+      query,
+      answer
+    });
+
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      success: false,
+      answer: "AI arama sırasında hata oluştu."
+    });
+  }
+});
+
 /* SEO */
 
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
   res.send(`User-agent: *
 Allow: /
-Sitemap: https://netsearch.onrender.com/sitemap.xml`);
+Sitemap: https://netsearch.com.tr/sitemap.xml`);
 });
 
 app.get("/sitemap.xml", async (req, res) => {
@@ -510,7 +675,7 @@ app.get("/sitemap.xml", async (req, res) => {
 
   const urls = sites.map(site => `
   <url>
-    <loc>https://netsearch.onrender.com/site.html?id=${site._id}</loc>
+    <loc>https://netsearch.com.tr/site.html?id=${site._id}</loc>
     <lastmod>${new Date(site.createdAt).toISOString()}</lastmod>
   </url>`).join("");
 
@@ -518,7 +683,7 @@ app.get("/sitemap.xml", async (req, res) => {
   res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://netsearch.onrender.com/</loc>
+    <loc>https://netsearch.com.tr/</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </url>
   ${urls}
