@@ -3,195 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>NetSearch İşletme</title>
-<meta name="description" content="NetSearch işletme detay sayfası">
+<title>NetSearch İşletme Detayı</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-
-body{
-  background:#020817;
-  color:white;
-  min-height:100vh;
-}
-
-.header{
-  padding:20px 40px;
-  background:#0f172a;
-  border-bottom:1px solid #1e293b;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.brand{
-  font-size:28px;
-  font-weight:bold;
-  color:#38bdf8;
-}
-
-.header a{
-  color:white;
-  text-decoration:none;
-  background:#2563eb;
-  padding:10px 16px;
-  border-radius:999px;
-}
-
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:40px 20px;
-}
-
-.hero{
-  background:#0f172a;
-  border:1px solid #1e293b;
-  border-radius:24px;
-  overflow:hidden;
-}
-
-.cover{
-  width:100%;
-  height:320px;
-  object-fit:cover;
-  background:#111827;
-}
-
-.content{
-  padding:30px;
-}
-
-.top{
-  display:flex;
-  gap:20px;
-  align-items:flex-start;
-  flex-wrap:wrap;
-}
-
-.logo{
-  width:90px;
-  height:90px;
-  border-radius:20px;
-  object-fit:cover;
-  border:1px solid #334155;
-  background:#020817;
-}
-
-.title{
-  font-size:34px;
-  color:#38bdf8;
-  margin-bottom:10px;
-}
-
-.badge{
-  display:inline-block;
-  margin-right:8px;
-  margin-top:8px;
-  padding:7px 13px;
-  border-radius:999px;
-  background:#1e293b;
-  color:#38bdf8;
-  font-size:14px;
-}
-
-.rating{
-  background:#ca8a04;
-  color:white;
-}
-
-.sponsor{
-  background:#9333ea;
-  color:white;
-}
-
-.info{
-  margin-top:20px;
-  line-height:1.8;
-  color:#cbd5e1;
-}
-
-.actions{
-  margin-top:25px;
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-}
-
-.btn{
-  border:none;
-  border-radius:999px;
-  padding:12px 18px;
-  cursor:pointer;
-  color:white;
-  text-decoration:none;
-  background:#2563eb;
-}
-
-.green{background:#16a34a}
-.orange{background:#ea580c}
-
-.reviewSection{
-  margin-top:35px;
-  background:#0f172a;
-  border:1px solid #1e293b;
-  border-radius:24px;
-  padding:25px;
-}
-
-.review{
-  border-top:1px solid #1e293b;
-  padding-top:15px;
-  margin-top:15px;
-  color:#cbd5e1;
-}
-
-.reviewForm{
-  margin-top:25px;
-  display:grid;
-  gap:12px;
-}
-
-.reviewForm input,
-.reviewForm textarea,
-.reviewForm select{
-  width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:1px solid #334155;
-  background:#020817;
-  color:white;
-}
-
-.reviewForm textarea{
-  min-height:100px;
-}
-
-.reviewForm button{
-  border:none;
-  padding:14px;
-  border-radius:12px;
-  background:#16a34a;
-  color:white;
-  cursor:pointer;
-}
-
+body{background:#020817;color:white;min-height:100vh}
+.header{background:#0f172a;border-bottom:1px solid #1e293b;padding:20px 35px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:30px;font-weight:bold;color:#38bdf8}
+.btn{border:none;border-radius:999px;padding:13px 20px;cursor:pointer;color:white;text-decoration:none;display:inline-block;font-size:15px}
+.blue{background:#2563eb}.green{background:#16a34a}.orange{background:#ea580c}.purple{background:#9333ea}
+.container{max-width:1100px;margin:45px auto;padding:0 20px}
+.card,.reviewsBox{background:#0f172a;border:1px solid #1e293b;border-radius:28px;overflow:hidden;margin-bottom:30px}
+.cover{width:100%;max-height:360px;object-fit:cover;background:#111827}
+.content{padding:30px}
+.top{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.logoBox{width:90px;height:90px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#0ea5e9,#2563eb);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:bold}
+.logoBox img{width:100%;height:100%;object-fit:cover}
+h1{color:#38bdf8;font-size:36px;margin-bottom:10px}
+.badge{display:inline-block;background:#1e293b;color:#38bdf8;padding:8px 14px;border-radius:999px;margin:5px 6px 5px 0;font-size:14px}
+.desc{color:#e5e7eb;line-height:1.8;margin-top:22px;font-size:17px}
+.info{margin-top:18px;color:#cbd5e1;line-height:1.8}
+.info b{color:white}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.callBtn{background:#16a34a;font-weight:bold}
+.whatsappBtn{background:#22c55e;font-weight:bold}
+.siteBtn{background:#2563eb;font-weight:bold}
+.webBtn{background:#9333ea}
+.reviewBtn{background:#ea580c}
+.reviewsBox{padding:28px}
+.reviewsBox h2{color:#38bdf8;margin-bottom:18px}
+.review{background:#111827;border:1px solid #1e293b;border-radius:18px;padding:16px;margin-bottom:14px}
+.review b{color:#38bdf8}
+.review p{color:#cbd5e1;margin-top:8px;line-height:1.6}
+input,textarea,select{width:100%;padding:14px;background:#020817;border:1px solid #334155;border-radius:14px;color:white;margin-bottom:12px}
+textarea{min-height:100px}
+.empty{color:#94a3b8}
 @media(max-width:700px){
-
-  .header{
-    padding:18px;
-    flex-direction:column;
-    gap:15px;
-  }
-
-  .title{
-    font-size:28px;
-  }
-
-  .cover{
-    height:220px;
-  }
+.header{flex-direction:column;gap:14px}
+h1{font-size:28px}
+.content{padding:22px}
+.actions .btn{width:100%;text-align:center}
 }
 </style>
 </head>
@@ -199,220 +50,196 @@ body{
 <body>
 
 <div class="header">
-  <div class="brand">NetSearch AI</div>
-  <a href="/">Ana Sayfa</a>
+  <div class="logo">NetSearch AI</div>
+  <a class="btn blue" href="/">Ana Sayfa</a>
 </div>
 
 <div class="container">
 
-  <div class="hero">
+  <div id="siteDetail"></div>
 
-    <img id="cover" class="cover">
-
-    <div class="content">
-
-      <div class="top">
-
-        <img id="logo" class="logo">
-
-        <div>
-
-          <div id="title" class="title"></div>
-
-          <div id="badges"></div>
-
-        </div>
-
-      </div>
-
-      <div class="info" id="info"></div>
-
-      <div class="actions">
-
-        <a id="visitBtn" class="btn green" target="_blank">
-          Siteye Git
-        </a>
-
-        <button class="btn" onclick="googleSearch()">
-          Google’da Ara
-        </button>
-
-        <button class="btn orange" onclick="scrollReviews()">
-          Yorumlar
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="reviewSection" id="reviewSection">
-
+  <div class="reviewsBox">
     <h2>Yorumlar</h2>
-
     <div id="reviews"></div>
 
-    <div class="reviewForm">
-
-      <input id="reviewName" placeholder="Adınız">
-
-      <select id="reviewRating">
-        <option value="5">5 Yıldız</option>
-        <option value="4">4 Yıldız</option>
-        <option value="3">3 Yıldız</option>
-        <option value="2">2 Yıldız</option>
-        <option value="1">1 Yıldız</option>
-      </select>
-
-      <textarea id="reviewComment" placeholder="Yorumunuzu yazın"></textarea>
-
-      <button onclick="sendReview()">
-        Yorumu Gönder
-      </button>
-
-    </div>
-
+    <h2 style="margin-top:28px">Yorum Yap</h2>
+    <input id="userName" placeholder="Adınız">
+    <select id="rating">
+      <option value="5">5 Yıldız</option>
+      <option value="4">4 Yıldız</option>
+      <option value="3">3 Yıldız</option>
+      <option value="2">2 Yıldız</option>
+      <option value="1">1 Yıldız</option>
+    </select>
+    <textarea id="comment" placeholder="Yorumunuzu yazın"></textarea>
+    <button class="btn orange" onclick="addReview()">Yorumu Gönder</button>
   </div>
 
 </div>
 
 <script>
-const params = new URLSearchParams(location.search);
-
+const params = new URLSearchParams(window.location.search);
 const siteId = params.get("id");
 
-let siteData = null;
+let currentSite = null;
+
+function letterLogo(title){
+  return (title || "N").charAt(0).toUpperCase();
+}
+
+function cleanPhone(phone){
+  return (phone || "").replaceAll(" ","").replaceAll("-","").replaceAll("(","").replaceAll(")","");
+}
+
+function whatsappLink(phone){
+  const cleaned = cleanPhone(phone);
+  if(!cleaned) return "#";
+
+  let number = cleaned;
+
+  if(number.startsWith("0")){
+    number = "90" + number.substring(1);
+  }
+
+  if(!number.startsWith("90")){
+    number = "90" + number;
+  }
+
+  return `https://wa.me/${number}`;
+}
+
+function googleSearch(title){
+  const q = encodeURIComponent(title);
+  window.open(`https://www.google.com/search?q=${q}`, "_blank");
+}
+
+async function registerClick(){
+  try{
+    await fetch(`/api/sites/${siteId}/click`, { method:"POST" });
+  }catch(err){}
+}
 
 async function loadSite(){
+  const box = document.getElementById("siteDetail");
+
+  if(!siteId){
+    box.innerHTML = `<div class="card"><div class="content">Site bulunamadı.</div></div>`;
+    return;
+  }
 
   const res = await fetch(`/api/sites/${siteId}`);
   const site = await res.json();
 
-  siteData = site;
+  currentSite = site;
 
-  document.title = site.seoTitle || site.title;
-
-  document.querySelector('meta[name="description"]').setAttribute(
-    "content",
-    site.seoDescription || site.desc || ""
-  );
-
-  document.getElementById("cover").src =
-    site.imageUrl || "https://via.placeholder.com/1200x400.png?text=NetSearch";
-
-  document.getElementById("logo").src =
-    site.logoUrl || "https://via.placeholder.com/200x200.png?text=NS";
-
-  document.getElementById("title").innerText =
-    site.title || "İşletme";
-
-  document.getElementById("visitBtn").href =
-    site.url;
-
-  document.getElementById("badges").innerHTML = `
-    <span class="badge">${site.category || "Genel"}</span>
-
-    ${site.adActive
-      ? `<span class="badge sponsor">Sponsorlu</span>`
-      : ""
-    }
-
-    ${site.city || site.district
-      ? `<span class="badge">📍 ${site.city || ""} ${site.district || ""}</span>`
-      : ""
-    }
-
-    ${site.phone
-      ? `<span class="badge">📞 ${site.phone}</span>`
-      : ""
-    }
-  `;
-
-  document.getElementById("info").innerHTML = `
-    <p><b>Açıklama:</b> ${site.desc || "-"}</p>
-
-    <p><b>Adres:</b> ${site.address || "-"}</p>
-
-    <p><b>Anahtar Kelimeler:</b> ${site.keywords || "-"}</p>
-
-    <p><b>Görüntülenme:</b> ${site.views || 0}</p>
-
-    <p><b>Tıklama:</b> ${site.clicks || 0}</p>
-  `;
-
-  loadReviews();
-}
-
-function stars(rating){
-
-  const n = Math.round(Number(rating || 5));
-
-  return "★".repeat(n) + "☆".repeat(5 - n);
-}
-
-async function loadReviews(){
-
-  const res = await fetch(`/api/sites/${siteId}/reviews`);
-
-  const reviews = await res.json();
-
-  const box = document.getElementById("reviews");
-
-  box.innerHTML = "";
-
-  if(reviews.length === 0){
-
-    box.innerHTML = `
-      <p style="margin-top:20px;color:#94a3b8">
-        Henüz yorum yok.
-      </p>
-    `;
-
+  if(site.message){
+    box.innerHTML = `<div class="card"><div class="content">Site bulunamadı.</div></div>`;
     return;
   }
 
-  reviews.forEach(review => {
+  document.title = `${site.title} - NetSearch AI`;
 
-    box.innerHTML += `
-      <div class="review">
+  fetch(`/api/sites/${siteId}/view`, { method:"POST" });
 
-        <b>${review.userName || "Ziyaretçi"}</b>
+  const phone = cleanPhone(site.phone);
+  const hasPhone = phone.length > 0;
+  const hasCover = site.imageUrl && site.imageUrl.trim() !== "";
 
-        <div style="color:#facc15;margin-top:5px">
-          ${stars(review.rating)}
+  box.innerHTML = `
+    <div class="card">
+
+      ${hasCover ? `<img class="cover" src="${site.imageUrl}" onerror="this.style.display='none'">` : ""}
+
+      <div class="content">
+
+        <div class="top">
+          <div class="logoBox">
+            ${site.logoUrl ? `<img src="${site.logoUrl}" onerror="this.parentElement.innerHTML='${letterLogo(site.title)}'">` : letterLogo(site.title)}
+          </div>
+
+          <div>
+            <h1>${site.title || ""}</h1>
+
+            <span class="badge">${site.category || "Genel"}</span>
+            ${site.city ? `<span class="badge">📍 ${site.city}</span>` : ""}
+            ${site.district ? `<span class="badge">${site.district}</span>` : ""}
+            ${hasPhone ? `<span class="badge">📞 ${site.phone}</span>` : ""}
+          </div>
         </div>
 
-        <p style="margin-top:10px">
-          ${review.comment}
-        </p>
+        <div class="desc">
+          ${site.desc || ""}
+        </div>
+
+        <div class="info">
+          ${site.address ? `<p><b>Adres:</b> ${site.address}</p>` : ""}
+          ${site.keywords ? `<p><b>Hizmetler:</b> ${site.keywords}</p>` : ""}
+        </div>
+
+        <div class="actions">
+
+          ${hasPhone ? `
+            <a class="btn callBtn" href="tel:${phone}" onclick="registerClick()">
+              📞 Hemen Ara
+            </a>
+          ` : ""}
+
+          ${hasPhone ? `
+            <a class="btn whatsappBtn" href="${whatsappLink(site.phone)}" target="_blank" onclick="registerClick()">
+              WhatsApp
+            </a>
+          ` : ""}
+
+          <a class="btn siteBtn" href="${site.url}" target="_blank" onclick="registerClick()">
+            Siteye Git
+          </a>
+
+          <button class="btn webBtn" onclick="googleSearch('${(site.title || "").replace(/'/g,"\\'")}')">
+            Web’de Ara
+          </button>
+
+          <a class="btn reviewBtn" href="#reviews">
+            Yorumlar
+          </a>
+
+        </div>
 
       </div>
-    `;
-  });
+    </div>
+  `;
 }
 
-async function sendReview(){
+async function loadReviews(){
+  const box = document.getElementById("reviews");
+  const res = await fetch(`/api/sites/${siteId}/reviews`);
+  const reviews = await res.json();
 
-  const userName =
-    document.getElementById("reviewName").value.trim();
+  if(!reviews || reviews.length === 0){
+    box.innerHTML = `<p class="empty">Henüz yorum yok.</p>`;
+    return;
+  }
 
-  const rating =
-    document.getElementById("reviewRating").value;
+  box.innerHTML = reviews.map(r => `
+    <div class="review">
+      <b>${r.userName || "Ziyaretçi"}</b> ⭐ ${r.rating || 5}
+      <p>${r.comment}</p>
+    </div>
+  `).join("");
+}
 
-  const comment =
-    document.getElementById("reviewComment").value.trim();
+async function addReview(){
+  const userName = document.getElementById("userName").value.trim();
+  const rating = document.getElementById("rating").value;
+  const comment = document.getElementById("comment").value.trim();
 
   if(!comment){
-    alert("Yorum yaz.");
+    alert("Yorum boş olamaz.");
     return;
   }
 
   const res = await fetch(`/api/sites/${siteId}/reviews`, {
     method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
+    headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
       userName:userName || "Ziyaretçi",
       rating,
@@ -421,37 +248,14 @@ async function sendReview(){
   });
 
   const data = await res.json();
+  alert(data.message || "Yorum eklendi.");
 
-  alert(data.message || "Yorum gönderildi.");
-
-  document.getElementById("reviewComment").value = "";
-
+  document.getElementById("comment").value = "";
   loadReviews();
 }
 
-function googleSearch(){
-
-  if(!siteData) return;
-
-  const q = encodeURIComponent(
-    siteData.title + " yorumları güvenilir mi"
-  );
-
-  window.open(
-    `https://www.google.com/search?q=${q}`,
-    "_blank"
-  );
-}
-
-function scrollReviews(){
-
-  document.getElementById("reviewSection")
-    .scrollIntoView({
-      behavior:"smooth"
-    });
-}
-
 loadSite();
+loadReviews();
 </script>
 
 </body>

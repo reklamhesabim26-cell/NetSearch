@@ -2,307 +2,397 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const path = require("path");
 const cors = require("cors");
-const multer = require("multer");
-const fs = require("fs");
+const path = require("path");
+const OpenAI = require("openai");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-const uploadDir = path.join(__dirname, "public", "uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(uploadDir));
 
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB bağlandı 🔥"))
-.catch(err => console.log("MongoDB hata:", err));
+const PORT = process.env.PORT || 3000;
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, Date.now() + "-" + Math.round(Math.random() * 1e9) + ext);
-  }
-});
+let openai = null;
 
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    cb(null, allowed.includes(file.mimetype));
-  },
-  limits: { fileSize: 5 * 1024 * 1024 }
-});
-
-const userSchema = new mongoose.Schema({
-  name: String,
-  company: String,
-  email: String,
-  phone: String,
-  username: String,
-  password: String,
-  role: { type: String, default: "user" },
-  banned: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const siteSchema = new mongoose.Schema({
-  title: String,
-  url: String,
-  keywords: String,
-  desc: String,
-  category: String,
-  logoUrl: String,
-  imageUrl: String,
-  phone: String,
-  address: String,
-  latitude: { type: Number, default: null },
-  longitude: { type: Number, default: null },
-  seoTitle: String,
-  seoDescription: String,
-  ownerId: String,
-  ownerName: String,
-  status: { type: String, default: "pending" },
-  adActive: { type: Boolean, default: false },
-  isAd: { type: Boolean, default: false },
-  balance: { type: Number, default: 0 },
-  costPerClick: { type: Number, default: 5 },
-  dailyLimit: { type: Number, default: 100 },
-  todaySpent: { type: Number, default: 0 },
-  clicks: { type: Number, default: 0 },
-  paidClicks: { type: Number, default: 0 },
-  views: { type: Number, default: 0 },
-  city: String,
-  district: String,
-  negativeKeywords: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-const clickSchema = new mongoose.Schema({
-  siteId: String,
-  userKey: String,
-  time: Number
-});
-
-const reviewSchema = new mongoose.Schema({
-  siteId: String,
-  userName: String,
-  rating: { type: Number, default: 5 },
-  comment: String,
-  approved: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.model("User", userSchema);
-const Site = mongoose.model("Site", siteSchema);
-const Click = mongoose.model("Click", clickSchema);
-const Review = mongoose.model("Review", reviewSchema);
-
-function safeUser(user) {
-  return {
-    id: user._id.toString(),
-    name: user.name,
-    company: user.company,
-    email: user.email,
-    phone: user.phone,
-    username: user.username,
-    role: user.role,
-    banned: user.banned
-  };
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+  });
 }
 
-function safeSite(site) {
-  const obj = site.toObject();
-  obj.id = obj._id.toString();
-  return obj;
-}
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB bağlantısı başarılı"))
+  .catch((err) => console.error("MongoDB bağlantı hatası:", err));
 
-function safeReview(review) {
-  const obj = review.toObject();
-  obj.id = obj._id.toString();
-  return obj;
-}
-
-async function createAdmin() {
-  const hashedPassword = await bcrypt.hash("123456", 10);
-
-  await User.findOneAndUpdate(
-    { username: "enderadmin" },
-    {
-      name: "Ender Admin",
-      company: "NetSearch",
-      email: "admin@netsearch.com",
-      phone: "05331310226",
-      username: "enderadmin",
-      password: hashedPassword,
-      role: "admin",
-      banned: false
+const SiteSchema = new mongoose.Schema(
+  {
+    title: String,
+    name: String,
+    url: String,
+    website: String,
+    description: String,
+    desc: String,
+    category: String,
+    tags: [String],
+    keywords: [String],
+    city: String,
+    district: String,
+    phone: String,
+    telefon: String,
+    whatsapp: String,
+    logo: String,
+    image: String,
+    cover: String,
+    status: {
+      type: String,
+      default: "pending"
     },
-    { upsert: true, new: true }
-  );
+    isSponsored: {
+      type: Boolean,
+      default: false
+    },
+    sponsorActive: {
+      type: Boolean,
+      default: false
+    },
+    sponsorBudget: {
+      type: Number,
+      default: 0
+    },
+    clicks: {
+      type: Number,
+      default: 0
+    },
+    views: {
+      type: Number,
+      default: 0
+    },
+    rating: {
+      type: Number,
+      default: 0
+    }
+  },
+  { timestamps: true }
+);
 
-  console.log("Ender admin hesabı hazır ✅");
+const CommentSchema = new mongoose.Schema(
+  {
+    siteId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Site"
+    },
+    name: String,
+    comment: String,
+    rating: Number,
+    status: {
+      type: String,
+      default: "pending"
+    }
+  },
+  { timestamps: true }
+);
+
+const UserSchema = new mongoose.Schema(
+  {
+    name: String,
+    email: String,
+    password: String,
+    role: {
+      type: String,
+      default: "user"
+    }
+  },
+  { timestamps: true }
+);
+
+const Site = mongoose.models.Site || mongoose.model("Site", SiteSchema);
+const Comment = mongoose.models.Comment || mongoose.model("Comment", CommentSchema);
+const User = mongoose.models.User || mongoose.model("User", UserSchema);
+
+function normalize(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replaceAll("ı", "i")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ş", "s")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .trim();
 }
 
-createAdmin();
+function siteText(site) {
+  return normalize([
+    site.title,
+    site.name,
+    site.description,
+    site.desc,
+    site.category,
+    site.city,
+    site.district,
+    ...(site.tags || []),
+    ...(site.keywords || [])
+  ].join(" "));
+}
 
-/* UPLOAD */
+function calculateScore(site, query) {
+  const q = normalize(query);
+  const words = q.split(" ").filter(Boolean);
+  const text = siteText(site);
 
-app.post("/api/upload", upload.single("image"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({
-      success: false,
-      message: "Dosya yüklenmedi."
+  let score = 0;
+
+  if (normalize(site.title || site.name).includes(q)) score += 60;
+  if (text.includes(q)) score += 35;
+
+  words.forEach((word) => {
+    if (text.includes(word)) score += 10;
+  });
+
+  if (site.isSponsored || site.sponsorActive) score += 25;
+  if (site.rating) score += Number(site.rating) * 3;
+  if (site.views) score += Math.min(site.views / 20, 10);
+  if (site.clicks) score += Math.min(site.clicks / 10, 15);
+
+  return score;
+}
+
+async function getAiAnswer(query, organicResults) {
+  try {
+    if (!openai) {
+      return "";
+    }
+
+    const siteSummary = organicResults
+      .slice(0, 5)
+      .map((site, index) => {
+        return `${index + 1}. ${site.title || site.name || "Site"} - ${site.description || site.desc || ""}`;
+      })
+      .join("\n");
+
+    if (!process.env.OPENAI_API_KEY) {
+  return "";
+}
+
+const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Sen NetSearch adlı yeni nesil arama motorunun AI cevap asistanısın. Kullanıcıya kısa, net ve faydalı Türkçe cevap ver. Kesin olmayan bilgileri kesinmiş gibi söyleme."
+        },
+        {
+          role: "user",
+          content: `
+Kullanıcının araması: ${query}
+
+Veritabanındaki ilgili site sonuçları:
+${siteSummary || "Henüz ilgili site bulunamadı."}
+
+Bu arama için kullanıcıya kısa bir AI cevabı ver.
+`
+        }
+      ],
+      max_tokens: 220,
+      temperature: 0.4
     });
-  }
 
+    return completion.choices?.[0]?.message?.content || "";
+  } catch (err) {
+    console.log("AI geçici olarak devre dışı:", err.message);
+    return "";
+  }
+}
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/health", (req, res) => {
   res.json({
-    success: true,
-    message: "Görsel yüklendi.",
-    url: `/uploads/${req.file.filename}`
+    ok: true,
+    message: "NetSearch server çalışıyor",
+    mongo: mongoose.connection.readyState === 1 ? "connected" : "not connected",
+    openai: process.env.OPENAI_API_KEY ? "key var" : "key yok"
   });
 });
 
-/* AUTH */
-
-async function registerHandler(req, res) {
+app.get("/api/search", async (req, res) => {
   try {
-    const { name, company, email, phone, username, password } = req.body;
+    const q = req.query.q || "";
 
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Kullanıcı adı ve şifre zorunlu."
+    if (!q.trim()) {
+      return res.json({
+        aiAnswer: "",
+        sponsored: [],
+        results: []
       });
     }
 
-    const exists = await User.findOne({
-      $or: [{ username }, { email }]
+    const regex = new RegExp(q.split(" ").join("|"), "i");
+
+    let sites = await Site.find({
+      status: { $ne: "deleted" },
+      $or: [
+        { title: regex },
+        { name: regex },
+        { description: regex },
+        { desc: regex },
+        { category: regex },
+        { city: regex },
+        { district: regex },
+        { tags: regex },
+        { keywords: regex }
+      ]
+    }).limit(80);
+
+    sites = sites
+      .map((site) => {
+        const obj = site.toObject();
+        obj.searchScore = calculateScore(obj, q);
+        return obj;
+      })
+      .filter((site) => site.searchScore > 0)
+      .sort((a, b) => b.searchScore - a.searchScore);
+
+    const sponsored = sites
+      .filter((site) => site.isSponsored || site.sponsorActive)
+      .slice(0, 5);
+
+    const results = sites
+      .filter((site) => !(site.isSponsored || site.sponsorActive))
+      .slice(0, 30);
+
+    const aiAnswer = await getAiAnswer(q, results.length ? results : sites);
+
+    res.json({
+      aiAnswer,
+      sponsored,
+      results
+    });
+  } catch (err) {
+    console.error("Arama hatası:", err);
+    res.status(500).json({
+      aiAnswer: "",
+      sponsored: [],
+      results: [],
+      error: "Arama sırasında hata oluştu"
+    });
+  }
+});
+
+app.get("/api/autocomplete", async (req, res) => {
+  try {
+    const q = req.query.q || "";
+
+    if (q.length < 2) {
+      return res.json([]);
+    }
+
+    const regex = new RegExp(q, "i");
+
+    const sites = await Site.find({
+      status: { $ne: "deleted" },
+      $or: [
+        { title: regex },
+        { name: regex },
+        { category: regex },
+        { city: regex },
+        { district: regex },
+        { tags: regex },
+        { keywords: regex }
+      ]
+    })
+      .limit(10)
+      .select("title name category city district tags keywords");
+
+    const suggestions = [];
+
+    sites.forEach((site) => {
+      if (site.title) suggestions.push(site.title);
+      if (site.name) suggestions.push(site.name);
+      if (site.category) suggestions.push(site.category);
+      if (site.city) suggestions.push(site.city);
+      if (site.district) suggestions.push(site.district);
+      if (Array.isArray(site.tags)) suggestions.push(...site.tags);
+      if (Array.isArray(site.keywords)) suggestions.push(...site.keywords);
     });
 
-    if (exists) {
-      return res.status(400).json({
-        success: false,
-        message: "Bu kullanıcı adı veya e-posta zaten kayıtlı."
-      });
-    }
+    const clean = [...new Set(suggestions)]
+      .filter((item) => normalize(item).includes(normalize(q)))
+      .slice(0, 8);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    res.json(clean);
+  } catch (err) {
+    console.error("Autocomplete hata:", err);
+    res.json([]);
+  }
+});
 
-    const user = await User.create({
-      name,
-      company,
-      email,
-      phone,
-      username,
-      password: hashedPassword,
-      role: "user"
+app.post("/api/sites", async (req, res) => {
+  try {
+    const body = req.body;
+
+    const site = await Site.create({
+      title: body.title || body.name,
+      name: body.name || body.title,
+      url: body.url || body.website,
+      website: body.website || body.url,
+      description: body.description || body.desc,
+      desc: body.desc || body.description,
+      category: body.category,
+      tags: Array.isArray(body.tags)
+        ? body.tags
+        : String(body.tags || "")
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean),
+      keywords: Array.isArray(body.keywords)
+        ? body.keywords
+        : String(body.keywords || "")
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean),
+      city: body.city,
+      district: body.district,
+      phone: body.phone || body.telefon,
+      telefon: body.telefon || body.phone,
+      whatsapp: body.whatsapp,
+      logo: body.logo,
+      image: body.image,
+      cover: body.cover,
+      status: body.status || "active"
     });
 
     res.json({
       success: true,
-      message: "Kayıt başarılı.",
-      user: safeUser(user)
+      message: "Site başarıyla eklendi",
+      site
     });
-
   } catch (err) {
-    console.log(err);
+    console.error("Site ekleme hatası:", err);
     res.status(500).json({
       success: false,
-      message: "Sunucu hatası."
+      message: "Site eklenirken hata oluştu"
     });
   }
-}
-
-async function loginHandler(req, res) {
-  try {
-    const { username, password } = req.body;
-
-    const user = await User.findOne({ username });
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Kullanıcı bulunamadı."
-      });
-    }
-
-    if (user.banned) {
-      return res.status(403).json({
-        success: false,
-        message: "Hesabınız engellenmiş."
-      });
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-
-    if (!match) {
-      return res.status(401).json({
-        success: false,
-        message: "Şifre yanlış."
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Giriş başarılı.",
-      username: user.username,
-      role: user.role,
-      user: safeUser(user)
-    });
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      success: false,
-      message: "Sunucu hatası."
-    });
-  }
-}
-
-app.post("/register", registerHandler);
-app.post("/api/register", registerHandler);
-app.post("/login", loginHandler);
-app.post("/api/login", loginHandler);
-
-/* USERS */
-
-app.get("/api/users", async (req, res) => {
-  const users = await User.find().sort({ createdAt: -1 });
-  res.json(users.map(safeUser));
 });
-
-app.delete("/api/users/:id", async (req, res) => {
-  const user = await User.findById(req.params.id);
-
-  if (!user) {
-    return res.status(404).json({ message: "Kullanıcı bulunamadı." });
-  }
-
-  if (user.role === "admin") {
-    return res.status(403).json({ message: "Admin hesabı silinemez." });
-  }
-
-  await User.findByIdAndDelete(req.params.id);
-
-  res.json({ message: "Kullanıcı silindi." });
-});
-
-/* SITES */
 
 app.get("/api/sites", async (req, res) => {
-  const sites = await Site.find().sort({ createdAt: -1 });
-  res.json(sites.map(safeSite));
+  try {
+    const sites = await Site.find({ status: { $ne: "deleted" } })
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    res.json(sites);
+  } catch (err) {
+    res.status(500).json({ error: "Siteler alınamadı" });
+  }
 });
 
 app.get("/api/sites/:id", async (req, res) => {
@@ -310,427 +400,215 @@ app.get("/api/sites/:id", async (req, res) => {
     const site = await Site.findById(req.params.id);
 
     if (!site) {
-      return res.status(404).json({ message: "Site bulunamadı." });
+      return res.status(404).json({ error: "Site bulunamadı" });
     }
 
-    res.json(safeSite(site));
+    site.views = Number(site.views || 0) + 1;
+    await site.save();
 
-  } catch (err) {
-    res.status(500).json({ message: "Sunucu hatası." });
-  }
-});
-
-app.post("/api/sites", async (req, res) => {
-  try {
-    const {
-      title,
-      url,
-      keywords,
-      desc,
-      category,
-      logoUrl,
-      imageUrl,
-      phone,
-      address,
-      latitude,
-      longitude,
-      seoTitle,
-      seoDescription,
-      ownerId,
-      ownerName,
-      city,
-      district
-    } = req.body;
-
-    if (!title || !url || !keywords || !desc) {
-      return res.status(400).json({
-        message: "Başlık, link, anahtar kelime ve açıklama zorunlu."
-      });
-    }
-
-    const site = await Site.create({
-      title,
-      url,
-      keywords,
-      desc,
-      category: category || "Genel",
-      logoUrl: logoUrl || "",
-      imageUrl: imageUrl || "",
-      phone: phone || "",
-      address: address || "",
-      latitude: latitude ? Number(latitude) : null,
-      longitude: longitude ? Number(longitude) : null,
-      seoTitle: seoTitle || title,
-      seoDescription: seoDescription || desc,
-      ownerId: ownerId || null,
-      ownerName: ownerName || "Admin",
-      status: ownerId ? "pending" : "approved",
-      city: city || "",
-      district: district || "",
-      negativeKeywords: ""
-    });
+    const comments = await Comment.find({
+      siteId: site._id,
+      status: { $ne: "deleted" }
+    }).sort({ createdAt: -1 });
 
     res.json({
-      message: ownerId ? "Site onay bekliyor." : "Site kaydedildi.",
-      site: safeSite(site)
+      site,
+      comments
     });
-
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Sunucu hatası." });
+    res.status(500).json({ error: "Detay alınamadı" });
   }
-});
-
-app.put("/api/sites/:id", async (req, res) => {
-  try {
-    const allowed = [
-      "title",
-      "url",
-      "keywords",
-      "desc",
-      "category",
-      "logoUrl",
-      "imageUrl",
-      "phone",
-      "address",
-      "latitude",
-      "longitude",
-      "seoTitle",
-      "seoDescription",
-      "city",
-      "district",
-      "negativeKeywords"
-    ];
-
-    const update = {};
-
-    allowed.forEach(field => {
-      if (req.body[field] !== undefined) {
-        if (field === "latitude" || field === "longitude") {
-          update[field] = req.body[field] === "" ? null : Number(req.body[field]);
-        } else {
-          update[field] = req.body[field];
-        }
-      }
-    });
-
-    const site = await Site.findByIdAndUpdate(
-      req.params.id,
-      update,
-      { new: true }
-    );
-
-    if (!site) {
-      return res.status(404).json({ message: "Site bulunamadı." });
-    }
-
-    res.json({
-      message: "Site güncellendi.",
-      site: safeSite(site)
-    });
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Sunucu hatası." });
-  }
-});
-
-app.delete("/api/sites/:id", async (req, res) => {
-  await Site.findByIdAndDelete(req.params.id);
-  await Review.deleteMany({ siteId: req.params.id });
-
-  res.json({ message: "Site ve yorumları silindi." });
-});
-
-app.put("/api/sites/:id/status", async (req, res) => {
-  const { status } = req.body;
-
-  if (!["pending", "approved", "rejected"].includes(status)) {
-    return res.status(400).json({ message: "Geçersiz durum." });
-  }
-
-  const site = await Site.findByIdAndUpdate(
-    req.params.id,
-    { status },
-    { new: true }
-  );
-
-  if (!site) {
-    return res.status(404).json({ message: "Site bulunamadı." });
-  }
-
-  res.json({
-    message: "Site durumu güncellendi.",
-    site: safeSite(site)
-  });
-});
-
-/* ADS */
-
-app.put("/api/sites/:id/ad", async (req, res) => {
-  const {
-    adActive,
-    balance,
-    costPerClick,
-    dailyLimit,
-    city,
-    district,
-    negativeKeywords
-  } = req.body;
-
-  const update = {};
-
-  if (typeof adActive === "boolean") {
-    update.adActive = adActive;
-    update.isAd = adActive;
-  }
-
-  if (balance !== undefined) update.balance = Number(balance);
-  if (costPerClick !== undefined) update.costPerClick = Number(costPerClick);
-  if (dailyLimit !== undefined) update.dailyLimit = Number(dailyLimit);
-  if (city !== undefined) update.city = city;
-  if (district !== undefined) update.district = district;
-  if (negativeKeywords !== undefined) update.negativeKeywords = negativeKeywords;
-
-  const site = await Site.findByIdAndUpdate(
-    req.params.id,
-    update,
-    { new: true }
-  );
-
-  if (!site) {
-    return res.status(404).json({ message: "Site bulunamadı." });
-  }
-
-  res.json({
-    message: "Reklam ayarları güncellendi.",
-    site: safeSite(site)
-  });
-});
-
-/* VIEWS / CLICKS */
-
-app.post("/api/sites/:id/view", async (req, res) => {
-  await Site.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { views: 1 } }
-  );
-
-  res.json({ message: "Görüntülenme kaydedildi." });
 });
 
 app.post("/api/sites/:id/click", async (req, res) => {
-  const id = req.params.id;
-  const userKey = req.ip + "-" + (req.headers["user-agent"] || "unknown");
-  const now = Date.now();
-  const protectionMs = 60 * 1000;
-
-  const site = await Site.findById(id);
-
-  if (!site) {
-    return res.status(404).json({ message: "Site bulunamadı." });
-  }
-
-  const recentClick = await Click.findOne({
-    siteId: id,
-    userKey,
-    time: { $gt: now - protectionMs }
-  });
-
-  site.clicks += 1;
-
-  if (!recentClick) {
-    await Click.create({
-      siteId: id,
-      userKey,
-      time: now
-    });
-
-    if (site.adActive) {
-      const cpc = Number(site.costPerClick || 0);
-
-      if (
-        Number(site.balance || 0) >= cpc &&
-        Number(site.todaySpent || 0) + cpc <= Number(site.dailyLimit || 0)
-      ) {
-        site.balance -= cpc;
-        site.todaySpent += cpc;
-        site.paidClicks += 1;
-      } else {
-        site.adActive = false;
-        site.isAd = false;
-      }
-    }
-  }
-
-  await site.save();
-
-  res.json({
-    message: "Tıklama kaydedildi.",
-    site: safeSite(site)
-  });
-});
-
-/* REVIEWS */
-
-app.get("/api/sites/:id/reviews", async (req, res) => {
-  const reviews = await Review.find({
-    siteId: req.params.id,
-    approved: true
-  }).sort({ createdAt: -1 });
-
-  res.json(reviews.map(safeReview));
-});
-
-app.post("/api/sites/:id/reviews", async (req, res) => {
-  const { userName, rating, comment } = req.body;
-
-  if (!comment) {
-    return res.status(400).json({ message: "Yorum boş olamaz." });
-  }
-
-  const review = await Review.create({
-    siteId: req.params.id,
-    userName: userName || "Ziyaretçi",
-    rating: Number(rating || 5),
-    comment,
-    approved: true
-  });
-
-  res.json({
-    message: "Yorum eklendi.",
-    review: safeReview(review)
-  });
-});
-
-app.get("/api/reviews", async (req, res) => {
-  const reviews = await Review.find().sort({ createdAt: -1 });
-  res.json(reviews.map(safeReview));
-});
-
-app.delete("/api/reviews/:id", async (req, res) => {
-  await Review.findByIdAndDelete(req.params.id);
-  res.json({ message: "Yorum silindi." });
-});
-
-/* REAL AI SEARCH */
-
-app.post("/api/ai-search", async (req, res) => {
   try {
-    const { query } = req.body;
-
-    if (!query) {
-      return res.status(400).json({
-        success: false,
-        answer: "Arama metni boş olamaz."
-      });
-    }
-
-    if (!process.env.OPENAI_API_KEY) {
-      return res.json({
-        success: true,
-        query,
-        answer: "AI sistemi henüz aktif değil. OPENAI_API_KEY Render ortam değişkenlerine eklenmeli."
-      });
-    }
-
-    const aiRes = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        input: `
-Sen NetSearch AI adlı yeni nesil arama motorunun cevap motorusun.
-
-Kullanıcı araması:
-${query}
-
-Kurallar:
-- Türkçe cevap ver.
-- Kısa, anlaşılır ve faydalı cevap ver.
-- Kullanıcı ders soruyorsa öğretici anlat.
-- Kullanıcı hava durumu, döviz, haber gibi güncel bilgi istiyorsa canlı veriye erişemediğini açıkça söyle.
-- Kullanıcı işletme/hizmet arıyorsa NetSearch içindeki işletme sonuçlarına bakmasını öner.
-- Gereksiz uzun yazma.
-`
-      })
+    await Site.findByIdAndUpdate(req.params.id, {
+      $inc: { clicks: 1 }
     });
 
-    const data = await aiRes.json();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
 
-    if (!aiRes.ok) {
-      console.log("OpenAI hata:", data);
-
-      return res.json({
-        success: true,
-        query,
-        answer: "AI şu anda cevap veremedi. OpenAI API anahtarı, kredi/bakiye veya model erişimi kontrol edilmeli."
-      });
-    }
-
-    const answer =
-      data.output_text ||
-      data.output?.[0]?.content?.[0]?.text ||
-      "AI cevap oluşturamadı.";
+app.post("/api/comments", async (req, res) => {
+  try {
+    const comment = await Comment.create({
+      siteId: req.body.siteId,
+      name: req.body.name,
+      comment: req.body.comment,
+      rating: req.body.rating,
+      status: "active"
+    });
 
     res.json({
       success: true,
-      query,
-      answer
+      message: "Yorum eklendi",
+      comment
     });
-
   } catch (err) {
-    console.log("AI hata:", err);
-
     res.status(500).json({
       success: false,
-      answer: "AI arama sırasında hata oluştu."
+      message: "Yorum eklenemedi"
     });
   }
 });
 
-/* SEO */
+app.get("/api/admin/sites", async (req, res) => {
+  try {
+    const sites = await Site.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
+    res.json(sites);
+  } catch (err) {
+    res.status(500).json({ error: "Admin siteleri alınamadı" });
+  }
+});
+
+app.put("/api/admin/sites/:id", async (req, res) => {
+  try {
+    const updated = await Site.findByIdAndUpdate(req.params.id, req.body, {
+      new: true
+    });
+
+    res.json({
+      success: true,
+      site: updated
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Site güncellenemedi"
+    });
+  }
+});
+
+app.delete("/api/admin/sites/:id", async (req, res) => {
+  try {
+    await Site.findByIdAndUpdate(req.params.id, {
+      status: "deleted"
+    });
+
+    res.json({
+      success: true,
+      message: "Site silindi"
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Site silinemedi"
+    });
+  }
+});
+
+app.post("/api/register", async (req, res) => {
+  try {
+    const exists = await User.findOne({ email: req.body.email });
+
+    if (exists) {
+      return res.status(400).json({
+        success: false,
+        message: "Bu e-posta zaten kayıtlı"
+      });
+    }
+
+    const user = await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      role: "user"
+    });
+
+    res.json({
+      success: true,
+      message: "Kayıt başarılı",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Kayıt hatası"
+    });
+  }
+});
+
+app.post("/api/login", async (req, res) => {
+  try {
+    const user = await User.findOne({
+      email: req.body.email,
+      password: req.body.password
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "E-posta veya şifre hatalı"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Giriş başarılı",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Giriş hatası"
+    });
+  }
+});
 
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
   res.send(`User-agent: *
 Allow: /
+
 Sitemap: https://netsearch.com.tr/sitemap.xml`);
 });
 
 app.get("/sitemap.xml", async (req, res) => {
-  const sites = await Site.find({ status: "approved" }).sort({ createdAt: -1 });
+  try {
+    const sites = await Site.find({
+      status: { $ne: "deleted" }
+    }).select("_id updatedAt");
 
-  const urls = sites.map(site => `
+    const urls = sites
+      .map((site) => {
+        return `
   <url>
-    <loc>https://netsearch.com.tr/site.html?id=${site._id}</loc>
-    <lastmod>${new Date(site.createdAt).toISOString()}</lastmod>
-  </url>`).join("");
+    <loc>https://netsearch.com.tr/detail.html?id=${site._id}</loc>
+    <lastmod>${new Date(site.updatedAt).toISOString()}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+      })
+      .join("");
 
-  res.type("application/xml");
-  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+    res.type("application/xml");
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://netsearch.com.tr/</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
   </url>
   ${urls}
 </urlset>`);
-});
-
-/* PAGES */
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.get("/site.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "site.html"));
+  } catch (err) {
+    res.status(500).send("Sitemap oluşturulamadı");
+  }
 });
 
 app.listen(PORT, () => {
-  console.log(`NetSearch çalışıyor 🚀 http://localhost:${PORT}`);
+  console.log(`NetSearch server ${PORT} portunda çalışıyor`);
 });
