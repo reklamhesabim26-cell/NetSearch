@@ -9,8 +9,8 @@ const OpenAI = require("openai");
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: "25mb" }));
-app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 const PORT = process.env.PORT || 3000;
@@ -29,21 +29,37 @@ const SiteSchema = new mongoose.Schema(
   {
     title: String,
     name: String,
+    businessName: String,
+
     url: String,
     website: String,
+    link: String,
+
     description: String,
     desc: String,
+    address: String,
+
     category: String,
     tags: [String],
     keywords: [String],
+
     city: String,
+    sehir: String,
     district: String,
+    ilce: String,
+
     phone: String,
     telefon: String,
     whatsapp: String,
+
     logo: String,
+    logoUrl: String,
     image: String,
     cover: String,
+    coverUrl: String,
+
+    seoTitle: String,
+    seoDescription: String,
 
     status: { type: String, default: "active" },
 
@@ -61,7 +77,7 @@ const SiteSchema = new mongoose.Schema(
 
     ownerEmail: String
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 const CommentSchema = new mongoose.Schema(
@@ -101,15 +117,33 @@ function normalize(text) {
     .trim();
 }
 
+function makeArray(value) {
+  if (Array.isArray(value)) return value;
+  return String(value || "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function safeRegex(query) {
+  const clean = String(query || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = clean.split(/\s+/).filter(Boolean);
+  return new RegExp(parts.length ? parts.join("|") : clean, "i");
+}
+
 function siteText(site) {
   return normalize([
     site.title,
     site.name,
+    site.businessName,
     site.description,
     site.desc,
+    site.address,
     site.category,
     site.city,
+    site.sehir,
     site.district,
+    site.ilce,
     ...(site.tags || []),
     ...(site.keywords || [])
   ].join(" "));
@@ -122,10 +156,10 @@ function calculateScore(site, query) {
 
   let score = 0;
 
-  const title = normalize(site.title || site.name);
+  const title = normalize(site.title || site.name || site.businessName);
   const category = normalize(site.category);
-  const city = normalize(site.city);
-  const district = normalize(site.district);
+  const city = normalize(site.city || site.sehir);
+  const district = normalize(site.district || site.ilce);
 
   if (title === q) score += 120;
   if (title.includes(q)) score += 80;
@@ -159,8 +193,8 @@ function calculateScore(site, query) {
 
   const descLength = String(site.description || site.desc || "").length;
   if (descLength > 60) score += 10;
-  if (site.logo || site.image) score += 8;
-  if (site.cover) score += 8;
+  if (site.logo || site.logoUrl || site.image) score += 8;
+  if (site.cover || site.coverUrl) score += 8;
   if (site.phone || site.telefon || site.whatsapp) score += 10;
   if (site.updatedAt) score += 5;
 
@@ -173,7 +207,7 @@ async function getAiAnswer(query, results) {
 
     const siteSummary = results
       .slice(0, 5)
-      .map((s, i) => `${i + 1}. ${s.title || s.name} - ${s.description || s.desc || ""}`)
+      .map((s, i) => `${i + 1}. ${s.title || s.name || s.businessName || "Site"} - ${s.description || s.desc || ""}`)
       .join("\n");
 
     const completion = await openai.chat.completions.create({
@@ -200,9 +234,51 @@ async function getAiAnswer(query, results) {
   }
 }
 
-function safeRegex(query) {
-  const clean = String(query || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(clean.split(/\s+/).filter(Boolean).join("|"), "i");
+function buildSiteFromBody(b) {
+  return {
+    title: b.title || b.name || b.businessName || b.baslik || "",
+    name: b.name || b.title || b.businessName || b.baslik || "",
+    businessName: b.businessName || b.name || b.title || "",
+
+    url: b.url || b.website || b.link || "",
+    website: b.website || b.url || b.link || "",
+    link: b.link || b.url || b.website || "",
+
+    description: b.description || b.desc || b.address || b.aciklama || "",
+    desc: b.desc || b.description || b.address || b.aciklama || "",
+    address: b.address || b.adres || "",
+
+    category: b.category || b.kategori || "Genel",
+    tags: makeArray(b.tags || b.keywords || b.anahtarKelimeler),
+    keywords: makeArray(b.keywords || b.tags || b.anahtarKelimeler),
+
+    city: b.city || b.sehir || "",
+    sehir: b.sehir || b.city || "",
+    district: b.district || b.ilce || "",
+    ilce: b.ilce || b.district || "",
+
+    phone: b.phone || b.telefon || "",
+    telefon: b.telefon || b.phone || "",
+    whatsapp: b.whatsapp || b.phone || b.telefon || "",
+
+    logo: b.logo || b.logoUrl || "",
+    logoUrl: b.logoUrl || b.logo || "",
+    image: b.image || b.logo || b.logoUrl || "",
+    cover: b.cover || b.coverUrl || b.image || "",
+    coverUrl: b.coverUrl || b.cover || b.image || "",
+
+    seoTitle: b.seoTitle || "",
+    seoDescription: b.seoDescription || "",
+
+    status: b.status || "active",
+
+    isSponsored: b.isSponsored === true || b.isSponsored === "true",
+    sponsorActive: b.sponsorActive === true || b.sponsorActive === "true",
+    sponsorBudget: Number(b.sponsorBudget || 0),
+    sponsorCpc: Number(b.sponsorCpc || 0),
+
+    ownerEmail: b.ownerEmail || b.email || ""
+  };
 }
 
 app.get("/", (req, res) => {
@@ -233,15 +309,19 @@ app.get("/api/search", async (req, res) => {
       $or: [
         { title: regex },
         { name: regex },
+        { businessName: regex },
         { description: regex },
         { desc: regex },
+        { address: regex },
         { category: regex },
         { city: regex },
+        { sehir: regex },
         { district: regex },
+        { ilce: regex },
         { tags: regex },
         { keywords: regex }
       ]
-    }).limit(150);
+    }).limit(200);
 
     sites = sites
       .map((site) => {
@@ -254,21 +334,21 @@ app.get("/api/search", async (req, res) => {
 
     const sponsored = sites
       .filter((s) => s.isSponsored || s.sponsorActive)
-      .sort((a, b) => b.searchScore - a.searchScore)
       .slice(0, 5);
 
     const results = sites
       .filter((s) => !(s.isSponsored || s.sponsorActive))
-      .sort((a, b) => b.searchScore - a.searchScore)
       .slice(0, 40);
 
-    const ids = [...sponsored, ...results].map((s) => s._id);
-    if (ids.length) {
-      await Site.updateMany({ _id: { $in: ids } }, { $inc: { views: 1 } });
-      await Site.updateMany(
-        { _id: { $in: sponsored.map((s) => s._id) } },
-        { $inc: { sponsorViews: 1 } }
-      );
+    const visibleIds = [...sponsored, ...results].map((s) => s._id).filter(Boolean);
+    const sponsoredIds = sponsored.map((s) => s._id).filter(Boolean);
+
+    if (visibleIds.length) {
+      await Site.updateMany({ _id: { $in: visibleIds } }, { $inc: { views: 1 } });
+    }
+
+    if (sponsoredIds.length) {
+      await Site.updateMany({ _id: { $in: sponsoredIds } }, { $inc: { sponsorViews: 1 } });
     }
 
     const aiAnswer = await getAiAnswer(q, results.length ? results : sites);
@@ -297,24 +377,30 @@ app.get("/api/autocomplete", async (req, res) => {
       $or: [
         { title: regex },
         { name: regex },
+        { businessName: regex },
         { category: regex },
         { city: regex },
+        { sehir: regex },
         { district: regex },
+        { ilce: regex },
         { tags: regex },
         { keywords: regex }
       ]
     })
-      .limit(20)
-      .select("title name category city district tags keywords");
+      .limit(30)
+      .select("title name businessName category city sehir district ilce tags keywords");
 
     const suggestions = [];
 
     sites.forEach((site) => {
       if (site.title) suggestions.push(site.title);
       if (site.name) suggestions.push(site.name);
+      if (site.businessName) suggestions.push(site.businessName);
       if (site.category) suggestions.push(site.category);
       if (site.city) suggestions.push(site.city);
+      if (site.sehir) suggestions.push(site.sehir);
       if (site.district) suggestions.push(site.district);
+      if (site.ilce) suggestions.push(site.ilce);
       if (Array.isArray(site.tags)) suggestions.push(...site.tags);
       if (Array.isArray(site.keywords)) suggestions.push(...site.keywords);
     });
@@ -331,42 +417,24 @@ app.get("/api/autocomplete", async (req, res) => {
 
 app.post("/api/sites", async (req, res) => {
   try {
-    const b = req.body;
-
-    const site = await Site.create({
-      title: b.title || b.name,
-      name: b.name || b.title,
-      url: b.url || b.website,
-      website: b.website || b.url,
-      description: b.description || b.desc,
-      desc: b.desc || b.description,
-      category: b.category,
-      tags: Array.isArray(b.tags) ? b.tags : String(b.tags || "").split(",").map(x => x.trim()).filter(Boolean),
-      keywords: Array.isArray(b.keywords) ? b.keywords : String(b.keywords || "").split(",").map(x => x.trim()).filter(Boolean),
-      city: b.city,
-      district: b.district,
-      phone: b.phone || b.telefon,
-      telefon: b.telefon || b.phone,
-      whatsapp: b.whatsapp,
-      logo: b.logo,
-      image: b.image,
-      cover: b.cover,
-      ownerEmail: b.ownerEmail,
-      status: b.status || "active"
-    });
-
+    const site = await Site.create(buildSiteFromBody(req.body));
     res.json({ success: true, message: "Site eklendi", site });
   } catch (err) {
+    console.error("Site ekleme hatası:", err.message);
     res.status(500).json({ success: false, message: "Site eklenemedi" });
   }
 });
 
 app.get("/api/sites", async (req, res) => {
-  const sites = await Site.find({ status: { $ne: "deleted" } })
-    .sort({ createdAt: -1 })
-    .limit(100);
+  try {
+    const sites = await Site.find({ status: { $ne: "deleted" } })
+      .sort({ createdAt: -1 })
+      .limit(200);
 
-  res.json(sites);
+    res.json(sites);
+  } catch {
+    res.status(500).json([]);
+  }
 });
 
 app.get("/api/sites/:id", async (req, res) => {
@@ -404,7 +472,6 @@ app.post("/api/sites/:id/click", async (req, res) => {
     }
 
     await Site.findByIdAndUpdate(req.params.id, update);
-
     res.json({ success: true });
   } catch {
     res.status(500).json({ success: false });
@@ -441,12 +508,68 @@ app.post("/api/comments", async (req, res) => {
   }
 });
 
+/* ADMIN ENDPOINTLER */
+
+app.get("/api/admin/stats", async (req, res) => {
+  try {
+    const allSites = await Site.find({ status: { $ne: "deleted" } });
+    const pendingSites = allSites.filter((s) => s.status === "pending");
+    const approvedSites = allSites.filter((s) => s.status === "active" || s.status === "approved");
+    const activeAds = allSites.filter((s) => s.isSponsored || s.sponsorActive);
+    const comments = await Comment.find({ status: { $ne: "deleted" } });
+
+    res.json({
+      totalSites: allSites.length,
+      pendingSites: pendingSites.length,
+      approvedSites: approvedSites.length,
+      activeAds: activeAds.length,
+      totalComments: comments.length,
+      yorum: comments.length
+    });
+  } catch {
+    res.json({
+      totalSites: 0,
+      pendingSites: 0,
+      approvedSites: 0,
+      activeAds: 0,
+      totalComments: 0,
+      yorum: 0
+    });
+  }
+});
+
 app.get("/api/admin/sites", async (req, res) => {
-  const sites = await Site.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
-  res.json(sites);
+  try {
+    const sites = await Site.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
+    res.json(sites);
+  } catch {
+    res.status(500).json([]);
+  }
+});
+
+app.post("/api/admin/sites", async (req, res) => {
+  try {
+    const site = await Site.create(buildSiteFromBody(req.body));
+    res.json({ success: true, message: "Site başarıyla eklendi", site });
+  } catch (err) {
+    console.error("Admin site ekleme hatası:", err.message);
+    res.status(500).json({ success: false, message: "Site eklenemedi" });
+  }
 });
 
 app.put("/api/admin/sites/:id", async (req, res) => {
+  try {
+    const updated = await Site.findByIdAndUpdate(req.params.id, buildSiteFromBody(req.body), {
+      new: true
+    });
+
+    res.json({ success: true, site: updated });
+  } catch {
+    res.status(500).json({ success: false, message: "Site güncellenemedi" });
+  }
+});
+
+app.patch("/api/admin/sites/:id", async (req, res) => {
   try {
     const updated = await Site.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ success: true, site: updated });
@@ -460,9 +583,32 @@ app.delete("/api/admin/sites/:id", async (req, res) => {
     await Site.findByIdAndUpdate(req.params.id, { status: "deleted" });
     res.json({ success: true, message: "Site silindi" });
   } catch {
+    res.status(500).json({ success: false, message: "Site silinemedi" });
+  }
+});
+
+app.get("/api/admin/comments", async (req, res) => {
+  try {
+    const comments = await Comment.find({ status: { $ne: "deleted" } })
+      .sort({ createdAt: -1 })
+      .limit(200);
+
+    res.json(comments);
+  } catch {
+    res.status(500).json([]);
+  }
+});
+
+app.delete("/api/admin/comments/:id", async (req, res) => {
+  try {
+    await Comment.findByIdAndUpdate(req.params.id, { status: "deleted" });
+    res.json({ success: true });
+  } catch {
     res.status(500).json({ success: false });
   }
 });
+
+/* OWNER / REKLAM VEREN */
 
 app.get("/api/owner/stats", async (req, res) => {
   try {
@@ -472,7 +618,7 @@ app.get("/api/owner/stats", async (req, res) => {
     const sites = await Site.find({
       ownerEmail: email,
       status: { $ne: "deleted" }
-    }).select("title name views clicks sponsorViews sponsorClicks sponsorBudget sponsorCpc rating reviewCount");
+    }).select("title name businessName views clicks sponsorViews sponsorClicks sponsorBudget sponsorCpc rating reviewCount");
 
     res.json({ success: true, sites });
   } catch {
@@ -480,10 +626,14 @@ app.get("/api/owner/stats", async (req, res) => {
   }
 });
 
+/* USER */
+
 app.post("/api/register", async (req, res) => {
   try {
     const exists = await User.findOne({ email: req.body.email });
-    if (exists) return res.status(400).json({ success: false, message: "Bu e-posta kayıtlı" });
+    if (exists) {
+      return res.status(400).json({ success: false, message: "Bu e-posta kayıtlı" });
+    }
 
     const user = await User.create({
       name: req.body.name,
@@ -508,7 +658,9 @@ app.post("/api/login", async (req, res) => {
       password: req.body.password
     });
 
-    if (!user) return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+    if (!user) {
+      return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+    }
 
     res.json({
       success: true,
@@ -518,6 +670,8 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
+/* SEO */
 
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
@@ -531,13 +685,17 @@ app.get("/sitemap.xml", async (req, res) => {
   try {
     const sites = await Site.find({ status: { $ne: "deleted" } }).select("_id updatedAt");
 
-    const urls = sites.map(site => `
+    const urls = sites
+      .map(
+        (site) => `
   <url>
     <loc>https://netsearch.com.tr/site.html?id=${site._id}</loc>
-    <lastmod>${new Date(site.updatedAt).toISOString()}</lastmod>
+    <lastmod>${new Date(site.updatedAt || Date.now()).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>`).join("");
+  </url>`
+      )
+      .join("");
 
     res.type("application/xml");
     res.send(`<?xml version="1.0" encoding="UTF-8"?>
