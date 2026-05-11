@@ -3,73 +3,122 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kayıt Ol</title>
+<title>NetSearch Kayıt Ol</title>
+
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f172a">
 
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
+*{box-sizing:border-box}
 
 body{
-background:#020817;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-padding:20px;
-color:white;
+  margin:0;
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+  background:#f4f9ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#0f172a;
 }
 
 .box{
-width:450px;
-background:#0f172a;
-padding:40px;
-border-radius:20px;
-border:1px solid #1e293b;
+  width:460px;
+  max-width:92%;
+  background:white;
+  border:1px solid #dbeafe;
+  border-radius:28px;
+  padding:34px;
+  box-shadow:0 25px 70px rgba(2,132,199,.14);
 }
 
+.logoArea{
+  text-align:center;
+  margin-bottom:22px;
+}
+
+.logoImg{
+  width:86px;
+  height:86px;
+  object-fit:cover;
+  border-radius:24px;
+  box-shadow:0 16px 38px rgba(14,165,233,.25);
+  margin-bottom:10px;
+}
+
+.logoText{
+  font-size:38px;
+  font-weight:900;
+  letter-spacing:-2px;
+}
+
+.logoText .net{color:#111827}
+.logoText .search{color:#0ea5e9}
+
 h1{
-text-align:center;
-margin-bottom:30px;
-color:#38bdf8;
+  margin:8px 0 20px;
+  text-align:center;
+  color:#0284c7;
+  font-size:26px;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin:11px 0 7px;
+  color:#334155;
 }
 
 input{
-width:100%;
-padding:16px;
-margin-bottom:15px;
-background:#111827;
-border:none;
-border-radius:10px;
-color:white;
-font-size:16px;
+  width:100%;
+  padding:15px;
+  border:1px solid #cbd5e1;
+  border-radius:15px;
+  font-size:15px;
+  outline:none;
+}
+
+input:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 4px #e0f2fe;
 }
 
 button{
-width:100%;
-padding:16px;
-border:none;
-border-radius:10px;
-background:linear-gradient(90deg,#00bfff,#2563eb);
-color:white;
-font-size:16px;
-cursor:pointer;
+  width:100%;
+  padding:16px;
+  margin-top:18px;
+  border:0;
+  border-radius:15px;
+  background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  color:white;
+  font-size:17px;
+  font-weight:900;
+  cursor:pointer;
 }
 
-.link{
-text-align:center;
-margin-top:20px;
+.msg{
+  text-align:center;
+  margin-top:15px;
+  font-weight:bold;
+  min-height:22px;
+}
+
+.err{color:#dc2626}
+.ok{color:#16a34a}
+
+.bottom{
+  text-align:center;
+  margin-top:18px;
+  line-height:1.9;
 }
 
 a{
-color:#38bdf8;
-text-decoration:none;
+  color:#0369a1;
+  font-weight:bold;
+  text-decoration:none;
 }
-
 </style>
 </head>
 
@@ -77,86 +126,99 @@ text-decoration:none;
 
 <div class="box">
 
-<h1>Hesap Oluştur</h1>
+  <div class="logoArea">
+    <img class="logoImg" src="/icon-512.png" alt="NetSearch Logo" onerror="this.style.display='none'">
+    <div class="logoText"><span class="net">Net</span><span class="search">Search</span></div>
+  </div>
 
-<input type="text" id="name" placeholder="Ad Soyad">
-<input type="text" id="company" placeholder="Firma Adı">
-<input type="email" id="email" placeholder="E-Posta">
-<input type="text" id="phone" placeholder="Telefon">
-<input type="text" id="username" placeholder="Kullanıcı Adı">
-<input type="password" id="password" placeholder="Şifre">
+  <h1>Hesap Oluştur</h1>
 
-<button onclick="register()">
-Hesap Oluştur
-</button>
+  <label>Ad Soyad</label>
+  <input id="name" placeholder="Adınız Soyadınız">
 
-<div class="link">
-Zaten hesabın var mı?
-<a href="/login.html">
-Giriş Yap
-</a>
-</div>
+  <label>Firma Adı</label>
+  <input id="company" placeholder="Firma adınız">
+
+  <label>E-posta</label>
+  <input id="email" type="email" placeholder="ornek@mail.com">
+
+  <label>Telefon</label>
+  <input id="phone" placeholder="05xx xxx xx xx">
+
+  <label>Şifre</label>
+  <input id="password" type="password" placeholder="En az 6 karakter">
+
+  <button onclick="register()">Hesap Oluştur</button>
+
+  <div id="message" class="msg"></div>
+
+  <div class="bottom">
+    Zaten hesabın var mı? <a href="/login.html">Giriş Yap</a><br>
+    <a href="/index.html">Ana Sayfaya Dön</a>
+  </div>
 
 </div>
 
 <script>
-
 async function register(){
+  const name = document.getElementById("name").value.trim();
+  const company = document.getElementById("company").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const msg = document.getElementById("message");
 
-const name = document.getElementById("name").value.trim();
-const company = document.getElementById("company").value.trim();
-const email = document.getElementById("email").value.trim();
-const phone = document.getElementById("phone").value.trim();
-const username = document.getElementById("username").value.trim();
-const password = document.getElementById("password").value.trim();
+  msg.className = "msg";
+  msg.innerText = "";
 
-if(
-!name ||
-!company ||
-!email ||
-!phone ||
-!username ||
-!password
-){
-alert("Tüm alanları doldur.");
-return;
+  if(!name || !email || !password){
+    msg.className = "msg err";
+    msg.innerText = "Ad soyad, e-posta ve şifre zorunlu.";
+    return;
+  }
+
+  if(password.length < 6){
+    msg.className = "msg err";
+    msg.innerText = "Şifre en az 6 karakter olmalı.";
+    return;
+  }
+
+  try{
+    const res = await fetch("/api/register",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        name,
+        company,
+        phone,
+        email,
+        password
+      })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      msg.className = "msg ok";
+      msg.innerText = "Kayıt başarılı. Giriş sayfasına yönlendiriliyorsun...";
+
+      setTimeout(()=>{
+        window.location.href = "/login.html";
+      },900);
+    }else{
+      msg.className = "msg err";
+      msg.innerText = data.message || "Kayıt başarısız.";
+    }
+
+  }catch{
+    msg.className = "msg err";
+    msg.innerText = "Sunucuya bağlanılamadı.";
+  }
 }
 
-const res = await fetch("/api/register",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-name,
-company,
-email,
-phone,
-username,
-password
-})
-
+document.getElementById("password").addEventListener("keydown", function(e){
+  if(e.key === "Enter") register();
 });
-
-const data = await res.json();
-
-if(!res.ok){
-
-alert(data.message || "Kayıt başarısız.");
-
-return;
-
-}
-
-alert("Kayıt başarılı 🚀");
-
-window.location.href = "/login.html";
-
-}
-
 </script>
 
 </body>
