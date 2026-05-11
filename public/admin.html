@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetSearch Admin Panel</title>
+
 <link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
 
 <style>
 *{box-sizing:border-box}
@@ -15,18 +17,22 @@ header{background:white;border-bottom:1px solid #dbeafe;padding:16px 22px}
 .wrap{max-width:1250px;margin:auto;padding:22px}
 .panel{background:white;border:1px solid #dbeafe;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px rgba(15,23,42,.06)}
 h2{margin:0 0 14px;color:#0284c7}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .stat{background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:15px}
 .stat b{display:block;font-size:28px;color:#0284c7}
-input,textarea,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;margin-bottom:9px}
+input,textarea,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;margin-bottom:9px;font-size:14px}
+textarea{min-height:80px}
+label{font-weight:bold;font-size:13px;color:#334155}
 button,a{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:pointer;text-decoration:none;margin:3px}
-.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}.dark{background:#0f172a;color:white}.orange{background:#f59e0b;color:white}
+.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}.dark{background:#0f172a;color:white}.orange{background:#f59e0b;color:white}.gray{background:#64748b;color:white}
 .card{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:16px;margin:12px 0}
 .badge{display:inline-block;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:bold;margin:4px;background:white;border:1px solid #bae6fd;color:#0369a1}
 .pending{background:#fef3c7;border-color:#f59e0b;color:#92400e}
 .active{background:#dcfce7;border-color:#86efac;color:#166534}
 .rejected{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-.small{font-size:13px;color:#64748b}
+.small{font-size:13px;color:#64748b;word-break:break-all}
+.editBox{display:none;margin-top:14px;background:white;border:1px solid #dbeafe;border-radius:16px;padding:14px}
+@media(max-width:700px){.top{flex-direction:column;align-items:flex-start}button,a{width:100%;text-align:center}}
 </style>
 </head>
 
@@ -55,14 +61,19 @@ button,a{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:p
   </div>
 
   <div class="panel">
-    <h2>Reklam / İşletme Listesi</h2>
-    <input id="searchBox" placeholder="İşletme, e-posta, şehir ara..." oninput="renderSites()">
-    <select id="filterStatus" onchange="renderSites()">
-      <option value="all">Tümü</option>
-      <option value="pending">Onay Bekleyenler</option>
-      <option value="active">Aktif Reklamlar</option>
-      <option value="rejected">Reddedilenler</option>
-    </select>
+    <h2>Reklam / İşletme Yönetimi</h2>
+
+    <div class="grid">
+      <input id="searchBox" placeholder="İşletme, e-posta, şehir ara..." oninput="renderSites()">
+      <select id="filterStatus" onchange="renderSites()">
+        <option value="all">Tümü</option>
+        <option value="pending">Onay Bekleyenler</option>
+        <option value="active">Aktif Reklamlar</option>
+        <option value="rejected">Reddedilenler</option>
+        <option value="passive">Pasifler</option>
+      </select>
+    </div>
+
     <div id="siteList">Yükleniyor...</div>
   </div>
 
@@ -129,6 +140,7 @@ function renderSites(){
     if(filter==="pending" && s.status!=="pending") return false;
     if(filter==="active" && !active) return false;
     if(filter==="rejected" && s.status!=="rejected") return false;
+    if(filter==="passive" && active) return false;
 
     return true;
   });
@@ -139,6 +151,7 @@ function renderSites(){
   }
 
   list.forEach(s=>{
+    const id=s._id;
     const active=s.sponsored||s.isSponsored||s.sponsorActive;
     const pending=s.status==="pending";
     const rejected=s.status==="rejected";
@@ -155,25 +168,79 @@ function renderSites(){
         ${rejected?'<span class="badge rejected">Reddedildi</span>':""}
         <span class="badge">Owner: ${esc(s.ownerEmail||"Yok")}</span>
         <span class="badge">Şehir: ${esc(s.city||s.sehir||"")}</span>
+        <span class="badge">İlçe: ${esc(s.district||s.ilce||"")}</span>
         <span class="badge">Bütçe: ${s.sponsorBudget||0}₺</span>
         <span class="badge">CPC: ${s.cpc||s.sponsorCpc||0}₺</span>
         <span class="badge">Görüntüleme: ${s.views||0}</span>
         <span class="badge">Tıklama: ${s.clicks||0}</span>
         <span class="badge">Kalite: ${s.qualityScore||0}</span>
+        <span class="badge">AdScore: ${s.adScore||0}</span>
       </div>
 
-      <p>${esc(s.description||s.desc||"")}</p>
+      <p><b>Başlıklar:</b> ${esc([s.adHeadline1,s.adHeadline2,s.adHeadline3].filter(Boolean).join(" | "))}</p>
+      <p><b>Açıklamalar:</b> ${esc([s.adDescription1,s.adDescription2].filter(Boolean).join(" "))}</p>
+      <p><b>Anahtar:</b> ${esc(arrayText(s.keywords||s.tags))}</p>
+      <p><b>Negatif:</b> ${esc(arrayText(s.negativeKeywords))}</p>
+      ${s.rejectReason ? `<p style="color:#dc2626"><b>Red nedeni:</b> ${esc(s.rejectReason)}</p>` : ""}
       <p class="small">${esc(s.url||s.website||"")}</p>
 
-      <button class="green" onclick="approveAd('${s._id}')">Onayla ve Yayına Al</button>
-      <button class="orange" onclick="pauseAd('${s._id}')">Reklamı Durdur</button>
-      <button class="red" onclick="rejectAd('${s._id}')">Reddet</button>
-      <button class="dark" onclick="deleteAd('${s._id}')">Sil</button>
-      <button class="blue" onclick="editOwner('${s._id}')">Owner E-posta Düzenle</button>
+      <button class="green" onclick="approveAd('${id}')">Onayla ve Yayına Al</button>
+      <button class="orange" onclick="pauseAd('${id}')">Reklamı Durdur</button>
+      <button class="red" onclick="rejectAd('${id}')">Reddet</button>
+      <button class="dark" onclick="deleteAd('${id}')">Sil</button>
+      <button class="blue" onclick="toggleEdit('${id}')">Detaylı Düzenle</button>
+
+      <div id="edit-${id}" class="editBox">
+        <div class="grid">
+          <div><label>İşletme Adı</label><input id="title-${id}" value="${attr(s.title||s.businessName||"")}"></div>
+          <div><label>Owner E-posta</label><input id="owner-${id}" value="${attr(s.ownerEmail||"")}"></div>
+          <div><label>Web Site</label><input id="url-${id}" value="${attr(s.url||s.website||"")}"></div>
+          <div><label>Telefon</label><input id="phone-${id}" value="${attr(s.phone||s.telefon||"")}"></div>
+        </div>
+
+        <div class="grid">
+          <div><label>Başlık 1</label><input id="h1-${id}" value="${attr(s.adHeadline1||"")}"></div>
+          <div><label>Başlık 2</label><input id="h2-${id}" value="${attr(s.adHeadline2||"")}"></div>
+          <div><label>Başlık 3</label><input id="h3-${id}" value="${attr(s.adHeadline3||"")}"></div>
+        </div>
+
+        <label>Açıklama 1</label>
+        <textarea id="d1-${id}">${esc(s.adDescription1||s.description||"")}</textarea>
+
+        <label>Açıklama 2</label>
+        <textarea id="d2-${id}">${esc(s.adDescription2||"")}</textarea>
+
+        <div class="grid">
+          <div><label>Şehir</label><input id="city-${id}" value="${attr(s.city||s.sehir||"")}"></div>
+          <div><label>İlçeler</label><input id="districts-${id}" value="${attr(arrayText(s.targetDistricts)||s.district||s.ilce||"")}"></div>
+          <div><label>Kategori</label><input id="category-${id}" value="${attr(s.category||"Genel")}"></div>
+        </div>
+
+        <label>Anahtar Kelimeler</label>
+        <textarea id="keywords-${id}">${esc(arrayText(s.keywords||s.tags))}</textarea>
+
+        <label>Negatif Anahtar Kelimeler</label>
+        <textarea id="negative-${id}">${esc(arrayText(s.negativeKeywords))}</textarea>
+
+        <div class="grid">
+          <div><label>Günlük Bütçe</label><input id="daily-${id}" type="number" value="${s.dailyLimit||0}"></div>
+          <div><label>CPC</label><input id="cpc-${id}" type="number" value="${s.cpc||s.sponsorCpc||0}"></div>
+          <div><label>Bakiye</label><input id="budget-${id}" type="number" value="${s.sponsorBudget||0}"></div>
+          <div><label>Enlem</label><input id="lat-${id}" value="${s.latitude||""}"></div>
+          <div><label>Boylam</label><input id="lng-${id}" value="${s.longitude||""}"></div>
+        </div>
+
+        <button class="green" onclick="saveEdit('${id}')">Düzenlemeyi Kaydet</button>
+      </div>
     `;
 
     box.appendChild(div);
   });
+}
+
+function toggleEdit(id){
+  const el=document.getElementById("edit-"+id);
+  el.style.display=el.style.display==="block" ? "none" : "block";
 }
 
 async function approveAd(id){
@@ -185,6 +252,7 @@ async function approveAd(id){
     sponsorActive:true,
     verified:true,
     isVerified:true,
+    rejectReason:"",
     adStoppedReason:""
   });
 }
@@ -212,20 +280,54 @@ async function rejectAd(id){
 
 async function deleteAd(id){
   if(!confirm("Silinsin mi?")) return;
-
-  await fetch("/api/admin/sites/"+id,{
-    method:"DELETE"
-  });
-
+  await fetch("/api/admin/sites/"+id,{method:"DELETE"});
   loadData();
 }
 
-async function editOwner(id){
-  const site=allSites.find(x=>x._id===id);
-  const email=prompt("Owner e-posta:", site.ownerEmail||"");
-  if(email===null) return;
+async function saveEdit(id){
+  const payload={
+    title:val("title-"+id),
+    name:val("title-"+id),
+    businessName:val("title-"+id),
+    ownerEmail:val("owner-"+id),
 
-  await updateSite(id,{ownerEmail:email});
+    url:val("url-"+id),
+    website:val("url-"+id),
+    link:val("url-"+id),
+
+    phone:val("phone-"+id),
+    telefon:val("phone-"+id),
+    whatsapp:val("phone-"+id),
+
+    adHeadline1:val("h1-"+id),
+    adHeadline2:val("h2-"+id),
+    adHeadline3:val("h3-"+id),
+    adDescription1:val("d1-"+id),
+    adDescription2:val("d2-"+id),
+
+    description:val("d1-"+id),
+    desc:val("d1-"+id),
+
+    city:val("city-"+id),
+    sehir:val("city-"+id),
+    targetCities:toArray(val("city-"+id)),
+    targetDistricts:toArray(val("districts-"+id)),
+    category:val("category-"+id),
+
+    keywords:val("keywords-"+id),
+    tags:val("keywords-"+id),
+    negativeKeywords:val("negative-"+id),
+
+    dailyLimit:Number(val("daily-"+id)||0),
+    cpc:Number(val("cpc-"+id)||0),
+    sponsorCpc:Number(val("cpc-"+id)||0),
+    sponsorBudget:Number(val("budget-"+id)||0),
+
+    latitude:Number(val("lat-"+id)||0),
+    longitude:Number(val("lng-"+id)||0)
+  };
+
+  await updateSite(id,payload);
 }
 
 async function updateSite(id,payload){
@@ -248,11 +350,19 @@ async function updateSite(id,payload){
   }
 }
 
+function val(id){return document.getElementById(id).value.trim();}
+function toArray(v){return String(v||"").split(",").map(x=>x.trim()).filter(Boolean);}
+function arrayText(v){return Array.isArray(v) ? v.join(", ") : (v || "");}
+
 function esc(t){
   return String(t||"")
     .replaceAll("&","&amp;")
     .replaceAll("<","&lt;")
     .replaceAll(">","&gt;");
+}
+
+function attr(t){
+  return esc(t).replaceAll('"',"&quot;");
 }
 </script>
 
