@@ -10,6 +10,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const OpenAI = require("openai");
+const axios = require("axios");
+const cheerio = require("cheerio");
 
 const app = express();
 
@@ -78,33 +80,19 @@ function tokenFor(user) {
   }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-function auth(req, res, next) {
-  const header = req.headers.authorization || "";
-  const token = header.replace("Bearer ", "");
-
-  if (!token) return res.status(401).json({ success: false, message: "Token yok" });
-
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ success: false, message: "Token geçersiz" });
-  }
-}
-
-function adminOnly(req, res, next) {
-  auth(req, res, () => {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, message: "Admin yetkisi gerekli" });
-    }
-    next();
-  });
-}
-
 function normalize(t) {
   return String(t || "").toLowerCase()
-    .replaceAll("ı","i").replaceAll("ğ","g").replaceAll("ü","u")
-    .replaceAll("ş","s").replaceAll("ö","o").replaceAll("ç","c").trim();
+    .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
+    .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c").trim();
+}
+
+function slugify(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
+    .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function arr(v) {
@@ -166,9 +154,12 @@ function score(site, q) {
 function buildSite(b) {
   return {
     ...b,
+
     title: b.title || b.name || b.businessName || "",
     name: b.name || b.title || b.businessName || "",
     businessName: b.businessName || b.title || b.name || "",
+
+    slug: b.slug || slugify(b.title || b.name || b.businessName || ""),
 
     url: b.url || b.website || b.link || "",
     website: b.website || b.url || b.link || "",
@@ -184,6 +175,7 @@ function buildSite(b) {
 
     phone: b.phone || b.telefon || "",
     telefon: b.telefon || b.phone || "",
+    whatsapp: b.whatsapp || b.phone || b.telefon || "",
 
     keywords: arr(b.keywords || b.tags),
     tags: arr(b.tags || b.keywords),
@@ -205,10 +197,15 @@ function buildSite(b) {
     dailyLimit: Number(b.dailyLimit || 0),
     cpc: Number(b.cpc || b.sponsorCpc || 0),
     sponsorCpc: Number(b.sponsorCpc || b.cpc || 0),
+
     aiScore: Number(b.aiScore || 10),
     qualityScore: Number(b.qualityScore || 0),
+
     latitude: Number(b.latitude || 0),
-    longitude: Number(b.longitude || 0)
+    longitude: Number(b.longitude || 0),
+
+    views: Number(b.views || 0),
+    clicks: Number(b.clicks || 0)
   };
 }
 
@@ -221,7 +218,8 @@ app.get("/health", (req, res) => {
     mongo: mongoose.connection.readyState === 1 ? "connected" : "not connected",
     openai: process.env.OPENAI_API_KEY ? "key var" : "key yok",
     jwt: "active",
-    upload: "active"
+    upload: "active",
+    autoIndex: "active"
   });
 });
 
@@ -231,10 +229,14 @@ app.post("/api/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!email || !password) return res.json({ success: false, message: "E-posta ve şifre gerekli" });
+    if (!email || !password) {
+      return res.json({ success: false, message: "E-posta ve şifre gerekli" });
+    }
 
     const exists = await User.findOne({ email });
-    if (exists) return res.json({ success: false, message: "Bu e-posta kayıtlı" });
+    if (exists) {
+      return res.json({ success: false, message: "Bu e-posta kayıtlı" });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
     await User.create({ name, email, password: hashed, role: "user" });
@@ -269,7 +271,9 @@ app.post("/api/login", async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+    if (!user) {
+      return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+    }
 
     let ok = false;
 
@@ -283,7 +287,9 @@ app.post("/api/login", async (req, res) => {
       }
     }
 
-    if (!ok) return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+    if (!ok) {
+      return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+    }
 
     const safeUser = {
       id: user._id,
@@ -314,12 +320,177 @@ app.post("/api/upload/multiple", upload.array("files", 10), (req, res) => {
   res.json({ success: true, urls: (req.files || []).map(f => `/uploads/${f.filename}`) });
 });
 
+/* AUTO INDEX SYSTEM */
+
+app.post("/api/auto-index", async (req, res) => {
+  try {
+    let { url, city, district, ownerEmail } = req.body;
+
+    if (!url) {
+      return res.json({ success: false, message: "URL gerekli" });
+    }
+
+    if (!url.startsWith("http")) {
+      url = "https://" + url;
+    }
+
+    const already = await Site.findOne({
+      $or: [
+        { url },
+        { website: url },
+        { link: url }
+      ],
+      status: { $ne: "deleted" }
+    });
+
+    if (already) {
+      return res.json({
+        success: false,
+        message: "Bu site zaten kayıtlı",
+        site: already
+      });
+    }
+
+    const response = await axios.get(url, {
+      timeout: 15000,
+      maxRedirects: 5,
+      headers: {
+        "User-Agent": "NetSearchBot/1.0 (+https://netsearch.com.tr)"
+      }
+    });
+
+    const html = response.data;
+    const $ = cheerio.load(html);
+
+    const title =
+      $("title").first().text().trim() ||
+      $('meta[property="og:title"]').attr("content") ||
+      url;
+
+    const description =
+      $('meta[name="description"]').attr("content") ||
+      $('meta[property="og:description"]').attr("content") ||
+      $("p").first().text().trim().slice(0, 220) ||
+      "";
+
+    let favicon =
+      $('link[rel="icon"]').attr("href") ||
+      $('link[rel="shortcut icon"]').attr("href") ||
+      "/favicon.ico";
+
+    if (favicon && !favicon.startsWith("http")) {
+      favicon = new URL(favicon, url).href;
+    }
+
+    let image =
+      $('meta[property="og:image"]').attr("content") ||
+      $('meta[name="twitter:image"]').attr("content") ||
+      "";
+
+    if (image && !image.startsWith("http")) {
+      image = new URL(image, url).href;
+    }
+
+    const keywords = [];
+
+    const metaKeywords = $('meta[name="keywords"]').attr("content");
+    if (metaKeywords) keywords.push(...arr(metaKeywords));
+
+    $("h1,h2,h3").each((i, el) => {
+      const text = $(el).text().trim();
+      if (text.length > 3 && text.length < 70) {
+        keywords.push(text);
+      }
+    });
+
+    const full = normalize(`${title} ${description} ${keywords.join(" ")}`);
+
+    let detectedCategory = "Genel";
+    if (full.includes("kombi") || full.includes("servis") || full.includes("tamir")) detectedCategory = "Teknik Servis";
+    if (full.includes("restoran") || full.includes("yemek")) detectedCategory = "Restoran";
+    if (full.includes("cafe") || full.includes("kahve")) detectedCategory = "Cafe";
+    if (full.includes("doktor") || full.includes("hastane") || full.includes("klinik")) detectedCategory = "Sağlık";
+    if (full.includes("avukat") || full.includes("hukuk")) detectedCategory = "Hukuk";
+    if (full.includes("otel") || full.includes("hotel")) detectedCategory = "Otel";
+    if (full.includes("market") || full.includes("alışveriş") || full.includes("alisveris")) detectedCategory = "Market";
+    if (full.includes("okul") || full.includes("kurs") || full.includes("eğitim") || full.includes("egitim")) detectedCategory = "Eğitim";
+
+    const newSite = await Site.create(buildSite({
+      title,
+      name: title,
+      businessName: title,
+
+      description,
+      desc: description,
+
+      url,
+      website: url,
+      link: url,
+
+      logo: favicon,
+      logoUrl: favicon,
+      image: favicon,
+
+      cover: image,
+      coverUrl: image,
+      gallery: image ? [image] : [],
+
+      keywords: [...new Set(keywords)].slice(0, 20),
+      tags: [...new Set(keywords)].slice(0, 20),
+
+      category: detectedCategory,
+
+      city: city || "",
+      sehir: city || "",
+      district: district || "",
+      ilce: district || "",
+
+      ownerEmail: ownerEmail || "",
+
+      approved: true,
+      verified: false,
+      isVerified: false,
+
+      sponsored: false,
+      isSponsored: false,
+      sponsorActive: false,
+
+      aiScore: 25,
+      qualityScore: 20,
+
+      views: 0,
+      clicks: 0,
+
+      sponsorBudget: 0,
+      cpc: 0,
+
+      status: "active",
+      createdBy: "auto-index",
+      indexedAt: new Date()
+    }));
+
+    res.json({
+      success: true,
+      message: "Site başarıyla otomatik indexlendi",
+      site: newSite
+    });
+
+  } catch (e) {
+    console.log("AUTO INDEX ERROR:", e.message);
+
+    res.status(500).json({
+      success: false,
+      message: "Site taranamadı"
+    });
+  }
+});
+
 /* SEARCH */
 
 app.get("/api/sites", async (req, res) => {
   try {
     const q = req.query.q || "";
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(300);
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(500);
 
     let results = sites;
 
@@ -337,9 +508,9 @@ app.get("/api/sites", async (req, res) => {
       o.finalScore = score(o, q);
       o.searchScore = o.finalScore;
       return o;
-    }).sort((a,b) => b.finalScore - a.finalScore);
+    }).sort((a, b) => b.finalScore - a.finalScore);
 
-    res.json(results.slice(0, 40));
+    res.json(results.slice(0, 60));
   } catch {
     res.status(500).json([]);
   }
@@ -348,7 +519,7 @@ app.get("/api/sites", async (req, res) => {
 app.get("/api/search", async (req, res) => {
   try {
     const q = req.query.q || "";
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(300);
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(500);
 
     const words = normalize(q).split(/\s+/).filter(Boolean);
 
@@ -366,16 +537,17 @@ app.get("/api/search", async (req, res) => {
       const o = site.toObject();
       o.searchScore = score(o, q);
       return o;
-    }).sort((a,b) => b.searchScore - a.searchScore);
+    }).sort((a, b) => b.searchScore - a.searchScore);
 
     const sponsored = results.filter(s => s.sponsored || s.isSponsored || s.sponsorActive).slice(0, 5);
-    const organic = results.filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive)).slice(0, 40);
+    const organic = results.filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive)).slice(0, 60);
 
     let aiAnswer = "";
+
     try {
       if (openai && q.trim()) {
         const summary = [...sponsored, ...organic].slice(0, 5)
-          .map((s,i) => `${i+1}. ${s.title || s.name || s.businessName} - ${s.description || s.desc || ""}`)
+          .map((s, i) => `${i + 1}. ${s.title || s.name || s.businessName} - ${s.description || s.desc || ""}`)
           .join("\n");
 
         const completion = await openai.chat.completions.create({
@@ -404,7 +576,7 @@ app.get("/api/autocomplete", async (req, res) => {
     const q = normalize(req.query.q || "");
     if (q.length < 2) return res.json([]);
 
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(200);
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(300);
     const suggestions = [];
 
     sites.forEach(site => {
@@ -427,13 +599,23 @@ app.get("/api/autocomplete", async (req, res) => {
 
 app.get("/api/sites/:id", async (req, res) => {
   try {
-    const site = await Site.findById(req.params.id);
+    let site = null;
+
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      site = await Site.findById(req.params.id);
+    }
+
+    if (!site) {
+      site = await Site.findOne({ slug: req.params.id, status: { $ne: "deleted" } });
+    }
+
     if (!site) return res.status(404).json({ success: false });
 
     site.views = Number(site.views || 0) + 1;
     await site.save();
 
     const comments = await Comment.find({ siteId: site._id, status: { $ne: "deleted" } }).sort({ createdAt: -1 });
+
     res.json({ site, comments });
   } catch {
     res.status(500).json({ success: false });
@@ -481,7 +663,7 @@ app.get("/api/admin/stats", async (req, res) => {
       totalUsers: await User.countDocuments()
     });
   } catch {
-    res.json({ totalSites:0,pendingSites:0,approvedSites:0,activeAds:0,totalComments:0,totalUsers:0 });
+    res.json({ totalSites: 0, pendingSites: 0, approvedSites: 0, activeAds: 0, totalComments: 0, totalUsers: 0 });
   }
 });
 
@@ -541,17 +723,10 @@ Sitemap: https://netsearch.com.tr/sitemap.xml`);
 
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).select("_id title city category updatedAt");
-
-    const slugify = (text) => String(text || "")
-      .toLowerCase()
-      .replaceAll("ı","i").replaceAll("ğ","g").replaceAll("ü","u")
-      .replaceAll("ş","s").replaceAll("ö","o").replaceAll("ç","c")
-      .replace(/[^a-z0-9]+/g,"-")
-      .replace(/^-+|-+$/g,"");
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).select("_id title slug city category updatedAt");
 
     const siteUrls = sites.map(site => {
-      const slug = slugify(site.title || site._id);
+      const slug = site.slug || slugify(site.title || site._id);
       return `
   <url>
     <loc>https://netsearch.com.tr/site/${slug}</loc>
@@ -593,7 +768,7 @@ app.get("/sitemap.xml", async (req, res) => {
   }
 });
 
-/* SEO SLUG ROUTES - app.listen üstünde kalmalı */
+/* SEO SLUG ROUTES */
 
 app.get("/site/:slug", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "site.html"));
