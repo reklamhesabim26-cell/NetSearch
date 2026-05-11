@@ -4,227 +4,320 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>NetSearch - Yapay Zeka Destekli Arama Motoru</title>
-
-  <meta name="description" content="NetSearch ile işletmeleri, web sitelerini ve yapay zeka destekli arama sonuçlarını keşfedin.">
-  <meta name="keywords" content="NetSearch, arama motoru, yapay zeka arama, işletme arama, teknik servis, Eskişehir">
+  <title>NetSearch - AI Destekli Yeni Nesil Arama Motoru</title>
+  <meta name="description" content="NetSearch ile işletmeleri, web sitelerini ve AI destekli sonuçları keşfedin.">
   <meta name="robots" content="index, follow">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #020817;
-      color: #fff;
+      background: linear-gradient(180deg, #eff6ff, #ffffff);
+      color: #0f172a;
     }
 
     header {
-      text-align: center;
-      padding: 50px 16px 30px;
+      padding: 28px 18px 50px;
+      background: linear-gradient(135deg, #e0f2fe, #ffffff 45%, #dbeafe);
+      border-bottom: 1px solid #dbeafe;
     }
 
-    .logo {
-      font-size: 56px;
-      font-weight: 900;
-      color: #38bdf8;
-      letter-spacing: 1px;
-    }
-
-    .subtitle {
-      margin-top: 12px;
-      font-size: 20px;
-      color: #dbeafe;
-    }
-
-    .search-area {
-      max-width: 900px;
-      margin: 30px auto 20px;
-      padding: 0 16px;
-    }
-
-    .search-box {
+    .topbar {
+      max-width: 1180px;
+      margin: auto;
       display: flex;
-      background: #111827;
-      border: 1px solid #243044;
-      border-radius: 40px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
     }
 
-    .search-box input {
+    .brand {
+      font-size: 32px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .brand span { color: #0284c7; }
+
+    .toplinks {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toplinks a {
+      text-decoration: none;
+      color: #075985;
+      background: white;
+      border: 1px solid #bae6fd;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 8px 20px rgba(14,165,233,.12);
+    }
+
+    .hero {
+      max-width: 980px;
+      margin: 54px auto 0;
+      text-align: center;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 54px;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+    }
+
+    .hero h1 span {
+      color: #0284c7;
+    }
+
+    .hero p {
+      margin: 18px auto 0;
+      max-width: 720px;
+      color: #475569;
+      font-size: 19px;
+      line-height: 1.6;
+    }
+
+    .search-panel {
+      max-width: 900px;
+      margin: -34px auto 24px;
+      padding: 18px;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid #dbeafe;
+      border-radius: 28px;
+      box-shadow: 0 24px 70px rgba(2,132,199,.18);
+      position: relative;
+      z-index: 5;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-row input {
       flex: 1;
-      padding: 22px 28px;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 18px;
+      padding: 18px 20px;
       font-size: 18px;
-      font-weight: 600;
+      outline: none;
+      background: white;
+      color: #0f172a;
     }
 
-    .search-box button {
-      width: 170px;
+    .search-row input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 4px #e0f2fe;
+    }
+
+    .search-row button {
       border: none;
+      border-radius: 18px;
+      padding: 0 34px;
       background: linear-gradient(135deg, #0ea5e9, #2563eb);
       color: white;
-      font-size: 18px;
+      font-size: 17px;
+      font-weight: 900;
       cursor: pointer;
-      font-weight: bold;
     }
 
-    .categories,
-    .quick-searches {
+    .chips {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 18px;
+      margin-top: 14px;
     }
 
     .chip {
-      padding: 10px 18px;
+      padding: 9px 13px;
+      background: #f8fafc;
+      border: 1px solid #dbeafe;
+      color: #0369a1;
       border-radius: 999px;
-      background: #111827;
-      border: 1px solid #243044;
-      color: #7dd3fc;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      font-size: 14px;
     }
 
-    .chip.active {
-      background: #2563eb;
-      color: white;
+    .chip:hover {
+      background: #e0f2fe;
     }
 
-    .location-note {
-      text-align: center;
-      color: #94a3b8;
-      font-size: 14px;
-      margin-top: 16px;
+    .suggestions {
+      display: none;
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 82px;
+      background: white;
+      border: 1px solid #dbeafe;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(15,23,42,.12);
+      z-index: 20;
+    }
+
+    .suggestions div {
+      padding: 13px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .suggestions div:hover {
+      background: #f0f9ff;
     }
 
     main {
       max-width: 1120px;
-      margin: 60px auto;
-      padding: 0 16px;
+      margin: auto;
+      padding: 28px 16px 60px;
+    }
+
+    .loader {
+      display: none;
+      text-align: center;
+      margin: 26px 0;
+      color: #0284c7;
+      font-weight: 900;
+      font-size: 18px;
     }
 
     .ai-box {
       display: none;
-      background: linear-gradient(135deg, #111827, #172554);
-      border: 1px solid #1e40af;
+      background: linear-gradient(135deg, #ffffff, #eff6ff);
+      border: 1px solid #bfdbfe;
       border-radius: 24px;
       padding: 22px;
-      margin-bottom: 30px;
+      margin-bottom: 22px;
+      box-shadow: 0 18px 45px rgba(37,99,235,.12);
     }
 
     .ai-box h2 {
-      margin: 0 0 12px;
-      color: #38bdf8;
+      margin: 0 0 10px;
+      color: #0369a1;
       font-size: 22px;
     }
 
     .ai-box p {
       margin: 0;
-      color: #e5e7eb;
+      color: #334155;
       line-height: 1.7;
+      font-size: 16px;
     }
 
     .section-title {
       display: none;
-      margin: 28px 0 18px;
-      font-size: 22px;
-      color: #fff;
+      margin: 28px 0 16px;
+      color: #0f172a;
+      font-size: 24px;
+      letter-spacing: -.3px;
     }
 
     .result-card {
-      background: #111827;
-      border: 1px solid #243044;
-      border-radius: 24px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
       overflow: hidden;
-      margin-bottom: 26px;
-      box-shadow: 0 20px 50px rgba(0,0,0,.25);
+      margin-bottom: 22px;
+      box-shadow: 0 18px 50px rgba(15,23,42,.08);
+    }
+
+    .result-card.sponsored {
+      border: 2px solid #38bdf8;
+      box-shadow: 0 22px 60px rgba(14,165,233,.18);
     }
 
     .cover {
       width: 100%;
       height: 220px;
       object-fit: cover;
-      background: #1f2937;
+      background: linear-gradient(135deg, #dbeafe, #f8fafc);
     }
 
     .card-body {
-      padding: 24px;
+      padding: 22px;
     }
 
     .head {
       display: flex;
-      gap: 18px;
+      gap: 16px;
       align-items: center;
     }
 
     .logo-img {
       width: 72px;
       height: 72px;
-      border-radius: 18px;
+      border-radius: 20px;
       object-fit: cover;
-      background: white;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
       flex-shrink: 0;
     }
 
     .title {
-      font-size: 28px;
-      color: #38bdf8;
-      margin-bottom: 6px;
+      color: #0284c7;
+      font-size: 27px;
+      font-weight: 900;
+      margin-bottom: 5px;
     }
 
     .url {
-      color: #22c55e;
-      font-size: 15px;
+      color: #16a34a;
+      font-size: 14px;
       word-break: break-all;
+      font-weight: 700;
     }
 
     .desc {
-      color: #e5e7eb;
-      margin: 22px 0;
+      color: #334155;
+      margin: 18px 0;
       line-height: 1.6;
       font-size: 16px;
     }
 
     .badges {
       display: flex;
-      gap: 10px;
+      gap: 9px;
       flex-wrap: wrap;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
     .badge {
-      background: #172033;
-      color: #7dd3fc;
-      padding: 9px 14px;
+      background: #f1f5f9;
+      color: #0369a1;
+      border: 1px solid #dbeafe;
+      padding: 8px 12px;
       border-radius: 999px;
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 800;
     }
 
     .badge.sponsored {
-      background: #f59e0b;
-      color: #111827;
-      font-weight: bold;
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #92400e;
     }
 
     .badge.ai {
-      background: #10b981;
-      color: white;
-      font-weight: bold;
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
     }
 
     .actions {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
@@ -233,88 +326,72 @@
       border: none;
       text-decoration: none;
       color: white;
-      padding: 13px 20px;
+      padding: 12px 18px;
       border-radius: 999px;
-      font-size: 15px;
-      font-weight: bold;
+      font-size: 14px;
+      font-weight: 900;
       cursor: pointer;
     }
 
-    .visit {
-      background: #16a34a;
-    }
-
-    .detail {
-      background: #2563eb;
-    }
-
-    .web {
-      background: #ea580c;
-    }
-
-    .share {
-      background: #9333ea;
-    }
-
-    .phone {
-      background: #0f766e;
-    }
-
-    .whatsapp {
-      background: #22c55e;
-    }
+    .visit { background: #16a34a; }
+    .detail { background: #2563eb; }
+    .web { background: #f97316; }
+    .phone { background: #0f766e; }
+    .whatsapp { background: #22c55e; }
+    .share { background: #9333ea; }
 
     .empty {
       display: none;
       text-align: center;
-      color: #94a3b8;
-      margin-top: 50px;
+      color: #64748b;
       font-size: 18px;
-    }
-
-    .loader {
-      display: none;
-      text-align: center;
-      color: #38bdf8;
-      font-size: 18px;
-      margin-top: 40px;
+      padding: 50px 12px;
     }
 
     footer {
       text-align: center;
       color: #64748b;
-      padding: 40px 16px;
+      padding: 34px 16px;
+      border-top: 1px solid #e2e8f0;
+      background: white;
     }
 
-    @media (max-width: 700px) {
-      .logo {
-        font-size: 40px;
-      }
-
-      .subtitle {
-        font-size: 16px;
-      }
-
-      .search-box {
-        border-radius: 24px;
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
         flex-direction: column;
       }
 
-      .search-box input {
-        padding: 18px;
+      .brand {
+        font-size: 28px;
       }
 
-      .search-box button {
-        width: 100%;
+      .hero {
+        margin-top: 34px;
+      }
+
+      .hero h1 {
+        font-size: 38px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .search-panel {
+        margin: -24px 12px 18px;
+      }
+
+      .search-row {
+        flex-direction: column;
+      }
+
+      .search-row button {
         padding: 16px;
       }
 
-      main {
-        margin-top: 36px;
-      }
-
       .cover {
-        height: 160px;
+        height: 165px;
       }
 
       .head {
@@ -337,40 +414,39 @@
 <body>
 
 <header>
-  <div class="logo">NetSearch</div>
-  <div class="subtitle">Yapay zeka destekli yeni nesil arama motoru</div>
-
-  <div class="search-area">
-    <div class="search-box">
-      <input id="searchInput" type="text" placeholder="Ne aramak istiyorsun? Örn: kombi servisi">
-      <button onclick="search()">Ara</button>
-    </div>
-
-    <div class="categories">
-      <div class="chip active" onclick="quickSearch('')">Tümü</div>
-      <div class="chip" onclick="quickSearch('Teknik Servis')">Teknik Servis</div>
-      <div class="chip" onclick="quickSearch('Çiçekçi')">Çiçekçi</div>
-      <div class="chip" onclick="quickSearch('Market')">Market</div>
-      <div class="chip" onclick="quickSearch('Resmi Kurum')">Resmi Kurum</div>
-      <div class="chip" onclick="quickSearch('Restoran')">Restoran</div>
-      <div class="chip" onclick="quickSearch('Sağlık')">Sağlık</div>
-      <div class="chip" onclick="quickSearch('Eğitim')">Eğitim</div>
-    </div>
-
-    <div class="quick-searches">
-      <div class="chip" onclick="quickSearch('Eskişehir kombi servisi')">Eskişehir kombi servisi</div>
-      <div class="chip" onclick="quickSearch('Yapay zeka')">Yapay zeka</div>
-      <div class="chip" onclick="quickSearch('Tarih dersi')">Tarih dersi</div>
-      <div class="chip" onclick="quickSearch('Hava durumu')">Hava durumu</div>
-      <div class="chip" onclick="quickSearch('E-Devlet')">E-Devlet</div>
-      <div class="chip" onclick="quickSearch('Yakınımdaki işletmeler')">📍 Yakınımdaki İşletmeler</div>
-    </div>
-
-    <div class="location-note">
-      Konum izni verirsen yakındaki işletmeleri öne çıkarabiliriz.
+  <div class="topbar">
+    <div class="brand">Net<span>Search</span></div>
+    <div class="toplinks">
+      <a href="/login.html">Giriş</a>
+      <a href="/register.html">Kayıt Ol</a>
+      <a href="/user-panel.html">İşletme Paneli</a>
+      <a href="/admin.html">Admin</a>
     </div>
   </div>
+
+  <div class="hero">
+    <h1>AI Destekli <span>Yeni Nesil</span> Arama Motoru</h1>
+    <p>İşletmeleri, web sitelerini, sponsorlu sonuçları ve akıllı arama cevaplarını tek ekranda keşfet.</p>
+  </div>
 </header>
+
+<div class="search-panel">
+  <div class="search-row">
+    <input id="searchInput" type="text" placeholder="Ne aramak istiyorsun? Örn: Eskişehir kombi servisi" autocomplete="off">
+    <button onclick="search()">Ara</button>
+  </div>
+
+  <div id="suggestions" class="suggestions"></div>
+
+  <div class="chips">
+    <div class="chip" onclick="quickSearch('Eskişehir kombi servisi')">Eskişehir kombi servisi</div>
+    <div class="chip" onclick="quickSearch('Teknik Servis')">Teknik Servis</div>
+    <div class="chip" onclick="quickSearch('Yapay zeka')">Yapay Zeka</div>
+    <div class="chip" onclick="quickSearch('E-Devlet')">E-Devlet</div>
+    <div class="chip" onclick="quickSearch('Restoran')">Restoran</div>
+    <div class="chip" onclick="quickSearch('Yakınımdaki işletmeler')">📍 Yakınımdaki İşletmeler</div>
+  </div>
+</div>
 
 <main>
   <div id="loader" class="loader">Aranıyor...</div>
@@ -392,21 +468,57 @@
 </main>
 
 <footer>
-  © 2026 NetSearch.com.tr - Yeni nesil AI arama motoru
+  © 2026 NetSearch.com.tr - AI destekli yeni nesil arama motoru
 </footer>
 
 <script>
+  const API_BASE = "";
   const input = document.getElementById("searchInput");
+  const suggestionsBox = document.getElementById("suggestions");
 
   input.addEventListener("keydown", function(e) {
     if (e.key === "Enter") search();
   });
 
-  function quickSearch(text) {
-    if (text) {
-      input.value = text;
-      search();
+  input.addEventListener("input", async function() {
+    const q = input.value.trim();
+
+    if (q.length < 2) {
+      suggestionsBox.style.display = "none";
+      return;
     }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/autocomplete?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+
+      suggestionsBox.innerHTML = "";
+
+      if (!Array.isArray(data) || data.length === 0) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      data.slice(0, 8).forEach(item => {
+        const div = document.createElement("div");
+        div.textContent = item;
+        div.onclick = () => {
+          input.value = item;
+          suggestionsBox.style.display = "none";
+          search();
+        };
+        suggestionsBox.appendChild(div);
+      });
+
+      suggestionsBox.style.display = "block";
+    } catch {
+      suggestionsBox.style.display = "none";
+    }
+  });
+
+  function quickSearch(text) {
+    input.value = text;
+    search();
   }
 
   async function search() {
@@ -417,6 +529,7 @@
       return;
     }
 
+    suggestionsBox.style.display = "none";
     document.getElementById("loader").style.display = "block";
     document.getElementById("aiBox").style.display = "none";
     document.getElementById("sponsoredTitle").style.display = "none";
@@ -427,7 +540,7 @@
     document.getElementById("results").innerHTML = "";
 
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
 
       document.getElementById("loader").style.display = "none";
@@ -437,8 +550,8 @@
         document.getElementById("aiBox").style.display = "block";
       }
 
-      const sponsored = data.sponsored || data.ads || [];
-      const results = data.results || data.sites || [];
+      const sponsored = data.sponsored || [];
+      const results = data.results || [];
 
       if (sponsored.length > 0) {
         document.getElementById("sponsoredTitle").style.display = "block";
@@ -459,24 +572,25 @@
       }
 
     } catch (err) {
+      console.error(err);
       document.getElementById("loader").style.display = "none";
       document.getElementById("empty").style.display = "block";
-      console.error(err);
     }
   }
 
   function createCard(site, isSponsored) {
     const card = document.createElement("div");
-    card.className = "result-card";
+    card.className = "result-card" + (isSponsored ? " sponsored" : "");
 
     const id = site._id || site.id || "";
-    const title = site.title || site.name || "İsimsiz Site";
-    const url = site.url || site.website || "#";
-    const desc = site.description || site.desc || "Bu site hakkında açıklama bulunamadı.";
-    const logo = site.logo || site.image || "https://via.placeholder.com/120x120.png?text=NS";
-    const cover = site.cover || site.image || "https://via.placeholder.com/1200x400.png?text=NetSearch";
+    const title = site.title || site.name || site.businessName || "İsimsiz Site";
+    const url = site.url || site.website || site.link || "#";
+    const desc = site.description || site.desc || site.address || "Bu site hakkında açıklama bulunamadı.";
+    const logo = site.logo || site.logoUrl || site.image || "https://via.placeholder.com/120x120.png?text=NS";
+    const cover = site.cover || site.coverUrl || site.image || "https://via.placeholder.com/1200x400.png?text=NetSearch";
     const category = site.category || "Genel";
-    const city = site.city || "";
+    const city = site.city || site.sehir || "";
+    const district = site.district || site.ilce || "";
     const phone = site.phone || site.telefon || "";
     const whatsapp = site.whatsapp || phone;
     const aiScore = site.searchScore ? Math.round(site.searchScore) : "";
@@ -499,7 +613,7 @@
           <span class="badge">${escapeHtml(category)}</span>
           ${isSponsored ? `<span class="badge sponsored">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
           ${aiScore ? `<span class="badge ai">AI Skor: ${aiScore}</span>` : ""}
-          ${city ? `<span class="badge">📍 ${escapeHtml(city)}</span>` : ""}
+          ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
           ${phone ? `<span class="badge">📞 ${escapeHtml(phone)}</span>` : ""}
         </div>
 
@@ -509,7 +623,7 @@
           <a class="web" href="https://www.google.com/search?q=${encodeURIComponent(title)}" target="_blank">Web’de Ara</a>
           ${phone ? `<a class="phone" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
           ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
-          <button class="share" onclick="shareSite('${escapeHtml(title)}','${escapeHtml(url)}')">Paylaş</button>
+          <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
         </div>
       </div>
     `;
@@ -521,20 +635,15 @@
     if (!id) return;
 
     try {
-      await fetch(`/api/sites/${id}/click`, {
+      await fetch(`${API_BASE}/api/sites/${id}/click`, {
         method: "POST"
       });
-    } catch (err) {
-      console.log("Tıklama kaydı alınamadı");
-    }
+    } catch {}
   }
 
   function shareSite(title, url) {
     if (navigator.share) {
-      navigator.share({
-        title,
-        url
-      });
+      navigator.share({ title, url });
     } else {
       navigator.clipboard.writeText(url);
       alert("Link kopyalandı.");
@@ -555,6 +664,13 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(text) {
+    return String(text || "")
+      .replaceAll("\\", "\\\\")
+      .replaceAll("'", "\\'")
+      .replaceAll('"', "&quot;");
   }
 </script>
 
