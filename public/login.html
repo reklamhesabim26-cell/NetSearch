@@ -6,149 +6,157 @@
 <title>NetSearch Giriş</title>
 
 <style>
+*{box-sizing:border-box}
 body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#eef5ff;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+  margin:0;
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#e0f2fe,#ffffff,#dbeafe);
 }
-
 .box{
-    width:380px;
-    background:white;
-    padding:35px;
-    border-radius:24px;
-    box-shadow:0 10px 40px rgba(0,0,0,0.08);
+  width:420px;
+  max-width:92%;
+  background:white;
+  border:1px solid #dbeafe;
+  border-radius:28px;
+  padding:34px;
+  box-shadow:0 25px 70px rgba(2,132,199,.16);
 }
-
 .logo{
-    text-align:center;
-    font-size:52px;
-    font-weight:800;
-    margin-bottom:30px;
+  text-align:center;
+  font-size:48px;
+  font-weight:900;
+  margin-bottom:26px;
 }
-
-.logo span{
-    color:#1da1ff;
-}
-
+.logo span{color:#0ea5e9}
 input{
-    width:100%;
-    padding:16px;
-    margin-bottom:18px;
-    border-radius:14px;
-    border:1px solid #dbe7ff;
-    font-size:16px;
-    box-sizing:border-box;
+  width:100%;
+  padding:16px;
+  margin-bottom:14px;
+  border:1px solid #cbd5e1;
+  border-radius:15px;
+  font-size:16px;
+  outline:none;
 }
-
+input:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 4px #e0f2fe;
+}
 button{
-    width:100%;
-    padding:16px;
-    border:none;
-    border-radius:14px;
-    background:linear-gradient(90deg,#1da1ff,#2563eb);
-    color:white;
-    font-size:18px;
-    cursor:pointer;
-    font-weight:bold;
+  width:100%;
+  padding:16px;
+  border:0;
+  border-radius:15px;
+  background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  color:white;
+  font-size:17px;
+  font-weight:900;
+  cursor:pointer;
 }
-
-button:hover{
-    opacity:.95;
+.msg{
+  text-align:center;
+  margin-top:15px;
+  font-weight:bold;
 }
-
-#error{
-    text-align:center;
-    color:red;
-    margin-top:15px;
-}
-
+.err{color:#dc2626}
+.ok{color:#16a34a}
 .bottom{
-    text-align:center;
-    margin-top:20px;
+  text-align:center;
+  margin-top:20px;
 }
-
 a{
-    color:#1d4ed8;
-    text-decoration:none;
-    font-weight:bold;
+  color:#0369a1;
+  font-weight:bold;
+  text-decoration:none;
 }
 </style>
 </head>
+
 <body>
 
 <div class="box">
+  <div class="logo">Net<span>Search</span></div>
 
-<div class="logo">
-Net<span>Search</span>
-</div>
+  <input id="email" placeholder="E-posta veya kullanıcı adı">
+  <input id="password" type="password" placeholder="Şifre">
 
-<input type="text" id="email" placeholder="Kullanıcı adı veya e-mail">
+  <button onclick="login()">Giriş Yap</button>
 
-<input type="password" id="password" placeholder="Şifre">
+  <div id="message" class="msg"></div>
 
-<button onclick="login()">Giriş Yap</button>
-
-<div id="error"></div>
-
-<div class="bottom">
-Hesabın yok mu?
-<a href="/register.html">Kayıt Ol</a>
-</div>
-
+  <div class="bottom">
+    Hesabın yok mu? <a href="/register.html">Kayıt Ol</a><br><br>
+    <a href="/index.html">Ana Sayfaya Dön</a>
+  </div>
 </div>
 
 <script>
+window.onload = function(){
+  const token = localStorage.getItem("token");
+  const userRaw = localStorage.getItem("user");
+
+  if(token && userRaw){
+    try{
+      const user = JSON.parse(userRaw);
+
+      if(user.role === "admin"){
+        window.location.href = "/admin.html";
+      }else{
+        window.location.href = "/user-panel.html";
+      }
+    }catch{}
+  }
+};
 
 async function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const msg = document.getElementById("message");
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  msg.className = "msg";
+  msg.innerText = "";
 
-    document.getElementById("error").innerText = "";
+  if(!email || !password){
+    msg.className = "msg err";
+    msg.innerText = "E-posta ve şifre gir.";
+    return;
+  }
 
-    try{
+  try{
+    const res = await fetch("/api/login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password})
+    });
 
-        const res = await fetch("/api/login",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                email,
-                password
-            })
-        });
+    const data = await res.json();
 
-        const data = await res.json();
+    if(data.success){
+      localStorage.setItem("token", data.token || "");
+      localStorage.setItem("user", JSON.stringify(data.user || {}));
 
-        if(data.success){
+      msg.className = "msg ok";
+      msg.innerText = "Giriş başarılı, yönlendiriliyorsun...";
 
-            localStorage.setItem("token",data.token || "ok");
-            localStorage.setItem("user",JSON.stringify(data.user || {}));
-
-            if(data.user?.role === "admin"){
-                window.location.href="/admin.html";
-            }else{
-                window.location.href="/user-panel.html";
-            }
-
+      setTimeout(()=>{
+        if(data.user?.role === "admin"){
+          window.location.href = "/admin.html";
         }else{
-            document.getElementById("error").innerText =
-            data.message || "Giriş başarısız";
+          window.location.href = "/user-panel.html";
         }
-
-    }catch(err){
-
-        document.getElementById("error").innerText =
-        "Sunucuya bağlanılamadı.";
-
-        console.log(err);
+      },600);
+    }else{
+      msg.className = "msg err";
+      msg.innerText = data.message || "Giriş başarısız.";
     }
+
+  }catch(err){
+    msg.className = "msg err";
+    msg.innerText = "Sunucuya bağlanılamadı.";
+  }
 }
 </script>
 
