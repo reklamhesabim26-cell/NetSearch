@@ -7,25 +7,35 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:#eef6ff;
   color:#0f172a;
 }
+
 header{
   background:linear-gradient(135deg,#0ea5e9,#2563eb);
   color:white;
   padding:22px;
 }
-.wrap{max-width:1200px;margin:auto;padding:20px}
+
+.wrap{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
 .top{
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:12px;
 }
+
 h1{margin:0;font-size:30px}
+
 button,a{
   border:0;
   border-radius:12px;
@@ -34,13 +44,16 @@ button,a{
   cursor:pointer;
   text-decoration:none;
 }
+
 .logout{background:white;color:#2563eb}
+
 .stats{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:14px;
   margin:20px 0;
 }
+
 .stat{
   background:white;
   border:1px solid #dbeafe;
@@ -48,7 +61,13 @@ button,a{
   padding:18px;
   box-shadow:0 10px 30px rgba(15,23,42,.06);
 }
-.stat b{font-size:30px;color:#0284c7;display:block}
+
+.stat b{
+  font-size:30px;
+  color:#0284c7;
+  display:block;
+}
+
 .panel{
   background:white;
   border:1px solid #dbeafe;
@@ -57,12 +76,15 @@ button,a{
   margin-bottom:20px;
   box-shadow:0 12px 35px rgba(15,23,42,.07);
 }
+
 .panel h2{margin-top:0;color:#0284c7}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:12px;
 }
+
 input,select,textarea{
   width:100%;
   padding:13px;
@@ -70,46 +92,98 @@ input,select,textarea{
   border-radius:12px;
   font-size:14px;
   outline:none;
+  background:white;
 }
+
 textarea{min-height:80px;resize:vertical}
+
+.uploadBox{
+  border:2px dashed #bae6fd;
+  background:#f8fbff;
+  border-radius:18px;
+  padding:16px;
+}
+
+.uploadBox h3{
+  margin:0 0 10px;
+  color:#0369a1;
+}
+
+.preview{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.preview img{
+  width:90px;
+  height:70px;
+  object-fit:cover;
+  border-radius:12px;
+  border:1px solid #dbeafe;
+  background:white;
+}
+
 .save{background:#16a34a;color:white}
 .clear{background:#64748b;color:white}
 .edit{background:#2563eb;color:white}
 .delete{background:#dc2626;color:white}
 .sponsor{background:#f59e0b;color:white}
-.list{
-  display:grid;
-  gap:14px;
-}
+
+.list{display:grid;gap:14px}
+
 .card{
   background:#f8fbff;
   border:1px solid #dbeafe;
   border-radius:18px;
   padding:16px;
 }
+
 .cardTop{
   display:flex;
   justify-content:space-between;
   gap:12px;
   align-items:flex-start;
 }
+
+.cardInfo{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+
+.cardLogo{
+  width:72px;
+  height:72px;
+  border-radius:18px;
+  object-fit:cover;
+  background:#dbeafe;
+  border:1px solid #bae6fd;
+  flex-shrink:0;
+}
+
 .card h3{
   margin:0 0 6px;
   color:#0284c7;
 }
+
 .url{
   color:#16a34a;
   word-break:break-all;
   font-weight:bold;
   font-size:14px;
 }
+
 .desc{color:#475569;line-height:1.5}
+
 .badges{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
   margin:10px 0;
 }
+
 .badge{
   background:white;
   border:1px solid #bae6fd;
@@ -119,21 +193,25 @@ textarea{min-height:80px;resize:vertical}
   font-size:12px;
   font-weight:bold;
 }
+
 .actions{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
   margin-top:12px;
 }
+
 .msg{
   text-align:center;
   font-weight:bold;
   margin:10px 0;
 }
+
 .ok{color:#16a34a}
 .err{color:#dc2626}
+
 @media(max-width:700px){
-  .top,.cardTop{flex-direction:column}
+  .top,.cardTop,.cardInfo{flex-direction:column}
   .actions button{width:100%}
 }
 </style>
@@ -162,9 +240,12 @@ textarea{min-height:80px;resize:vertical}
     <h2 id="formTitle">Yeni İşletme / Site Ekle</h2>
 
     <input type="hidden" id="siteId">
+    <input type="hidden" id="logo">
+    <input type="hidden" id="cover">
+    <input type="hidden" id="gallery">
 
     <div class="grid">
-      <input id="title" placeholder="İşletme Başlığı">
+      <input id="title" placeholder="İşletme / Site Başlığı">
       <input id="url" placeholder="Site Linki https://...">
       <select id="category">
         <option>Genel</option>
@@ -195,26 +276,38 @@ textarea{min-height:80px;resize:vertical}
     <br><br>
 
     <div class="grid">
-      <input id="logo" placeholder="Logo URL">
-      <input id="cover" placeholder="Kapak Görseli URL">
-      <input id="gallery" placeholder="Galeri URL'leri virgülle">
-      <input id="seoTitle" placeholder="SEO Başlık">
-      <input id="seoDesc" placeholder="SEO Açıklama">
+      <div class="uploadBox">
+        <h3>Logo Yükle</h3>
+        <input type="file" id="logoFile" accept="image/*" onchange="uploadSingle('logoFile','logo','logoPreview')">
+        <div id="logoPreview" class="preview"></div>
+      </div>
+
+      <div class="uploadBox">
+        <h3>Kapak Görseli Yükle</h3>
+        <input type="file" id="coverFile" accept="image/*" onchange="uploadSingle('coverFile','cover','coverPreview')">
+        <div id="coverPreview" class="preview"></div>
+      </div>
+
+      <div class="uploadBox">
+        <h3>Galeri Yükle</h3>
+        <input type="file" id="galleryFiles" accept="image/*" multiple onchange="uploadMultiple('galleryFiles','gallery','galleryPreview')">
+        <div id="galleryPreview" class="preview"></div>
+      </div>
     </div>
 
     <br>
 
     <div class="grid">
+      <input id="seoTitle" placeholder="SEO Başlık">
+      <input id="seoDesc" placeholder="SEO Açıklama">
       <select id="approved">
         <option value="true">Onaylı</option>
         <option value="false">Onay Bekliyor</option>
       </select>
-
       <select id="sponsored">
         <option value="false">Organik</option>
         <option value="true">Sponsorlu</option>
       </select>
-
       <input id="sponsorBudget" type="number" placeholder="Reklam Bütçesi">
       <input id="cpc" type="number" placeholder="Tıklama Başı Maliyet">
       <input id="dailyLimit" type="number" placeholder="Günlük Limit">
@@ -248,7 +341,77 @@ function msg(text,type="ok"){
   const el=document.getElementById("message");
   el.className="msg " + type;
   el.innerText=text;
-  setTimeout(()=>el.innerText="",3000);
+  setTimeout(()=>el.innerText="",4000);
+}
+
+async function uploadSingle(inputId, hiddenId, previewId){
+  const input=document.getElementById(inputId);
+  const file=input.files[0];
+  if(!file) return;
+
+  const formData=new FormData();
+  formData.append("file",file);
+
+  try{
+    msg("Görsel yükleniyor...");
+    const res=await fetch(`${API}/api/upload`,{
+      method:"POST",
+      body:formData
+    });
+    const data=await res.json();
+
+    if(data.success){
+      document.getElementById(hiddenId).value=data.url;
+      showPreview(previewId,[data.url]);
+      msg("Görsel yüklendi.");
+    }else{
+      msg(data.message || "Görsel yüklenemedi.","err");
+    }
+  }catch(err){
+    console.log(err);
+    msg("Görsel yüklenirken hata oluştu.","err");
+  }
+}
+
+async function uploadMultiple(inputId, hiddenId, previewId){
+  const input=document.getElementById(inputId);
+  const files=input.files;
+  if(!files || files.length===0) return;
+
+  const formData=new FormData();
+  Array.from(files).forEach(file=>formData.append("files",file));
+
+  try{
+    msg("Galeri yükleniyor...");
+    const res=await fetch(`${API}/api/upload/multiple`,{
+      method:"POST",
+      body:formData
+    });
+    const data=await res.json();
+
+    if(data.success){
+      const old=val(hiddenId) ? val(hiddenId).split(",").filter(Boolean) : [];
+      const all=[...old,...data.urls];
+      document.getElementById(hiddenId).value=all.join(",");
+      showPreview(previewId,all);
+      msg("Galeri yüklendi.");
+    }else{
+      msg(data.message || "Galeri yüklenemedi.","err");
+    }
+  }catch(err){
+    console.log(err);
+    msg("Galeri yüklenirken hata oluştu.","err");
+  }
+}
+
+function showPreview(previewId,urls){
+  const box=document.getElementById(previewId);
+  box.innerHTML="";
+  urls.filter(Boolean).forEach(url=>{
+    const img=document.createElement("img");
+    img.src=url;
+    box.appendChild(img);
+  });
 }
 
 async function loadStats(){
@@ -289,21 +452,24 @@ async function loadSites(){
       const district=site.district || site.ilce || "";
       const approved=site.approved !== false;
       const sponsored=site.sponsored || site.isSponsored || site.sponsorActive;
+      const logo=site.logo || site.logoUrl || site.image || "";
 
       const div=document.createElement("div");
       div.className="card";
       div.innerHTML=`
         <div class="cardTop">
-          <div>
-            <h3>${escapeHtml(title)}</h3>
-            <div class="url">${escapeHtml(url)}</div>
+          <div class="cardInfo">
+            <img class="cardLogo" src="${escapeHtml(logo || 'https://via.placeholder.com/120x120.png?text=NS')}" onerror="this.src='https://via.placeholder.com/120x120.png?text=NS'">
+            <div>
+              <h3>${escapeHtml(title)}</h3>
+              <div class="url">${escapeHtml(url)}</div>
+              <p class="desc">${escapeHtml(desc)}</p>
+            </div>
           </div>
           <div>
             <b>${approved ? "Onaylı" : "Bekliyor"}</b>
           </div>
         </div>
-
-        <p class="desc">${escapeHtml(desc)}</p>
 
         <div class="badges">
           <span class="badge">${escapeHtml(site.category || "Genel")}</span>
@@ -356,6 +522,7 @@ function getPayload(){
     negativeKeywords: val("negativeKeywords"),
     logo: val("logo"),
     logoUrl: val("logo"),
+    image: val("logo"),
     cover: val("cover"),
     coverUrl: val("cover"),
     gallery: val("gallery").split(",").map(x=>x.trim()).filter(Boolean),
@@ -377,8 +544,8 @@ async function saveSite(){
   const id=val("siteId");
   const payload=getPayload();
 
-  if(!payload.title || !payload.url){
-    msg("Başlık ve site linki zorunlu.","err");
+  if(!payload.title){
+    msg("Başlık zorunlu.","err");
     return;
   }
 
@@ -420,18 +587,24 @@ function editSite(site){
   set("description",site.description || site.desc || "");
   set("keywords",Array.isArray(site.keywords) ? site.keywords.join(", ") : site.keywords || "");
   set("negativeKeywords",Array.isArray(site.negativeKeywords) ? site.negativeKeywords.join(", ") : site.negativeKeywords || "");
-  set("logo",site.logo || site.logoUrl || "");
+  set("logo",site.logo || site.logoUrl || site.image || "");
   set("cover",site.cover || site.coverUrl || "");
-  set("gallery",Array.isArray(site.gallery) ? site.gallery.join(", ") : "");
+  set("gallery",Array.isArray(site.gallery) ? site.gallery.join(",") : "");
   set("seoTitle",site.seoTitle || "");
   set("seoDesc",site.seoDesc || "");
   set("approved",site.approved === false ? "false" : "true");
+
   const sp=site.sponsored || site.isSponsored || site.sponsorActive;
   set("sponsored",sp ? "true" : "false");
   set("sponsorBudget",site.sponsorBudget || 0);
   set("cpc",site.cpc || site.sponsorCpc || 0);
   set("dailyLimit",site.dailyLimit || 0);
   set("aiScore",site.aiScore || 10);
+
+  showPreview("logoPreview",[val("logo")]);
+  showPreview("coverPreview",[val("cover")]);
+  showPreview("galleryPreview",val("gallery").split(",").filter(Boolean));
+
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -488,6 +661,9 @@ function clearForm(){
   set("approved","true");
   set("sponsored","false");
   set("aiScore","10");
+  document.getElementById("logoPreview").innerHTML="";
+  document.getElementById("coverPreview").innerHTML="";
+  document.getElementById("galleryPreview").innerHTML="";
 }
 
 function val(id){return document.getElementById(id).value}
