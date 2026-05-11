@@ -2,10 +2,14 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
+<meta name="google-site-verification" content="DNd0Vp0WeAutlDii6xeZptxHS4Qd9tAFqbJdODmTmlo" />
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NetSearch - AI Destekli Arama Motoru</title>
+
 <meta name="description" content="NetSearch ile işletmeleri, web sitelerini ve yapay zeka destekli arama sonuçlarını keşfedin.">
+
 <meta name="robots" content="index, follow">
 
 <style>
@@ -322,45 +326,6 @@ footer a{
   text-decoration:none;
   margin-right:14px;
 }
-
-@media(max-width:700px){
-  .top{
-    padding:14px;
-  }
-
-  .logo{
-    font-size:54px;
-  }
-
-  .searchRow{
-    padding-left:14px;
-  }
-
-  .searchRow input{
-    font-size:16px;
-  }
-
-  .searchRow button{
-    padding:11px 16px;
-  }
-
-  .buttons{
-    gap:8px;
-  }
-
-  .buttons button{
-    width:100%;
-  }
-
-  .actions a,.actions button{
-    width:100%;
-    text-align:center;
-  }
-
-  footer{
-    padding-bottom:24px;
-  }
-}
 </style>
 </head>
 
@@ -372,36 +337,58 @@ footer a{
 </div>
 
 <section class="hero" id="hero">
-  <div class="logo"><span class="net">Net</span><span class="search">Search</span></div>
+
+  <div class="logo">
+    <span class="net">Net</span><span class="search">Search</span>
+  </div>
 
   <div class="searchBox">
+
     <div class="searchRow">
       <span class="searchIcon">🔎</span>
+
       <input id="searchInput" type="text" placeholder="NetSearch'te ara..." autocomplete="off">
+
       <button onclick="searchSites()">Ara</button>
+
       <button class="voice" onclick="voiceSearch()">🎙️</button>
     </div>
 
     <div id="suggestions" class="suggestions"></div>
+
   </div>
 
   <div class="buttons">
-    <button onclick="quickSearch('Eskişehir kombi servisi')">NetSearch'te Ara</button>
-    <button onclick="quickSearch('Yakınımdaki işletmeler')">Kendimi Şanslı Hissediyorum</button>
+    <button onclick="quickSearch('Eskişehir kombi servisi')">
+      NetSearch'te Ara
+    </button>
+
+    <button onclick="quickSearch('Yakınımdaki işletmeler')">
+      Kendimi Şanslı Hissediyorum
+    </button>
   </div>
+
 </section>
 
 <main id="resultsWrap" class="resultsWrap">
+
   <div id="aiBox" class="aiBox">
     <h2>NetSearch AI Özeti</h2>
     <p id="aiText"></p>
   </div>
 
-  <h2 id="sponsoredTitle" class="sectionTitle" style="display:none;">Sponsorlu Sonuçlar</h2>
+  <h2 id="sponsoredTitle" class="sectionTitle" style="display:none;">
+    Sponsorlu Sonuçlar
+  </h2>
+
   <div id="sponsoredResults" class="resultGrid"></div>
 
-  <h2 id="organicTitle" class="sectionTitle" style="display:none;">Arama Sonuçları</h2>
+  <h2 id="organicTitle" class="sectionTitle" style="display:none;">
+    Arama Sonuçları
+  </h2>
+
   <div id="results" class="resultGrid"></div>
+
 </main>
 
 <footer>
@@ -411,231 +398,217 @@ footer a{
     <a href="/login.html">İşletme</a>
     <a href="#">Arama nasıl çalışır?</a>
   </div>
-  <div>© 2026 NetSearch</div>
+
+  <div>
+    © 2026 NetSearch
+  </div>
 </footer>
 
 <script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.unregister()));
-}
-if (window.caches) {
-  caches.keys().then(names => names.forEach(name => caches.delete(name)));
-}
-
-const input = document.getElementById("searchInput");
-const suggestionsBox = document.getElementById("suggestions");
-
-input.addEventListener("keydown", function(e){
-  if(e.key === "Enter") searchSites();
-});
-
-input.addEventListener("input", async function(){
-  const q = input.value.trim();
-
-  if(q.length < 2){
-    suggestionsBox.style.display = "none";
-    return;
-  }
-
-  try{
-    const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}&t=${Date.now()}`, {cache:"no-store"});
-    const data = await res.json();
-
-    suggestionsBox.innerHTML = "";
-
-    if(!Array.isArray(data) || data.length === 0){
-      suggestionsBox.style.display = "none";
-      return;
-    }
-
-    data.slice(0,8).forEach(item=>{
-      const div = document.createElement("div");
-      div.innerText = item;
-      div.onclick = () => {
-        input.value = item;
-        suggestionsBox.style.display = "none";
-        searchSites();
-      };
-      suggestionsBox.appendChild(div);
-    });
-
-    suggestionsBox.style.display = "block";
-  }catch{
-    suggestionsBox.style.display = "none";
-  }
-});
-
-function quickSearch(text){
-  input.value = text;
-  searchSites();
-}
-
-function voiceSearch(){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if(!SpeechRecognition){
-    alert("Tarayıcın sesli aramayı desteklemiyor.");
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "tr-TR";
-  recognition.start();
-
-  recognition.onresult = function(event){
-    input.value = event.results[0][0].transcript;
-    searchSites();
-  };
-}
-
 async function searchSites(){
-  const q = input.value.trim();
 
-  document.getElementById("hero").style.justifyContent = "flex-start";
-  document.getElementById("hero").style.paddingTop = "35px";
-  document.getElementById("hero").style.paddingBottom = "30px";
+  const q = document.getElementById("searchInput").value.trim();
+
   document.getElementById("resultsWrap").style.display = "block";
 
-  document.getElementById("sponsoredTitle").style.display = "none";
-  document.getElementById("organicTitle").style.display = "none";
-  document.getElementById("sponsoredResults").innerHTML = "";
-  document.getElementById("results").innerHTML = `<div class="loading">Aranıyor...</div>`;
+  document.getElementById("results").innerHTML =
+  `<div class="loading">Aranıyor...</div>`;
 
   try{
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&t=${Date.now()}`, {cache:"no-store"});
+
+    const res = await fetch(
+      "/api/search?q=" + encodeURIComponent(q)
+    );
+
     const data = await res.json();
 
     const sponsored = data.sponsored || [];
     const organic = data.results || [];
 
     document.getElementById("results").innerHTML = "";
+    document.getElementById("sponsoredResults").innerHTML = "";
 
     document.getElementById("aiText").innerText =
-      data.aiAnswer || `"${q || "Tüm sonuçlar"}" için en alakalı sonuçlar listelendi.`;
+    data.aiAnswer ||
+    `"${q}" için en alakalı sonuçlar listelendi.`;
 
     if(sponsored.length){
       document.getElementById("sponsoredTitle").style.display = "block";
+
       sponsored.forEach(site=>{
-        document.getElementById("sponsoredResults").appendChild(createCard(site,true));
+        document.getElementById("sponsoredResults")
+        .appendChild(createCard(site,true));
       });
+
+    }else{
+      document.getElementById("sponsoredTitle").style.display = "none";
     }
 
     if(organic.length){
+
       document.getElementById("organicTitle").style.display = "block";
+
       organic.forEach(site=>{
-        document.getElementById("results").appendChild(createCard(site,false));
+        document.getElementById("results")
+        .appendChild(createCard(site,false));
       });
-    }
 
-    if(!sponsored.length && !organic.length){
-      document.getElementById("results").innerHTML =
-        `<div class="empty">Sonuç bulunamadı. Daha farklı kelimelerle tekrar ara.</div>`;
-    }
+    }else{
 
-    document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
+      document.getElementById("organicTitle").style.display = "none";
+
+      if(!sponsored.length){
+        document.getElementById("results").innerHTML =
+        `<div class="empty">Sonuç bulunamadı.</div>`;
+      }
+    }
 
   }catch(err){
+
     document.getElementById("results").innerHTML =
-      `<div class="empty" style="color:#dc2626;">Sunucu bağlantı hatası.</div>`;
+    `<div class="empty">Sunucu bağlantı hatası.</div>`;
   }
 }
 
 function createCard(site,isSponsored){
-  const card = document.createElement("div");
-  card.className = "card" + (isSponsored ? " sponsored" : "");
 
-  const id = site._id || "";
-  const title = site.title || site.name || site.businessName || "İsimsiz Site";
-  const url = site.url || site.website || site.link || "#";
-  const desc = site.description || site.desc || site.address || "Açıklama bulunamadı.";
+  const div = document.createElement("div");
 
-  const logo = site.logo || site.logoUrl || site.image || "";
-  const hasLogo = logo && String(logo).trim() !== "";
+  div.className = "card" + (isSponsored ? " sponsored" : "");
 
-  const category = site.category || "Genel";
-  const city = site.city || site.sehir || "";
-  const district = site.district || site.ilce || "";
-  const phone = site.phone || site.telefon || "";
-  const whatsapp = site.whatsapp || phone;
-  const verified = site.verified || site.isVerified;
-  const score = site.searchScore || site.finalScore || site.aiScore || "";
-  const firstLetter = title.trim().charAt(0).toUpperCase() || "N";
+  const title =
+    site.title ||
+    site.name ||
+    site.businessName ||
+    "İsimsiz";
 
-  card.innerHTML = `
+  const url =
+    site.url ||
+    site.website ||
+    "#";
+
+  const desc =
+    site.description ||
+    site.desc ||
+    "Açıklama yok";
+
+  const logo =
+    site.logo ||
+    site.logoUrl ||
+    "";
+
+  const verified =
+    site.verified ||
+    site.isVerified;
+
+  div.innerHTML = `
+
     <div class="cardTop">
+
       ${
-        hasLogo
-        ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(firstLetter)}</div>'">`
-        : `<div class="logoLetter">${escapeHtml(firstLetter)}</div>`
+        logo
+        ?
+        `<img class="siteLogo" src="${logo}">`
+        :
+        `<div class="logoLetter">
+          ${title.charAt(0).toUpperCase()}
+        </div>`
       }
 
       <div>
-        <div class="title">${escapeHtml(title)}</div>
-        <div class="url">${escapeHtml(url)}</div>
+
+        <div class="title">
+          ${title}
+        </div>
+
+        <div class="url">
+          ${url}
+        </div>
+
       </div>
+
     </div>
 
-    <p class="desc">${escapeHtml(desc)}</p>
+    <div class="desc">
+      ${desc}
+    </div>
 
     <div class="badges">
-      ${isSponsored ? `<span class="badge ad">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
-      ${verified ? `<span class="badge verified">✅ Doğrulanmış</span>` : ""}
-      <span class="badge">${escapeHtml(category)}</span>
-      ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
-      ${score ? `<span class="badge">AI Skor: ${Math.round(score)}</span>` : ""}
-      ${phone ? `<span class="badge">📞 ${escapeHtml(phone)}</span>` : ""}
+
+      ${
+        isSponsored
+        ?
+        `<span class="badge ad">Sponsorlu</span>`
+        :
+        `<span class="badge">Organik Sonuç</span>`
+      }
+
+      ${
+        verified
+        ?
+        `<span class="badge verified">
+          ✅ Doğrulanmış
+        </span>`
+        :
+        ""
+      }
+
     </div>
 
     <div class="actions">
-      <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
-      <a class="detail" href="/site.html?id=${id}">Detay Sayfası</a>
-      ${phone ? `<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
-      ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
-      <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
+
+      <a class="visit" href="${url}" target="_blank">
+        Siteye Git
+      </a>
+
+      <a class="detail" href="/site.html?id=${site._id}">
+        Detay Sayfası
+      </a>
+
     </div>
   `;
 
-  return card;
+  return div;
 }
 
-async function trackClick(id){
-  if(!id) return;
-  try{
-    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {method:"POST",cache:"no-store"});
-  }catch{}
+function quickSearch(text){
+  document.getElementById("searchInput").value = text;
+  searchSites();
 }
 
-function shareSite(title,url){
-  if(navigator.share){
-    navigator.share({title,url});
-  }else{
-    navigator.clipboard.writeText(url);
-    alert("Link kopyalandı.");
+function voiceSearch(){
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition){
+    alert("Tarayıcı desteklemiyor");
+    return;
   }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = "tr-TR";
+
+  recognition.start();
+
+  recognition.onresult = function(event){
+
+    document.getElementById("searchInput").value =
+    event.results[0][0].transcript;
+
+    searchSites();
+  };
 }
 
-function cleanPhone(phone){
-  let p = String(phone || "").replace(/\D/g,"");
-  if(p.startsWith("0")) p = "90" + p.slice(1);
-  if(!p.startsWith("90") && p.length === 10) p = "90" + p;
-  return p;
-}
+document.getElementById("searchInput")
+.addEventListener("keydown", function(e){
 
-function escapeHtml(text){
-  return String(text || "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-function escapeAttr(text){
-  return String(text || "")
-    .replaceAll("\\","\\\\")
-    .replaceAll("'","\\'")
-    .replaceAll('"',"&quot;");
-}
+  if(e.key === "Enter"){
+    searchSites();
+  }
+});
 </script>
 
 </body>
