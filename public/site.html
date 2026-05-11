@@ -3,259 +3,583 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>NetSearch İşletme Detayı</title>
+<meta name="description" content="NetSearch işletme detay sayfası">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#020817;color:white;min-height:100vh}
-.header{background:#0f172a;border-bottom:1px solid #1e293b;padding:20px 35px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:30px;font-weight:bold;color:#38bdf8}
-.btn{border:none;border-radius:999px;padding:13px 20px;cursor:pointer;color:white;text-decoration:none;display:inline-block;font-size:15px}
-.blue{background:#2563eb}.green{background:#16a34a}.orange{background:#ea580c}.purple{background:#9333ea}
-.container{max-width:1100px;margin:45px auto;padding:0 20px}
-.card,.reviewsBox{background:#0f172a;border:1px solid #1e293b;border-radius:28px;overflow:hidden;margin-bottom:30px}
-.cover{width:100%;max-height:360px;object-fit:cover;background:#111827}
-.content{padding:30px}
-.top{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
-.logoBox{width:90px;height:90px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#0ea5e9,#2563eb);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:bold}
-.logoBox img{width:100%;height:100%;object-fit:cover}
-h1{color:#38bdf8;font-size:36px;margin-bottom:10px}
-.badge{display:inline-block;background:#1e293b;color:#38bdf8;padding:8px 14px;border-radius:999px;margin:5px 6px 5px 0;font-size:14px}
-.desc{color:#e5e7eb;line-height:1.8;margin-top:22px;font-size:17px}
-.info{margin-top:18px;color:#cbd5e1;line-height:1.8}
-.info b{color:white}
-.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.callBtn{background:#16a34a;font-weight:bold}
-.whatsappBtn{background:#22c55e;font-weight:bold}
-.siteBtn{background:#2563eb;font-weight:bold}
-.webBtn{background:#9333ea}
-.reviewBtn{background:#ea580c}
-.reviewsBox{padding:28px}
-.reviewsBox h2{color:#38bdf8;margin-bottom:18px}
-.review{background:#111827;border:1px solid #1e293b;border-radius:18px;padding:16px;margin-bottom:14px}
-.review b{color:#38bdf8}
-.review p{color:#cbd5e1;margin-top:8px;line-height:1.6}
-input,textarea,select{width:100%;padding:14px;background:#020817;border:1px solid #334155;border-radius:14px;color:white;margin-bottom:12px}
-textarea{min-height:100px}
-.empty{color:#94a3b8}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#eef6ff;
+  color:#0f172a;
+}
+
+header{
+  background:linear-gradient(135deg,#e0f2fe,#ffffff,#dbeafe);
+  padding:22px;
+  border-bottom:1px solid #dbeafe;
+}
+
+.top{
+  max-width:1100px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:30px;
+  font-weight:900;
+}
+
+.logo span{color:#0284c7}
+
+.top a{
+  text-decoration:none;
+  background:white;
+  border:1px solid #bae6fd;
+  color:#0369a1;
+  padding:10px 16px;
+  border-radius:999px;
+  font-weight:bold;
+}
+
+.wrap{
+  max-width:1100px;
+  margin:auto;
+  padding:24px 16px 60px;
+}
+
+.hero{
+  background:white;
+  border:1px solid #dbeafe;
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(15,23,42,.08);
+}
+
+.cover{
+  width:100%;
+  height:300px;
+  object-fit:cover;
+  background:#dbeafe;
+}
+
+.content{
+  padding:24px;
+}
+
+.head{
+  display:flex;
+  gap:18px;
+  align-items:center;
+}
+
+.siteLogo{
+  width:90px;
+  height:90px;
+  object-fit:cover;
+  border-radius:24px;
+  background:#e0f2fe;
+  border:1px solid #dbeafe;
+}
+
+h1{
+  margin:0 0 8px;
+  color:#0284c7;
+  font-size:34px;
+}
+
+.url{
+  color:#16a34a;
+  font-weight:bold;
+  word-break:break-all;
+}
+
+.desc{
+  margin:22px 0;
+  color:#334155;
+  line-height:1.7;
+  font-size:17px;
+}
+
+.badges{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:18px 0;
+}
+
+.badge{
+  background:#f8fbff;
+  border:1px solid #bae6fd;
+  color:#0369a1;
+  border-radius:999px;
+  padding:9px 13px;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.verified{
+  background:#dcfce7;
+  border-color:#86efac;
+  color:#166534;
+}
+
+.sponsored{
+  background:#fef3c7;
+  border-color:#f59e0b;
+  color:#92400e;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+
+.actions a,
+.actions button{
+  border:0;
+  text-decoration:none;
+  color:white;
+  padding:13px 18px;
+  border-radius:999px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.visit{background:#16a34a}
+.call{background:#0f766e}
+.whatsapp{background:#22c55e}
+.share{background:#9333ea}
+.back{background:#2563eb}
+
+.section{
+  background:white;
+  border:1px solid #dbeafe;
+  border-radius:24px;
+  padding:22px;
+  margin-top:22px;
+  box-shadow:0 16px 45px rgba(15,23,42,.06);
+}
+
+.section h2{
+  margin-top:0;
+  color:#0284c7;
+}
+
+.slider{
+  position:relative;
+  overflow:hidden;
+  border-radius:22px;
+  background:#f1f5f9;
+}
+
+.slider img{
+  width:100%;
+  height:380px;
+  object-fit:cover;
+  display:block;
+}
+
+.sliderBtns{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:12px;
+}
+
+.sliderBtns button{
+  border:0;
+  background:#2563eb;
+  color:white;
+  border-radius:12px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.mapBox{
+  background:#f8fbff;
+  border:1px dashed #bae6fd;
+  border-radius:20px;
+  padding:22px;
+  color:#475569;
+  line-height:1.6;
+}
+
+.commentForm{
+  display:grid;
+  gap:10px;
+}
+
+input,textarea,select{
+  width:100%;
+  padding:13px;
+  border:1px solid #cbd5e1;
+  border-radius:12px;
+  font-size:15px;
+}
+
+textarea{
+  min-height:90px;
+}
+
+.commentForm button{
+  background:#16a34a;
+  color:white;
+  border:0;
+  padding:13px;
+  border-radius:12px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.comment{
+  border-top:1px solid #e2e8f0;
+  padding:14px 0;
+}
+
+.comment b{color:#0284c7}
+
+.related{
+  display:grid;
+  gap:14px;
+}
+
+.relatedCard{
+  border:1px solid #dbeafe;
+  background:#f8fbff;
+  border-radius:18px;
+  padding:14px;
+}
+
+.relatedCard h3{
+  margin:0 0 6px;
+  color:#0284c7;
+}
+
+.empty{
+  text-align:center;
+  color:#64748b;
+  padding:50px;
+  font-size:20px;
+}
+
 @media(max-width:700px){
-.header{flex-direction:column;gap:14px}
-h1{font-size:28px}
-.content{padding:22px}
-.actions .btn{width:100%;text-align:center}
+  .top,.head{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .cover{
+    height:200px;
+  }
+
+  h1{
+    font-size:26px;
+  }
+
+  .slider img{
+    height:220px;
+  }
+
+  .actions a,
+  .actions button{
+    width:100%;
+    text-align:center;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <div class="logo">NetSearch AI</div>
-  <a class="btn blue" href="/">Ana Sayfa</a>
-</div>
-
-<div class="container">
-
-  <div id="siteDetail"></div>
-
-  <div class="reviewsBox">
-    <h2>Yorumlar</h2>
-    <div id="reviews"></div>
-
-    <h2 style="margin-top:28px">Yorum Yap</h2>
-    <input id="userName" placeholder="Adınız">
-    <select id="rating">
-      <option value="5">5 Yıldız</option>
-      <option value="4">4 Yıldız</option>
-      <option value="3">3 Yıldız</option>
-      <option value="2">2 Yıldız</option>
-      <option value="1">1 Yıldız</option>
-    </select>
-    <textarea id="comment" placeholder="Yorumunuzu yazın"></textarea>
-    <button class="btn orange" onclick="addReview()">Yorumu Gönder</button>
+<header>
+  <div class="top">
+    <div class="logo">Net<span>Search</span></div>
+    <a href="/index.html">Ana Sayfa</a>
   </div>
+</header>
 
+<div class="wrap" id="app">
+  <div class="empty">Yükleniyor...</div>
 </div>
 
 <script>
+const API = "";
 const params = new URLSearchParams(window.location.search);
 const siteId = params.get("id");
 
 let currentSite = null;
+let galleryImages = [];
+let currentSlide = 0;
 
-function letterLogo(title){
-  return (title || "N").charAt(0).toUpperCase();
-}
-
-function cleanPhone(phone){
-  return (phone || "").replaceAll(" ","").replaceAll("-","").replaceAll("(","").replaceAll(")","");
-}
-
-function whatsappLink(phone){
-  const cleaned = cleanPhone(phone);
-  if(!cleaned) return "#";
-
-  let number = cleaned;
-
-  if(number.startsWith("0")){
-    number = "90" + number.substring(1);
-  }
-
-  if(!number.startsWith("90")){
-    number = "90" + number;
-  }
-
-  return `https://wa.me/${number}`;
-}
-
-function googleSearch(title){
-  const q = encodeURIComponent(title);
-  window.open(`https://www.google.com/search?q=${q}`, "_blank");
-}
-
-async function registerClick(){
-  try{
-    await fetch(`/api/sites/${siteId}/click`, { method:"POST" });
-  }catch(err){}
-}
+window.onload = loadSite;
 
 async function loadSite(){
-  const box = document.getElementById("siteDetail");
+  const app = document.getElementById("app");
 
   if(!siteId){
-    box.innerHTML = `<div class="card"><div class="content">Site bulunamadı.</div></div>`;
+    app.innerHTML = `<div class="empty">Site ID bulunamadı.</div>`;
     return;
   }
 
-  const res = await fetch(`/api/sites/${siteId}`);
-  const site = await res.json();
+  try{
+    const res = await fetch(`${API}/api/sites/${siteId}?t=${Date.now()}`, {cache:"no-store"});
+    const data = await res.json();
 
-  currentSite = site;
+    currentSite = data.site || data;
 
-  if(site.message){
-    box.innerHTML = `<div class="card"><div class="content">Site bulunamadı.</div></div>`;
-    return;
+    if(!currentSite || !currentSite._id){
+      app.innerHTML = `<div class="empty">İşletme bulunamadı.</div>`;
+      return;
+    }
+
+    renderSite(data.comments || []);
+    loadRelated();
+
+  }catch(err){
+    console.log(err);
+    app.innerHTML = `<div class="empty">Sunucuya bağlanılamadı.</div>`;
   }
+}
 
-  document.title = `${site.title} - NetSearch AI`;
+function renderSite(comments){
+  const app = document.getElementById("app");
 
-  fetch(`/api/sites/${siteId}/view`, { method:"POST" });
+  const title = currentSite.title || currentSite.name || currentSite.businessName || "İsimsiz İşletme";
+  const url = currentSite.url || currentSite.website || currentSite.link || "#";
+  const desc = currentSite.description || currentSite.desc || currentSite.address || "Açıklama bulunamadı.";
+  const logo = currentSite.logo || currentSite.logoUrl || currentSite.image || "https://via.placeholder.com/120x120.png?text=NS";
+  const cover = currentSite.cover || currentSite.coverUrl || currentSite.image || "https://via.placeholder.com/1200x400.png?text=NetSearch";
+  const category = currentSite.category || "Genel";
+  const city = currentSite.city || currentSite.sehir || "";
+  const district = currentSite.district || currentSite.ilce || "";
+  const phone = currentSite.phone || currentSite.telefon || "";
+  const whatsapp = currentSite.whatsapp || phone;
+  const verified = currentSite.verified || currentSite.isVerified;
+  const sponsored = currentSite.sponsored || currentSite.isSponsored || currentSite.sponsorActive;
 
-  const phone = cleanPhone(site.phone);
-  const hasPhone = phone.length > 0;
-  const hasCover = site.imageUrl && site.imageUrl.trim() !== "";
+  galleryImages = Array.isArray(currentSite.gallery) && currentSite.gallery.length
+    ? currentSite.gallery
+    : [cover];
 
-  box.innerHTML = `
-    <div class="card">
+  document.title = `${title} - NetSearch`;
+  document.querySelector("meta[name='description']").setAttribute("content", desc);
 
-      ${hasCover ? `<img class="cover" src="${site.imageUrl}" onerror="this.style.display='none'">` : ""}
+  app.innerHTML = `
+    <div class="hero">
+      <img class="cover" src="${escapeHtml(cover)}" onerror="this.src='https://via.placeholder.com/1200x400.png?text=NetSearch'">
 
       <div class="content">
-
-        <div class="top">
-          <div class="logoBox">
-            ${site.logoUrl ? `<img src="${site.logoUrl}" onerror="this.parentElement.innerHTML='${letterLogo(site.title)}'">` : letterLogo(site.title)}
-          </div>
-
+        <div class="head">
+          <img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.src='https://via.placeholder.com/120x120.png?text=NS'">
           <div>
-            <h1>${site.title || ""}</h1>
-
-            <span class="badge">${site.category || "Genel"}</span>
-            ${site.city ? `<span class="badge">📍 ${site.city}</span>` : ""}
-            ${site.district ? `<span class="badge">${site.district}</span>` : ""}
-            ${hasPhone ? `<span class="badge">📞 ${site.phone}</span>` : ""}
+            <h1>${escapeHtml(title)}</h1>
+            <div class="url">${escapeHtml(url)}</div>
           </div>
         </div>
 
-        <div class="desc">
-          ${site.desc || ""}
-        </div>
+        <p class="desc">${escapeHtml(desc)}</p>
 
-        <div class="info">
-          ${site.address ? `<p><b>Adres:</b> ${site.address}</p>` : ""}
-          ${site.keywords ? `<p><b>Hizmetler:</b> ${site.keywords}</p>` : ""}
+        <div class="badges">
+          ${verified ? `<span class="badge verified">✅ Doğrulanmış İşletme</span>` : `<span class="badge">Doğrulama Bekliyor</span>`}
+          ${sponsored ? `<span class="badge sponsored">⭐ Sponsorlu İşletme</span>` : `<span class="badge">Organik Sonuç</span>`}
+          <span class="badge">${escapeHtml(category)}</span>
+          ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
+          ${currentSite.rating ? `<span class="badge">⭐ ${currentSite.rating}</span>` : ""}
         </div>
 
         <div class="actions">
-
-          ${hasPhone ? `
-            <a class="btn callBtn" href="tel:${phone}" onclick="registerClick()">
-              📞 Hemen Ara
-            </a>
-          ` : ""}
-
-          ${hasPhone ? `
-            <a class="btn whatsappBtn" href="${whatsappLink(site.phone)}" target="_blank" onclick="registerClick()">
-              WhatsApp
-            </a>
-          ` : ""}
-
-          <a class="btn siteBtn" href="${site.url}" target="_blank" onclick="registerClick()">
-            Siteye Git
-          </a>
-
-          <button class="btn webBtn" onclick="googleSearch('${(site.title || "").replace(/'/g,"\\'")}')">
-            Web’de Ara
-          </button>
-
-          <a class="btn reviewBtn" href="#reviews">
-            Yorumlar
-          </a>
-
+          <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick()">Siteye Git</a>
+          ${phone ? `<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
+          ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
+          <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
+          <a class="back" href="/index.html">Aramaya Dön</a>
         </div>
-
       </div>
+    </div>
+
+    <div class="section">
+      <h2>Galeri</h2>
+      <div class="slider">
+        <img id="sliderImg" src="${escapeHtml(galleryImages[0])}" onerror="this.src='https://via.placeholder.com/1200x400.png?text=NetSearch'">
+      </div>
+      <div class="sliderBtns">
+        <button onclick="prevSlide()">Önceki</button>
+        <button onclick="nextSlide()">Sonraki</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Konum / Harita</h2>
+      <div class="mapBox">
+        <b>Adres:</b><br>
+        ${escapeHtml(currentSite.address || "Adres bilgisi eklenmemiş.")}
+        <br><br>
+        Harita entegrasyonu sonraki aşamada Google Maps veya OpenStreetMap ile bağlanacak.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Yorum Yap</h2>
+      <div class="commentForm">
+        <input id="commentName" placeholder="Adınız">
+        <select id="commentRating">
+          <option value="5">5 Yıldız</option>
+          <option value="4">4 Yıldız</option>
+          <option value="3">3 Yıldız</option>
+          <option value="2">2 Yıldız</option>
+          <option value="1">1 Yıldız</option>
+        </select>
+        <textarea id="commentText" placeholder="Yorumunuz"></textarea>
+        <button onclick="sendComment()">Yorum Gönder</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Yorumlar</h2>
+      <div id="comments">${renderComments(comments)}</div>
+    </div>
+
+    <div class="section">
+      <h2>Benzer İşletmeler</h2>
+      <div id="related" class="related">Yükleniyor...</div>
     </div>
   `;
 }
 
-async function loadReviews(){
-  const box = document.getElementById("reviews");
-  const res = await fetch(`/api/sites/${siteId}/reviews`);
-  const reviews = await res.json();
-
-  if(!reviews || reviews.length === 0){
-    box.innerHTML = `<p class="empty">Henüz yorum yok.</p>`;
-    return;
+function renderComments(comments){
+  if(!comments || comments.length === 0){
+    return `<p>Henüz yorum yok.</p>`;
   }
 
-  box.innerHTML = reviews.map(r => `
-    <div class="review">
-      <b>${r.userName || "Ziyaretçi"}</b> ⭐ ${r.rating || 5}
-      <p>${r.comment}</p>
+  return comments.map(c => `
+    <div class="comment">
+      <b>${escapeHtml(c.name || "Misafir")}</b> - ⭐ ${c.rating || 5}
+      <p>${escapeHtml(c.comment || "")}</p>
     </div>
   `).join("");
 }
 
-async function addReview(){
-  const userName = document.getElementById("userName").value.trim();
-  const rating = document.getElementById("rating").value;
-  const comment = document.getElementById("comment").value.trim();
+function nextSlide(){
+  if(!galleryImages.length) return;
+  currentSlide = (currentSlide + 1) % galleryImages.length;
+  document.getElementById("sliderImg").src = galleryImages[currentSlide];
+}
+
+function prevSlide(){
+  if(!galleryImages.length) return;
+  currentSlide = (currentSlide - 1 + galleryImages.length) % galleryImages.length;
+  document.getElementById("sliderImg").src = galleryImages[currentSlide];
+}
+
+async function sendComment(){
+  const name = document.getElementById("commentName").value.trim();
+  const rating = document.getElementById("commentRating").value;
+  const comment = document.getElementById("commentText").value.trim();
 
   if(!comment){
-    alert("Yorum boş olamaz.");
+    alert("Yorum yaz.");
     return;
   }
 
-  const res = await fetch(`/api/sites/${siteId}/reviews`, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      userName:userName || "Ziyaretçi",
-      rating,
-      comment
-    })
-  });
+  try{
+    const res = await fetch(`${API}/api/comments`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        siteId,
+        name,
+        rating,
+        comment
+      })
+    });
 
-  const data = await res.json();
-  alert(data.message || "Yorum eklendi.");
+    const data = await res.json();
 
-  document.getElementById("comment").value = "";
-  loadReviews();
+    if(data.success){
+      alert("Yorum eklendi.");
+      loadSite();
+    }else{
+      alert("Yorum eklenemedi.");
+    }
+  }catch{
+    alert("Sunucuya bağlanılamadı.");
+  }
 }
 
-loadSite();
-loadReviews();
+async function loadRelated(){
+  try{
+    const q = currentSite.category || currentSite.city || "";
+    const res = await fetch(`${API}/api/sites?q=${encodeURIComponent(q)}&t=${Date.now()}`, {cache:"no-store"});
+    const sites = await res.json();
+
+    const related = sites.filter(s => s._id !== currentSite._id).slice(0,4);
+    const box = document.getElementById("related");
+
+    if(!related.length){
+      box.innerHTML = "Benzer işletme bulunamadı.";
+      return;
+    }
+
+    box.innerHTML = related.map(site => `
+      <div class="relatedCard">
+        <h3>${escapeHtml(site.title || site.name || site.businessName || "İsimsiz")}</h3>
+        <p>${escapeHtml(site.description || site.desc || "")}</p>
+        <a href="/site.html?id=${site._id}">Detay Sayfası</a>
+      </div>
+    `).join("");
+
+  }catch{
+    document.getElementById("related").innerHTML = "Benzer işletmeler alınamadı.";
+  }
+}
+
+async function trackClick(){
+  try{
+    await fetch(`${API}/api/sites/${siteId}/click`, {method:"POST"});
+  }catch{}
+}
+
+function shareSite(title,url){
+  if(navigator.share){
+    navigator.share({title,url});
+  }else{
+    navigator.clipboard.writeText(url);
+    alert("Link kopyalandı.");
+  }
+}
+
+function cleanPhone(phone){
+  let p = String(phone || "").replace(/\D/g,"");
+  if(p.startsWith("0")) p = "90" + p.slice(1);
+  if(!p.startsWith("90") && p.length === 10) p = "90" + p;
+  return p;
+}
+
+function escapeHtml(text){
+  return String(text || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function escapeAttr(text){
+  return String(text || "")
+    .replaceAll("\\","\\\\")
+    .replaceAll("'","\\'")
+    .replaceAll('"',"&quot;");
+}
 </script>
 
 </body>
