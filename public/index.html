@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="google-site-verification" content="DNd0Vp0WeAutlDii6xeZptxHS4Qd9tAFqbJdODmTmlo" />
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NetSearch - AI Destekli Arama Motoru</title>
-
 <meta name="description" content="NetSearch ile işletmeleri, web sitelerini ve yapay zeka destekli arama sonuçlarını keşfedin.">
-
 <meta name="robots" content="index, follow">
+
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f172a">
 
 <style>
 *{box-sizing:border-box}
@@ -48,18 +50,33 @@ body{
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  padding:40px 16px 80px;
+  padding:35px 16px 80px;
 }
 
-.logo{
-  font-size:76px;
-  font-weight:900;
-  letter-spacing:-3px;
+.logoArea{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
   margin-bottom:28px;
 }
 
-.logo .net{color:#111827}
-.logo .search{color:#0ea5e9}
+.mainLogo{
+  width:140px;
+  height:140px;
+  object-fit:cover;
+  border-radius:32px;
+  box-shadow:0 18px 45px rgba(14,165,233,.28);
+}
+
+.brandText{
+  font-size:64px;
+  font-weight:900;
+  letter-spacing:-3px;
+}
+
+.brandText .net{color:#111827}
+.brandText .search{color:#0ea5e9}
 
 .searchBox{
   width:min(720px,92vw);
@@ -326,6 +343,50 @@ footer a{
   text-decoration:none;
   margin-right:14px;
 }
+
+@media(max-width:700px){
+  .top{
+    padding:14px;
+  }
+
+  .mainLogo{
+    width:110px;
+    height:110px;
+  }
+
+  .brandText{
+    font-size:48px;
+  }
+
+  .searchRow{
+    padding-left:14px;
+  }
+
+  .searchRow input{
+    font-size:16px;
+  }
+
+  .searchRow button{
+    padding:11px 16px;
+  }
+
+  .buttons{
+    gap:8px;
+  }
+
+  .buttons button{
+    width:100%;
+  }
+
+  .actions a,.actions button{
+    width:100%;
+    text-align:center;
+  }
+
+  footer{
+    padding-bottom:24px;
+  }
+}
 </style>
 </head>
 
@@ -338,34 +399,27 @@ footer a{
 
 <section class="hero" id="hero">
 
-  <div class="logo">
-    <span class="net">Net</span><span class="search">Search</span>
+  <div class="logoArea">
+    <img src="/icon-512.png" class="mainLogo" alt="NetSearch Logo">
+    <div class="brandText">
+      <span class="net">Net</span><span class="search">Search</span>
+    </div>
   </div>
 
   <div class="searchBox">
-
     <div class="searchRow">
       <span class="searchIcon">🔎</span>
-
       <input id="searchInput" type="text" placeholder="NetSearch'te ara..." autocomplete="off">
-
       <button onclick="searchSites()">Ara</button>
-
       <button class="voice" onclick="voiceSearch()">🎙️</button>
     </div>
 
     <div id="suggestions" class="suggestions"></div>
-
   </div>
 
   <div class="buttons">
-    <button onclick="quickSearch('Eskişehir kombi servisi')">
-      NetSearch'te Ara
-    </button>
-
-    <button onclick="quickSearch('Yakınımdaki işletmeler')">
-      Kendimi Şanslı Hissediyorum
-    </button>
+    <button onclick="quickSearch('Eskişehir kombi servisi')">NetSearch'te Ara</button>
+    <button onclick="quickSearch('Yakınımdaki işletmeler')">Kendimi Şanslı Hissediyorum</button>
   </div>
 
 </section>
@@ -377,16 +431,10 @@ footer a{
     <p id="aiText"></p>
   </div>
 
-  <h2 id="sponsoredTitle" class="sectionTitle" style="display:none;">
-    Sponsorlu Sonuçlar
-  </h2>
-
+  <h2 id="sponsoredTitle" class="sectionTitle" style="display:none;">Sponsorlu Sonuçlar</h2>
   <div id="sponsoredResults" class="resultGrid"></div>
 
-  <h2 id="organicTitle" class="sectionTitle" style="display:none;">
-    Arama Sonuçları
-  </h2>
-
+  <h2 id="organicTitle" class="sectionTitle" style="display:none;">Arama Sonuçları</h2>
   <div id="results" class="resultGrid"></div>
 
 </main>
@@ -399,27 +447,23 @@ footer a{
     <a href="#">Arama nasıl çalışır?</a>
   </div>
 
-  <div>
-    © 2026 NetSearch
-  </div>
+  <div>© 2026 NetSearch</div>
 </footer>
 
 <script>
 async function searchSites(){
-
   const q = document.getElementById("searchInput").value.trim();
 
-  document.getElementById("resultsWrap").style.display = "block";
+  document.getElementById("hero").style.justifyContent = "flex-start";
+  document.getElementById("hero").style.paddingTop = "35px";
+  document.getElementById("hero").style.paddingBottom = "30px";
 
-  document.getElementById("results").innerHTML =
-  `<div class="loading">Aranıyor...</div>`;
+  document.getElementById("resultsWrap").style.display = "block";
+  document.getElementById("results").innerHTML = `<div class="loading">Aranıyor...</div>`;
+  document.getElementById("sponsoredResults").innerHTML = "";
 
   try{
-
-    const res = await fetch(
-      "/api/search?q=" + encodeURIComponent(q)
-    );
-
+    const res = await fetch("/api/search?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {cache:"no-store"});
     const data = await res.json();
 
     const sponsored = data.sponsored || [];
@@ -429,146 +473,98 @@ async function searchSites(){
     document.getElementById("sponsoredResults").innerHTML = "";
 
     document.getElementById("aiText").innerText =
-    data.aiAnswer ||
-    `"${q}" için en alakalı sonuçlar listelendi.`;
+      data.aiAnswer || `"${q || "Tüm sonuçlar"}" için en alakalı sonuçlar listelendi.`;
 
     if(sponsored.length){
       document.getElementById("sponsoredTitle").style.display = "block";
-
       sponsored.forEach(site=>{
-        document.getElementById("sponsoredResults")
-        .appendChild(createCard(site,true));
+        document.getElementById("sponsoredResults").appendChild(createCard(site,true));
       });
-
     }else{
       document.getElementById("sponsoredTitle").style.display = "none";
     }
 
     if(organic.length){
-
       document.getElementById("organicTitle").style.display = "block";
-
       organic.forEach(site=>{
-        document.getElementById("results")
-        .appendChild(createCard(site,false));
+        document.getElementById("results").appendChild(createCard(site,false));
       });
-
     }else{
-
       document.getElementById("organicTitle").style.display = "none";
 
       if(!sponsored.length){
         document.getElementById("results").innerHTML =
-        `<div class="empty">Sonuç bulunamadı.</div>`;
+          `<div class="empty">Sonuç bulunamadı.</div>`;
       }
     }
 
-  }catch(err){
+    document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
 
+  }catch(err){
     document.getElementById("results").innerHTML =
-    `<div class="empty">Sunucu bağlantı hatası.</div>`;
+      `<div class="empty">Sunucu bağlantı hatası.</div>`;
   }
 }
 
 function createCard(site,isSponsored){
-
   const div = document.createElement("div");
-
   div.className = "card" + (isSponsored ? " sponsored" : "");
 
-  const title =
-    site.title ||
-    site.name ||
-    site.businessName ||
-    "İsimsiz";
-
-  const url =
-    site.url ||
-    site.website ||
-    "#";
-
-  const desc =
-    site.description ||
-    site.desc ||
-    "Açıklama yok";
-
-  const logo =
-    site.logo ||
-    site.logoUrl ||
-    "";
-
-  const verified =
-    site.verified ||
-    site.isVerified;
+  const id = site._id || "";
+  const title = site.title || site.name || site.businessName || "İsimsiz";
+  const url = site.url || site.website || site.link || "#";
+  const desc = site.description || site.desc || "Açıklama yok";
+  const logo = site.logo || site.logoUrl || "";
+  const verified = site.verified || site.isVerified;
+  const category = site.category || "Genel";
+  const city = site.city || site.sehir || "";
+  const district = site.district || site.ilce || "";
+  const phone = site.phone || site.telefon || "";
+  const whatsapp = site.whatsapp || phone;
+  const score = site.searchScore || site.finalScore || site.aiScore || "";
 
   div.innerHTML = `
-
     <div class="cardTop">
-
       ${
         logo
-        ?
-        `<img class="siteLogo" src="${logo}">`
-        :
-        `<div class="logoLetter">
-          ${title.charAt(0).toUpperCase()}
-        </div>`
+        ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(title.charAt(0).toUpperCase())}</div>'">`
+        : `<div class="logoLetter">${escapeHtml(title.charAt(0).toUpperCase())}</div>`
       }
 
       <div>
-
-        <div class="title">
-          ${title}
-        </div>
-
-        <div class="url">
-          ${url}
-        </div>
-
+        <div class="title">${escapeHtml(title)}</div>
+        <div class="url">${escapeHtml(url)}</div>
       </div>
-
     </div>
 
-    <div class="desc">
-      ${desc}
-    </div>
+    <div class="desc">${escapeHtml(desc)}</div>
 
     <div class="badges">
-
-      ${
-        isSponsored
-        ?
-        `<span class="badge ad">Sponsorlu</span>`
-        :
-        `<span class="badge">Organik Sonuç</span>`
-      }
-
-      ${
-        verified
-        ?
-        `<span class="badge verified">
-          ✅ Doğrulanmış
-        </span>`
-        :
-        ""
-      }
-
+      ${isSponsored ? `<span class="badge ad">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
+      ${verified ? `<span class="badge verified">✅ Doğrulanmış</span>` : ""}
+      <span class="badge">${escapeHtml(category)}</span>
+      ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
+      ${score ? `<span class="badge">AI Skor: ${Math.round(score)}</span>` : ""}
+      ${phone ? `<span class="badge">📞 ${escapeHtml(phone)}</span>` : ""}
     </div>
 
     <div class="actions">
-
-      <a class="visit" href="${url}" target="_blank">
-        Siteye Git
-      </a>
-
-      <a class="detail" href="/site.html?id=${site._id}">
-        Detay Sayfası
-      </a>
-
+      <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
+      <a class="detail" href="/site.html?id=${id}">Detay Sayfası</a>
+      ${phone ? `<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
+      ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
+      <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
     </div>
   `;
 
   return div;
+}
+
+async function trackClick(id){
+  if(!id) return;
+  try{
+    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {method:"POST",cache:"no-store"});
+  }catch{}
 }
 
 function quickSearch(text){
@@ -577,10 +573,7 @@ function quickSearch(text){
 }
 
 function voiceSearch(){
-
-  const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if(!SpeechRecognition){
     alert("Tarayıcı desteklemiyor");
@@ -588,26 +581,49 @@ function voiceSearch(){
   }
 
   const recognition = new SpeechRecognition();
-
   recognition.lang = "tr-TR";
-
   recognition.start();
 
   recognition.onresult = function(event){
-
-    document.getElementById("searchInput").value =
-    event.results[0][0].transcript;
-
+    document.getElementById("searchInput").value = event.results[0][0].transcript;
     searchSites();
   };
 }
 
-document.getElementById("searchInput")
-.addEventListener("keydown", function(e){
-
-  if(e.key === "Enter"){
-    searchSites();
+function shareSite(title,url){
+  if(navigator.share){
+    navigator.share({title,url});
+  }else{
+    navigator.clipboard.writeText(url);
+    alert("Link kopyalandı.");
   }
+}
+
+function cleanPhone(phone){
+  let p = String(phone || "").replace(/\D/g,"");
+  if(p.startsWith("0")) p = "90" + p.slice(1);
+  if(!p.startsWith("90") && p.length === 10) p = "90" + p;
+  return p;
+}
+
+function escapeHtml(text){
+  return String(text || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function escapeAttr(text){
+  return String(text || "")
+    .replaceAll("\\","\\\\")
+    .replaceAll("'","\\'")
+    .replaceAll('"',"&quot;");
+}
+
+document.getElementById("searchInput").addEventListener("keydown", function(e){
+  if(e.key === "Enter") searchSites();
 });
 </script>
 
