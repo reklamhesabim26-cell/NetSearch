@@ -6,6 +6,7 @@
 
 <title>NetSearch İşletme Detayı</title>
 <meta name="description" content="NetSearch işletme detay sayfası">
+<meta name="robots" content="index, follow">
 
 <style>
 *{box-sizing:border-box}
@@ -17,10 +18,10 @@ header{background:linear-gradient(135deg,#e0f2fe,#ffffff,#dbeafe);padding:22px;b
 .top a{text-decoration:none;background:white;border:1px solid #bae6fd;color:#0369a1;padding:10px 16px;border-radius:999px;font-weight:bold}
 .wrap{max-width:1100px;margin:auto;padding:24px 16px 60px}
 .hero{background:white;border:1px solid #dbeafe;border-radius:28px;overflow:hidden;box-shadow:0 20px 60px rgba(15,23,42,.08)}
-.cover{width:100%;height:300px;object-fit:cover;background:#dbeafe}
+.cover{width:100%;height:310px;object-fit:cover;background:#dbeafe}
 .content{padding:24px}
 .head{display:flex;gap:18px;align-items:center}
-.siteLogo{width:90px;height:90px;object-fit:cover;border-radius:24px;background:#e0f2fe;border:1px solid #dbeafe}
+.siteLogo{width:94px;height:94px;object-fit:cover;border-radius:24px;background:#e0f2fe;border:1px solid #dbeafe}
 h1{margin:0 0 8px;color:#0284c7;font-size:34px}
 .url{color:#16a34a;font-weight:bold;word-break:break-all}
 .desc{margin:22px 0;color:#334155;line-height:1.7;font-size:17px}
@@ -34,7 +35,7 @@ h1{margin:0 0 8px;color:#0284c7;font-size:34px}
 .section{background:white;border:1px solid #dbeafe;border-radius:24px;padding:22px;margin-top:22px;box-shadow:0 16px 45px rgba(15,23,42,.06)}
 .section h2{margin-top:0;color:#0284c7}
 .slider{position:relative;overflow:hidden;border-radius:22px;background:#f1f5f9}
-.slider img{width:100%;height:380px;object-fit:cover;display:block}
+.slider img{width:100%;height:390px;object-fit:cover;display:block}
 .sliderBtns{display:flex;justify-content:center;gap:10px;margin-top:12px}
 .sliderBtns button{border:0;background:#2563eb;color:white;border-radius:12px;padding:10px 16px;cursor:pointer;font-weight:bold}
 .mapBox{background:#f8fbff;border:1px dashed #bae6fd;border-radius:20px;padding:22px;color:#475569;line-height:1.6}
@@ -48,13 +49,30 @@ textarea{min-height:90px}
 .related{display:grid;gap:14px}
 .relatedCard{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:14px}
 .relatedCard h3{margin:0 0 6px;color:#0284c7}
+.relatedCard a{font-weight:bold;color:#2563eb;text-decoration:none}
 .empty{text-align:center;color:#64748b;padding:50px;font-size:20px}
+
+.seoLinks{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.seoLinks a{
+  background:#f8fbff;
+  border:1px solid #bae6fd;
+  color:#0369a1;
+  text-decoration:none;
+  font-weight:bold;
+  padding:9px 13px;
+  border-radius:999px;
+}
 
 @media(max-width:700px){
   .top,.head{flex-direction:column;align-items:flex-start}
-  .cover{height:200px}
+  .cover{height:210px}
   h1{font-size:26px}
-  .slider img{height:220px}
+  .slider img{height:230px}
   .mapFrame{height:260px}
   .actions a,.actions button{width:100%;text-align:center}
 }
@@ -77,13 +95,32 @@ textarea{min-height:90px}
 <script>
 const API = "";
 const params = new URLSearchParams(window.location.search);
-const siteId = params.get("id");
+const siteId = params.get("id") || getSlugFromUrl();
 
 let currentSite = null;
 let galleryImages = [];
 let currentSlide = 0;
 
 window.onload = loadSite;
+
+function getSlugFromUrl(){
+  const parts = window.location.pathname.split("/").filter(Boolean);
+  if(parts[0] === "site" && parts[1]) return parts[1];
+  return "";
+}
+
+function slugify(text){
+  return String(text || "")
+    .toLowerCase()
+    .replaceAll("ı","i")
+    .replaceAll("ğ","g")
+    .replaceAll("ü","u")
+    .replaceAll("ş","s")
+    .replaceAll("ö","o")
+    .replaceAll("ç","c")
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"");
+}
 
 async function loadSite(){
   const app = document.getElementById("app");
@@ -94,8 +131,8 @@ async function loadSite(){
   }
 
   try{
-    const res = await fetch(`${API}/api/sites/${siteId}?t=${Date.now()}`, {cache:"no-store"});
-    const data = await res.json();
+    let res = await fetch(`${API}/api/sites/${siteId}?t=${Date.now()}`, {cache:"no-store"});
+    let data = await res.json();
 
     currentSite = data.site || data;
 
@@ -130,12 +167,39 @@ function renderSite(comments){
   const verified = currentSite.verified || currentSite.isVerified;
   const sponsored = currentSite.sponsored || currentSite.isSponsored || currentSite.sponsorActive;
 
+  const latitude = Number(currentSite.latitude || 0);
+  const longitude = Number(currentSite.longitude || 0);
+
   const mapQuery = encodeURIComponent(`${address} ${city} ${district}`);
+  const slug = slugify(title);
+  const citySlug = slugify(city);
+  const catSlug = slugify(category);
+  const seoCityCat = citySlug && catSlug ? `/${citySlug}-${catSlug}` : "/";
 
   galleryImages = Array.isArray(currentSite.gallery) && currentSite.gallery.length ? currentSite.gallery : [cover];
 
-  document.title = `${title} - NetSearch`;
+  document.title = `${title} - ${city} ${category} | NetSearch`;
   document.querySelector("meta[name='description']").setAttribute("content", desc);
+
+  const schema = {
+    "@context":"https://schema.org",
+    "@type":"LocalBusiness",
+    "name": title,
+    "url": url,
+    "description": desc,
+    "telephone": phone,
+    "address": address,
+    "image": cover
+  };
+
+  let oldSchema = document.getElementById("schemaJson");
+  if(oldSchema) oldSchema.remove();
+
+  const schemaScript = document.createElement("script");
+  schemaScript.type = "application/ld+json";
+  schemaScript.id = "schemaJson";
+  schemaScript.textContent = JSON.stringify(schema);
+  document.head.appendChild(schemaScript);
 
   app.innerHTML = `
     <div class="hero">
@@ -164,7 +228,7 @@ function renderSite(comments){
           <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick()">Siteye Git</a>
           ${phone ? `<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
           ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
-          <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
+          <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(window.location.href)}')">Paylaş</button>
           <a class="back" href="/index.html">Aramaya Dön</a>
         </div>
       </div>
@@ -188,17 +252,39 @@ function renderSite(comments){
         ${escapeHtml(address || "Adres bilgisi eklenmemiş.")}
         <br><br>
 
-        ${address || city ? `
-          <iframe
-            class="mapFrame"
-            loading="lazy"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=26.0,39.0,31.0,41.5&layer=mapnik&marker=39.7767,30.5206">
-          </iframe>
-          <br><br>
-          <a target="_blank" href="https://www.google.com/maps/search/${mapQuery}">
-            Google Haritalar’da Aç
-          </a>
-        ` : `Harita için adres bilgisi eklenmemiş.`}
+        ${
+          latitude && longitude
+          ? `<iframe
+              class="mapFrame"
+              loading="lazy"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=${longitude-0.03},${latitude-0.03},${longitude+0.03},${latitude+0.03}&layer=mapnik&marker=${latitude},${longitude}">
+            </iframe>
+            <br><br>
+            <a target="_blank" href="https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}">
+              Google Haritalar’da Aç
+            </a>`
+          : address || city
+          ? `<iframe
+              class="mapFrame"
+              loading="lazy"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=26.0,39.0,31.0,41.5&layer=mapnik&marker=39.7767,30.5206">
+            </iframe>
+            <br><br>
+            <a target="_blank" href="https://www.google.com/maps/search/${mapQuery}">
+              Google Haritalar’da Aç
+            </a>`
+          : `Harita için adres bilgisi eklenmemiş.`
+        }
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>SEO Arama Bağlantıları</h2>
+      <div class="seoLinks">
+        <a href="/site.html?id=${currentSite._id}">${escapeHtml(title)}</a>
+        <a href="${seoCityCat}">${escapeHtml(city || "Şehir")} ${escapeHtml(category)}</a>
+        <a href="/index.html?q=${encodeURIComponent(title)}">${escapeHtml(title)} ara</a>
+        <a href="/index.html?q=${encodeURIComponent(city + " " + category)}">${escapeHtml(city)} ${escapeHtml(category)}</a>
       </div>
     </div>
 
@@ -269,7 +355,7 @@ async function sendComment(){
     const res = await fetch(`${API}/api/comments`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({siteId,name,rating,comment})
+      body:JSON.stringify({siteId:currentSite._id,name,rating,comment})
     });
 
     const data = await res.json();
@@ -314,7 +400,7 @@ async function loadRelated(){
 
 async function trackClick(){
   try{
-    await fetch(`${API}/api/sites/${siteId}/click`, {method:"POST"});
+    await fetch(`${API}/api/sites/${currentSite._id}/click`, {method:"POST"});
   }catch{}
 }
 
