@@ -3,265 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NetSearch İşletme Paneli</title>
+<title>NetSearch Reklam Paneli</title>
+
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f172a">
 
 <style>
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#eef6ff;
-  color:#0f172a;
-}
-
-header{
-  background:linear-gradient(135deg,#0ea5e9,#2563eb);
-  color:white;
-  padding:24px;
-}
-
-.wrap{
-  max-width:1200px;
-  margin:auto;
-  padding:20px;
-}
-
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-
-h1{margin:0}
-a,button{
-  border:0;
-  border-radius:12px;
-  padding:11px 15px;
-  font-weight:bold;
-  cursor:pointer;
-  text-decoration:none;
-}
-
-.home{background:white;color:#2563eb}
-
-.panel{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:22px;
-  padding:18px;
-  margin:20px 0;
-  box-shadow:0 12px 35px rgba(15,23,42,.07);
-}
-
-.panel h2{
-  margin-top:0;
-  color:#0284c7;
-}
-
-.loginBox{
-  max-width:480px;
-  margin:40px auto;
-}
-
-input,textarea,select{
-  width:100%;
-  padding:14px;
-  border:1px solid #cbd5e1;
-  border-radius:12px;
-  font-size:15px;
-  outline:none;
-  margin-bottom:12px;
-}
-
-textarea{
-  min-height:90px;
-  resize:vertical;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px;
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:14px;
-}
-
-.stat{
-  background:#f8fbff;
-  border:1px solid #dbeafe;
-  border-radius:18px;
-  padding:18px;
-}
-
-.stat b{
-  display:block;
-  font-size:30px;
-  color:#0284c7;
-}
-
-.card{
-  background:#f8fbff;
-  border:1px solid #dbeafe;
-  border-radius:20px;
-  padding:18px;
-  margin-bottom:16px;
-}
-
-.badges{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin:12px 0;
-}
-
-.badge{
-  background:white;
-  border:1px solid #bae6fd;
-  color:#0369a1;
-  border-radius:999px;
-  padding:8px 12px;
-  font-size:13px;
-  font-weight:bold;
-}
-
-.verified{
-  background:#dcfce7;
-  border-color:#86efac;
-  color:#166534;
-}
-
-.ad{
-  background:#fef3c7;
-  border-color:#f59e0b;
-  color:#92400e;
-}
-
+body{margin:0;font-family:Arial,sans-serif;background:#f4f9ff;color:#0f172a}
+header{background:white;border-bottom:1px solid #dbeafe;padding:16px 22px}
+.top{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:900}
+.logo img{width:44px;height:44px;border-radius:12px}
+.logo span{color:#0ea5e9}
+.nav{display:flex;gap:10px;flex-wrap:wrap}
+button,a{border:0;border-radius:12px;padding:11px 15px;font-weight:bold;cursor:pointer;text-decoration:none}
+.home{background:#e0f2fe;color:#0369a1}
+.logout{background:#0f172a;color:white}
+.wrap{max-width:1200px;margin:auto;padding:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.panel{background:white;border:1px solid #dbeafe;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px rgba(15,23,42,.06)}
+.panel h2{margin:0 0 14px;color:#0284c7}
+input,textarea,select{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:13px;font-size:15px;outline:none;background:white;margin-bottom:11px}
+textarea{min-height:86px;resize:vertical}
+label{font-weight:bold;color:#334155;font-size:14px}
+.stat{background:#f8fbff;border:1px solid #dbeafe;border-radius:18px;padding:17px}
+.stat b{font-size:28px;color:#0284c7;display:block}
 .save{background:#16a34a;color:white}
-.adbtn{background:#f59e0b;color:white}
 .stop{background:#dc2626;color:white}
+.start{background:#f59e0b;color:white}
 .pay{background:#2563eb;color:white}
-.gray{background:#64748b;color:white}
-
-.msg{
-  text-align:center;
-  font-weight:bold;
-  margin:12px;
-}
-
-.ok{color:#16a34a}
-.err{color:#dc2626}
-
-.gallery{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-}
-
-.gallery img{
-  width:120px;
-  height:90px;
-  object-fit:cover;
-  border-radius:14px;
-  border:1px solid #dbeafe;
-}
-
-@media(max-width:700px){
-  .top{flex-direction:column;align-items:flex-start}
-  button,a{width:100%;text-align:center}
-}
+.msg{text-align:center;font-weight:bold;margin:12px}
+.ok{color:#16a34a}.err{color:#dc2626}
+.adPreview{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:16px}
+.adTitle{color:#1d4ed8;font-size:20px;font-weight:900;margin-bottom:4px}
+.adUrl{color:#16a34a;font-size:14px;font-weight:bold;word-break:break-all}
+.adDesc{color:#334155;line-height:1.5;margin-top:8px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.badge{background:white;border:1px solid #bae6fd;color:#0369a1;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:bold}
+.adbadge{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.empty{text-align:center;color:#64748b;padding:35px}
+@media(max-width:700px){.top{flex-direction:column;align-items:flex-start}.nav button,.nav a,button{width:100%}}
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="wrap top">
-    <h1>NetSearch İşletme Paneli</h1>
-    <a class="home" href="/index.html">Ana Sayfa</a>
+  <div class="top">
+    <div class="logo">
+      <img src="/icon-192.png" onerror="this.style.display='none'">
+      Net<span>Search Ads</span>
+    </div>
+    <div class="nav">
+      <a class="home" href="/index.html">Ana Sayfa</a>
+      <button class="logout" onclick="logout()">Çıkış Yap</button>
+    </div>
   </div>
 </header>
 
 <div class="wrap">
 
-  <div id="loginPanel" class="panel loginBox">
-    <h2>İşletme Paneline Giriş</h2>
-    <input id="email" placeholder="İşletme e-posta adresi">
-    <button class="pay" onclick="loginOwner()">Panele Gir</button>
-    <div id="loginMsg" class="msg"></div>
+  <div class="panel">
+    <h2>Reklam Performansı</h2>
+    <div class="grid">
+      <div class="stat"><b id="totalSites">0</b>İşletme</div>
+      <div class="stat"><b id="totalViews">0</b>Görüntüleme</div>
+      <div class="stat"><b id="totalClicks">0</b>Tıklama</div>
+      <div class="stat"><b id="avgCtr">0%</b>CTR</div>
+      <div class="stat"><b id="totalBudget">0₺</b>Bakiye</div>
+    </div>
   </div>
 
-  <div id="dashboard" style="display:none;">
-
-    <div class="panel">
-      <h2>Reklam Performansı</h2>
-      <div class="stats">
-        <div class="stat"><b id="totalSites">0</b>İşletme</div>
-        <div class="stat"><b id="totalViews">0</b>Görüntüleme</div>
-        <div class="stat"><b id="totalClicks">0</b>Tıklama</div>
-        <div class="stat"><b id="avgCtr">0%</b>CTR</div>
-        <div class="stat"><b id="totalBudget">0₺</b>Reklam Bakiyesi</div>
+  <div class="panel">
+    <h2>Bakiye Yükleme</h2>
+    <div class="grid">
+      <div>
+        <label>Yüklenecek Tutar</label>
+        <input id="paymentAmount" type="number" placeholder="Örn: 500">
       </div>
-    </div>
-
-    <div class="panel">
-      <h2>Ödeme / Bakiye Yükleme</h2>
-      <p>Demo ödeme sistemi: gerçek ödeme entegrasyonu eklenince burada kart/iyzico/PayTR ödeme ekranı çalışacak.</p>
-      <div class="grid">
-        <input id="paymentAmount" type="number" placeholder="Yüklenecek bakiye ₺">
+      <div>
+        <label>Ödeme Yöntemi</label>
         <select id="paymentMethod">
-          <option>Kredi Kartı</option>
+          <option>PayTR / Kredi Kartı</option>
           <option>Havale / EFT</option>
-          <option>PayTR</option>
-          <option>iyzico</option>
         </select>
       </div>
-      <button class="pay" onclick="fakePayment()">Bakiye Yükle</button>
-      <div id="paymentMsg" class="msg"></div>
     </div>
+    <button class="pay" onclick="fakePayment()">Bakiye Yükle</button>
+    <div id="paymentMsg" class="msg"></div>
+  </div>
 
-    <div class="panel">
-      <h2>İşletmelerim ve Reklamlarım</h2>
-      <div id="siteList"></div>
-    </div>
-
+  <div class="panel">
+    <h2>İşletmelerim ve Reklamlarım</h2>
+    <div id="siteList">Yükleniyor...</div>
   </div>
 
 </div>
 
 <script>
-const API = "";
-let ownerEmail = "";
+let currentUser = null;
 let ownerSites = [];
 
-function loginOwner(){
-  ownerEmail = document.getElementById("email").value.trim();
+window.onload = function(){
+  const userRaw = localStorage.getItem("user");
+  const token = localStorage.getItem("token");
 
-  if(!ownerEmail){
-    document.getElementById("loginMsg").innerHTML = "<span class='err'>E-posta gir.</span>";
+  if(!token || !userRaw){
+    window.location.href = "/login.html";
     return;
   }
 
-  localStorage.setItem("ownerEmail", ownerEmail);
-  document.getElementById("loginPanel").style.display = "none";
-  document.getElementById("dashboard").style.display = "block";
-  loadOwnerSites();
-}
-
-window.onload = function(){
-  const saved = localStorage.getItem("ownerEmail");
-  if(saved){
-    document.getElementById("email").value = saved;
-    ownerEmail = saved;
-    document.getElementById("loginPanel").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-    loadOwnerSites();
+  try{
+    currentUser = JSON.parse(userRaw);
+  }catch{
+    logout();
+    return;
   }
+
+  loadOwnerSites();
+};
+
+function logout(){
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("netsearch_token");
+  localStorage.removeItem("netsearch_user");
+  window.location.href = "/login.html";
 }
 
 async function loadOwnerSites(){
@@ -273,34 +143,30 @@ async function loadOwnerSites(){
     const allSites = await res.json();
 
     ownerSites = allSites.filter(site => {
-      return String(site.ownerEmail || "").toLowerCase() === ownerEmail.toLowerCase();
+      return String(site.ownerEmail || "").toLowerCase() === String(currentUser.email || "").toLowerCase();
     });
 
     renderStats();
     renderSites();
 
-  }catch(err){
-    box.innerHTML = "<div class='msg err'>Sunucuya bağlanılamadı.</div>";
+  }catch{
+    box.innerHTML = "<div class='empty'>Sunucuya bağlanılamadı.</div>";
   }
 }
 
 function renderStats(){
-  let views = 0;
-  let clicks = 0;
-  let budget = 0;
+  let views=0, clicks=0, budget=0;
 
-  ownerSites.forEach(site => {
+  ownerSites.forEach(site=>{
     views += Number(site.views || 0);
     clicks += Number(site.clicks || 0);
     budget += Number(site.sponsorBudget || 0);
   });
 
-  const ctr = views > 0 ? ((clicks / views) * 100).toFixed(1) : 0;
-
   document.getElementById("totalSites").innerText = ownerSites.length;
   document.getElementById("totalViews").innerText = views;
   document.getElementById("totalClicks").innerText = clicks;
-  document.getElementById("avgCtr").innerText = ctr + "%";
+  document.getElementById("avgCtr").innerText = views ? ((clicks/views)*100).toFixed(1) + "%" : "0%";
   document.getElementById("totalBudget").innerText = budget + "₺";
 }
 
@@ -308,76 +174,148 @@ function renderSites(){
   const box = document.getElementById("siteList");
   box.innerHTML = "";
 
-  if(ownerSites.length === 0){
+  if(!ownerSites.length){
     box.innerHTML = `
-      <div class="msg err">
-        Bu e-posta adresine bağlı işletme bulunamadı.
-        Admin panelinden işletmeye ownerEmail ekle.
+      <div class="empty">
+        Bu e-posta adresine bağlı işletme bulunamadı.<br>
+        Admin panelinden işletmeye ownerEmail olarak şu e-postayı ekle:<br>
+        <b>${escapeHtml(currentUser.email || "")}</b>
       </div>
     `;
     return;
   }
 
-  ownerSites.forEach(site => {
+  ownerSites.forEach(site=>{
+    const id = site._id;
     const sponsored = site.sponsored || site.isSponsored || site.sponsorActive;
-    const verified = site.verified || site.isVerified;
-    const gallery = Array.isArray(site.gallery) ? site.gallery : [];
 
     const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <h2>${escapeHtml(site.title || site.name || site.businessName || "İsimsiz İşletme")}</h2>
-      <p>${escapeHtml(site.description || site.desc || "")}</p>
+    div.className = "panel";
 
-      <div class="badges">
-        ${verified ? `<span class="badge verified">Doğrulanmış İşletme</span>` : `<span class="badge">Doğrulama Bekliyor</span>`}
-        ${sponsored ? `<span class="badge ad">Sponsorlu Reklam Aktif</span>` : `<span class="badge">Organik</span>`}
-        <span class="badge">Görüntüleme: ${site.views || 0}</span>
-        <span class="badge">Tıklama: ${site.clicks || 0}</span>
-        <span class="badge">Bütçe: ${site.sponsorBudget || 0}₺</span>
-        <span class="badge">CPC: ${site.cpc || site.sponsorCpc || 0}₺</span>
-      </div>
+    div.innerHTML = `
+      <h2>${escapeHtml(site.title || site.name || "İşletme")}</h2>
 
       <div class="grid">
-        <input id="title-${site._id}" value="${escapeAttr(site.title || site.name || "")}" placeholder="Reklam Başlığı">
-        <input id="url-${site._id}" value="${escapeAttr(site.url || site.website || site.link || "")}" placeholder="Site Linki">
-        <input id="budget-${site._id}" type="number" value="${site.sponsorBudget || 0}" placeholder="Reklam Bütçesi">
-        <input id="cpc-${site._id}" type="number" value="${site.cpc || site.sponsorCpc || 0}" placeholder="Tıklama Başı Maliyet">
+        <div>
+          <label>Başlık 1</label>
+          <input id="h1-${id}" value="${escapeAttr(site.adHeadline1 || site.title || "")}" placeholder="Örn: Eskişehir Kombi Servisi">
+        </div>
+        <div>
+          <label>Başlık 2</label>
+          <input id="h2-${id}" value="${escapeAttr(site.adHeadline2 || "")}" placeholder="Örn: Aynı Gün Servis">
+        </div>
+        <div>
+          <label>Başlık 3</label>
+          <input id="h3-${id}" value="${escapeAttr(site.adHeadline3 || "")}" placeholder="Örn: Hemen Ara">
+        </div>
       </div>
 
-      <textarea id="keywords-${site._id}" placeholder="Anahtar kelimeler">${arrayText(site.keywords || site.tags)}</textarea>
-      <textarea id="negative-${site._id}" placeholder="Negatif anahtar kelimeler">${arrayText(site.negativeKeywords)}</textarea>
+      <label>Açıklama 1</label>
+      <textarea id="d1-${id}" placeholder="Reklam açıklaması 1">${escapeHtml(site.adDescription1 || site.description || "")}</textarea>
 
-      <div class="gallery">
-        ${gallery.map(img => `<img src="${escapeHtml(img)}">`).join("")}
+      <label>Açıklama 2</label>
+      <textarea id="d2-${id}" placeholder="Reklam açıklaması 2">${escapeHtml(site.adDescription2 || "")}</textarea>
+
+      <div class="grid">
+        <div>
+          <label>Hedef Şehirler</label>
+          <input id="cities-${id}" value="${escapeAttr(arrayText(site.targetCities || site.city || site.sehir))}" placeholder="Eskişehir, Ankara">
+        </div>
+        <div>
+          <label>Hedef İlçeler</label>
+          <input id="districts-${id}" value="${escapeAttr(arrayText(site.targetDistricts || site.district || site.ilce))}" placeholder="Tepebaşı, Odunpazarı">
+        </div>
+        <div>
+          <label>Günlük Bütçe</label>
+          <input id="daily-${id}" type="number" value="${site.dailyLimit || 0}" placeholder="100">
+        </div>
+        <div>
+          <label>Tıklama Başı Teklif / CPC</label>
+          <input id="cpc-${id}" type="number" value="${site.cpc || site.sponsorCpc || 0}" placeholder="5">
+        </div>
+      </div>
+
+      <label>Anahtar Kelimeler</label>
+      <textarea id="keywords-${id}" placeholder="kombi servisi, beyaz eşya servisi">${arrayText(site.keywords || site.tags)}</textarea>
+
+      <label>Negatif Anahtar Kelimeler</label>
+      <textarea id="negative-${id}" placeholder="ücretsiz, iş ilanı">${arrayText(site.negativeKeywords)}</textarea>
+
+      <div class="grid">
+        <div>
+          <label>Reklam Bütçesi</label>
+          <input id="budget-${id}" type="number" value="${site.sponsorBudget || 0}">
+        </div>
+        <div>
+          <label>Reklam Durumu</label>
+          <select id="status-${id}">
+            <option value="true" ${sponsored ? "selected" : ""}>Aktif</option>
+            <option value="false" ${!sponsored ? "selected" : ""}>Kapalı</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="adPreview">
+        <div class="badges"><span class="badge adbadge">Reklam Önizleme</span></div>
+        <div class="adTitle" id="previewTitle-${id}">${escapeHtml(site.adHeadline1 || site.title || "")}</div>
+        <div class="adUrl">${escapeHtml(site.url || site.website || "")}</div>
+        <div class="adDesc" id="previewDesc-${id}">${escapeHtml(site.adDescription1 || site.description || "")}</div>
       </div>
 
       <br>
 
-      <button class="save" onclick="saveAd('${site._id}')">Reklam Ayarlarını Kaydet</button>
-      <button class="${sponsored ? "stop" : "adbtn"}" onclick="toggleAd('${site._id}', ${sponsored ? "false" : "true"})">
+      <button class="save" onclick="saveAd('${id}')">Reklamı Kaydet</button>
+      <button class="${sponsored ? "stop" : "start"}" onclick="toggleAd('${id}', ${sponsored ? "false" : "true"})">
         ${sponsored ? "Reklamı Durdur" : "Reklamı Başlat"}
       </button>
     `;
 
     box.appendChild(div);
+
+    ["h1","h2","h3","d1","d2"].forEach(prefix=>{
+      const el = document.getElementById(`${prefix}-${id}`);
+      if(el){
+        el.addEventListener("input",()=>updatePreview(id));
+      }
+    });
   });
+}
+
+function updatePreview(id){
+  const title = [val(`h1-${id}`), val(`h2-${id}`), val(`h3-${id}`)].filter(Boolean).join(" | ");
+  const desc = [val(`d1-${id}`), val(`d2-${id}`)].filter(Boolean).join(" ");
+  document.getElementById(`previewTitle-${id}`).innerText = title || "Reklam Başlığı";
+  document.getElementById(`previewDesc-${id}`).innerText = desc || "Reklam açıklaması";
 }
 
 async function saveAd(id){
   const payload = {
-    title: val(`title-${id}`),
-    name: val(`title-${id}`),
-    businessName: val(`title-${id}`),
-    url: val(`url-${id}`),
-    website: val(`url-${id}`),
-    link: val(`url-${id}`),
-    sponsorBudget: Number(val(`budget-${id}`) || 0),
-    cpc: Number(val(`cpc-${id}`) || 0),
-    sponsorCpc: Number(val(`cpc-${id}`) || 0),
+    adHeadline1: val(`h1-${id}`),
+    adHeadline2: val(`h2-${id}`),
+    adHeadline3: val(`h3-${id}`),
+    adDescription1: val(`d1-${id}`),
+    adDescription2: val(`d2-${id}`),
+
+    title: val(`h1-${id}`),
+    name: val(`h1-${id}`),
+    businessName: val(`h1-${id}`),
+    description: val(`d1-${id}`),
+
+    targetCities: toArray(val(`cities-${id}`)),
+    targetDistricts: toArray(val(`districts-${id}`)),
+
     keywords: val(`keywords-${id}`),
     tags: val(`keywords-${id}`),
-    negativeKeywords: val(`negative-${id}`)
+    negativeKeywords: val(`negative-${id}`),
+
+    dailyLimit: Number(val(`daily-${id}`) || 0),
+    cpc: Number(val(`cpc-${id}`) || 0),
+    sponsorCpc: Number(val(`cpc-${id}`) || 0),
+    sponsorBudget: Number(val(`budget-${id}`) || 0),
+
+    sponsored: val(`status-${id}`) === "true",
+    isSponsored: val(`status-${id}`) === "true",
+    sponsorActive: val(`status-${id}`) === "true"
   };
 
   try{
@@ -390,10 +328,10 @@ async function saveAd(id){
     const data = await res.json();
 
     if(data.success){
-      alert("Reklam ayarları güncellendi.");
+      alert("Reklam ayarları kaydedildi.");
       loadOwnerSites();
     }else{
-      alert("Güncelleme başarısız.");
+      alert("Kaydetme başarısız.");
     }
   }catch{
     alert("Sunucuya bağlanılamadı.");
@@ -402,7 +340,7 @@ async function saveAd(id){
 
 async function toggleAd(id,state){
   try{
-    const res = await fetch(`/api/admin/sites/${id}`,{
+    await fetch(`/api/admin/sites/${id}`,{
       method:"PATCH",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
@@ -412,13 +350,7 @@ async function toggleAd(id,state){
       })
     });
 
-    const data = await res.json();
-
-    if(data.success){
-      loadOwnerSites();
-    }else{
-      alert("Reklam durumu değişmedi.");
-    }
+    loadOwnerSites();
   }catch{
     alert("Sunucuya bağlanılamadı.");
   }
@@ -426,59 +358,48 @@ async function toggleAd(id,state){
 
 async function fakePayment(){
   const amount = Number(document.getElementById("paymentAmount").value || 0);
+  const msg = document.getElementById("paymentMsg");
 
   if(amount <= 0){
-    document.getElementById("paymentMsg").innerHTML = "<span class='err'>Tutar gir.</span>";
+    msg.className = "msg err";
+    msg.innerText = "Tutar gir.";
     return;
   }
 
-  if(ownerSites.length === 0){
-    document.getElementById("paymentMsg").innerHTML = "<span class='err'>Bağlı işletme yok.</span>";
+  if(!ownerSites.length){
+    msg.className = "msg err";
+    msg.innerText = "Bağlı işletme yok.";
     return;
   }
 
-  const firstSite = ownerSites[0];
-  const newBudget = Number(firstSite.sponsorBudget || 0) + amount;
+  const first = ownerSites[0];
+  const newBudget = Number(first.sponsorBudget || 0) + amount;
 
-  try{
-    await fetch(`/api/admin/sites/${firstSite._id}`,{
-      method:"PATCH",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        sponsorBudget: newBudget
-      })
-    });
+  await fetch(`/api/admin/sites/${first._id}`,{
+    method:"PATCH",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({sponsorBudget:newBudget})
+  });
 
-    document.getElementById("paymentMsg").innerHTML = "<span class='ok'>Demo bakiye yüklendi.</span>";
-    document.getElementById("paymentAmount").value = "";
-    loadOwnerSites();
-
-  }catch{
-    document.getElementById("paymentMsg").innerHTML = "<span class='err'>Ödeme işlenemedi.</span>";
-  }
+  msg.className = "msg ok";
+  msg.innerText = "Demo bakiye yüklendi.";
+  document.getElementById("paymentAmount").value = "";
+  loadOwnerSites();
 }
 
 function val(id){return document.getElementById(id).value}
-
-function arrayText(v){
-  if(Array.isArray(v)) return v.join(", ");
-  return v || "";
-}
+function toArray(v){return String(v||"").split(",").map(x=>x.trim()).filter(Boolean)}
+function arrayText(v){return Array.isArray(v) ? v.join(", ") : (v || "")}
 
 function escapeHtml(text){
   return String(text || "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
 
 function escapeAttr(text){
   return String(text || "")
-    .replaceAll("&","&amp;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
 </script>
 
