@@ -9,292 +9,54 @@
 
 <style>
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#eef6ff;
-  color:#0f172a;
-}
-
-header{
-  background:linear-gradient(135deg,#e0f2fe,#ffffff,#dbeafe);
-  padding:22px;
-  border-bottom:1px solid #dbeafe;
-}
-
-.top{
-  max-width:1100px;
-  margin:auto;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.logo{
-  font-size:30px;
-  font-weight:900;
-}
-
+body{margin:0;font-family:Arial,sans-serif;background:#eef6ff;color:#0f172a}
+header{background:linear-gradient(135deg,#e0f2fe,#ffffff,#dbeafe);padding:22px;border-bottom:1px solid #dbeafe}
+.top{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:30px;font-weight:900}
 .logo span{color:#0284c7}
-
-.top a{
-  text-decoration:none;
-  background:white;
-  border:1px solid #bae6fd;
-  color:#0369a1;
-  padding:10px 16px;
-  border-radius:999px;
-  font-weight:bold;
-}
-
-.wrap{
-  max-width:1100px;
-  margin:auto;
-  padding:24px 16px 60px;
-}
-
-.hero{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:28px;
-  overflow:hidden;
-  box-shadow:0 20px 60px rgba(15,23,42,.08);
-}
-
-.cover{
-  width:100%;
-  height:300px;
-  object-fit:cover;
-  background:#dbeafe;
-}
-
-.content{
-  padding:24px;
-}
-
-.head{
-  display:flex;
-  gap:18px;
-  align-items:center;
-}
-
-.siteLogo{
-  width:90px;
-  height:90px;
-  object-fit:cover;
-  border-radius:24px;
-  background:#e0f2fe;
-  border:1px solid #dbeafe;
-}
-
-h1{
-  margin:0 0 8px;
-  color:#0284c7;
-  font-size:34px;
-}
-
-.url{
-  color:#16a34a;
-  font-weight:bold;
-  word-break:break-all;
-}
-
-.desc{
-  margin:22px 0;
-  color:#334155;
-  line-height:1.7;
-  font-size:17px;
-}
-
-.badges{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin:18px 0;
-}
-
-.badge{
-  background:#f8fbff;
-  border:1px solid #bae6fd;
-  color:#0369a1;
-  border-radius:999px;
-  padding:9px 13px;
-  font-weight:bold;
-  font-size:14px;
-}
-
-.verified{
-  background:#dcfce7;
-  border-color:#86efac;
-  color:#166534;
-}
-
-.sponsored{
-  background:#fef3c7;
-  border-color:#f59e0b;
-  color:#92400e;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:20px;
-}
-
-.actions a,
-.actions button{
-  border:0;
-  text-decoration:none;
-  color:white;
-  padding:13px 18px;
-  border-radius:999px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.visit{background:#16a34a}
-.call{background:#0f766e}
-.whatsapp{background:#22c55e}
-.share{background:#9333ea}
-.back{background:#2563eb}
-
-.section{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:24px;
-  padding:22px;
-  margin-top:22px;
-  box-shadow:0 16px 45px rgba(15,23,42,.06);
-}
-
-.section h2{
-  margin-top:0;
-  color:#0284c7;
-}
-
-.slider{
-  position:relative;
-  overflow:hidden;
-  border-radius:22px;
-  background:#f1f5f9;
-}
-
-.slider img{
-  width:100%;
-  height:380px;
-  object-fit:cover;
-  display:block;
-}
-
-.sliderBtns{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  margin-top:12px;
-}
-
-.sliderBtns button{
-  border:0;
-  background:#2563eb;
-  color:white;
-  border-radius:12px;
-  padding:10px 16px;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.mapBox{
-  background:#f8fbff;
-  border:1px dashed #bae6fd;
-  border-radius:20px;
-  padding:22px;
-  color:#475569;
-  line-height:1.6;
-}
-
-.commentForm{
-  display:grid;
-  gap:10px;
-}
-
-input,textarea,select{
-  width:100%;
-  padding:13px;
-  border:1px solid #cbd5e1;
-  border-radius:12px;
-  font-size:15px;
-}
-
-textarea{
-  min-height:90px;
-}
-
-.commentForm button{
-  background:#16a34a;
-  color:white;
-  border:0;
-  padding:13px;
-  border-radius:12px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.comment{
-  border-top:1px solid #e2e8f0;
-  padding:14px 0;
-}
-
+.top a{text-decoration:none;background:white;border:1px solid #bae6fd;color:#0369a1;padding:10px 16px;border-radius:999px;font-weight:bold}
+.wrap{max-width:1100px;margin:auto;padding:24px 16px 60px}
+.hero{background:white;border:1px solid #dbeafe;border-radius:28px;overflow:hidden;box-shadow:0 20px 60px rgba(15,23,42,.08)}
+.cover{width:100%;height:300px;object-fit:cover;background:#dbeafe}
+.content{padding:24px}
+.head{display:flex;gap:18px;align-items:center}
+.siteLogo{width:90px;height:90px;object-fit:cover;border-radius:24px;background:#e0f2fe;border:1px solid #dbeafe}
+h1{margin:0 0 8px;color:#0284c7;font-size:34px}
+.url{color:#16a34a;font-weight:bold;word-break:break-all}
+.desc{margin:22px 0;color:#334155;line-height:1.7;font-size:17px}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.badge{background:#f8fbff;border:1px solid #bae6fd;color:#0369a1;border-radius:999px;padding:9px 13px;font-weight:bold;font-size:14px}
+.verified{background:#dcfce7;border-color:#86efac;color:#166534}
+.sponsored{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.actions a,.actions button{border:0;text-decoration:none;color:white;padding:13px 18px;border-radius:999px;font-weight:bold;cursor:pointer}
+.visit{background:#16a34a}.call{background:#0f766e}.whatsapp{background:#22c55e}.share{background:#9333ea}.back{background:#2563eb}
+.section{background:white;border:1px solid #dbeafe;border-radius:24px;padding:22px;margin-top:22px;box-shadow:0 16px 45px rgba(15,23,42,.06)}
+.section h2{margin-top:0;color:#0284c7}
+.slider{position:relative;overflow:hidden;border-radius:22px;background:#f1f5f9}
+.slider img{width:100%;height:380px;object-fit:cover;display:block}
+.sliderBtns{display:flex;justify-content:center;gap:10px;margin-top:12px}
+.sliderBtns button{border:0;background:#2563eb;color:white;border-radius:12px;padding:10px 16px;cursor:pointer;font-weight:bold}
+.mapBox{background:#f8fbff;border:1px dashed #bae6fd;border-radius:20px;padding:22px;color:#475569;line-height:1.6}
+.mapFrame{width:100%;height:360px;border:0;border-radius:18px;margin-top:14px}
+.commentForm{display:grid;gap:10px}
+input,textarea,select{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:12px;font-size:15px}
+textarea{min-height:90px}
+.commentForm button{background:#16a34a;color:white;border:0;padding:13px;border-radius:12px;font-weight:bold;cursor:pointer}
+.comment{border-top:1px solid #e2e8f0;padding:14px 0}
 .comment b{color:#0284c7}
-
-.related{
-  display:grid;
-  gap:14px;
-}
-
-.relatedCard{
-  border:1px solid #dbeafe;
-  background:#f8fbff;
-  border-radius:18px;
-  padding:14px;
-}
-
-.relatedCard h3{
-  margin:0 0 6px;
-  color:#0284c7;
-}
-
-.empty{
-  text-align:center;
-  color:#64748b;
-  padding:50px;
-  font-size:20px;
-}
+.related{display:grid;gap:14px}
+.relatedCard{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:14px}
+.relatedCard h3{margin:0 0 6px;color:#0284c7}
+.empty{text-align:center;color:#64748b;padding:50px;font-size:20px}
 
 @media(max-width:700px){
-  .top,.head{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .cover{
-    height:200px;
-  }
-
-  h1{
-    font-size:26px;
-  }
-
-  .slider img{
-    height:220px;
-  }
-
-  .actions a,
-  .actions button{
-    width:100%;
-    text-align:center;
-  }
+  .top,.head{flex-direction:column;align-items:flex-start}
+  .cover{height:200px}
+  h1{font-size:26px}
+  .slider img{height:220px}
+  .mapFrame{height:260px}
+  .actions a,.actions button{width:100%;text-align:center}
 }
 </style>
 </head>
@@ -362,14 +124,15 @@ function renderSite(comments){
   const category = currentSite.category || "Genel";
   const city = currentSite.city || currentSite.sehir || "";
   const district = currentSite.district || currentSite.ilce || "";
+  const address = currentSite.address || "";
   const phone = currentSite.phone || currentSite.telefon || "";
   const whatsapp = currentSite.whatsapp || phone;
   const verified = currentSite.verified || currentSite.isVerified;
   const sponsored = currentSite.sponsored || currentSite.isSponsored || currentSite.sponsorActive;
 
-  galleryImages = Array.isArray(currentSite.gallery) && currentSite.gallery.length
-    ? currentSite.gallery
-    : [cover];
+  const mapQuery = encodeURIComponent(`${address} ${city} ${district}`);
+
+  galleryImages = Array.isArray(currentSite.gallery) && currentSite.gallery.length ? currentSite.gallery : [cover];
 
   document.title = `${title} - NetSearch`;
   document.querySelector("meta[name='description']").setAttribute("content", desc);
@@ -422,9 +185,20 @@ function renderSite(comments){
       <h2>Konum / Harita</h2>
       <div class="mapBox">
         <b>Adres:</b><br>
-        ${escapeHtml(currentSite.address || "Adres bilgisi eklenmemiş.")}
+        ${escapeHtml(address || "Adres bilgisi eklenmemiş.")}
         <br><br>
-        Harita entegrasyonu sonraki aşamada Google Maps veya OpenStreetMap ile bağlanacak.
+
+        ${address || city ? `
+          <iframe
+            class="mapFrame"
+            loading="lazy"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=26.0,39.0,31.0,41.5&layer=mapnik&marker=39.7767,30.5206">
+          </iframe>
+          <br><br>
+          <a target="_blank" href="https://www.google.com/maps/search/${mapQuery}">
+            Google Haritalar’da Aç
+          </a>
+        ` : `Harita için adres bilgisi eklenmemiş.`}
       </div>
     </div>
 
@@ -495,12 +269,7 @@ async function sendComment(){
     const res = await fetch(`${API}/api/comments`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        siteId,
-        name,
-        rating,
-        comment
-      })
+      body:JSON.stringify({siteId,name,rating,comment})
     });
 
     const data = await res.json();
@@ -518,7 +287,7 @@ async function sendComment(){
 
 async function loadRelated(){
   try{
-    const q = currentSite.category || currentSite.city || "";
+    const q = currentSite.category || currentSite.city || currentSite.sehir || "";
     const res = await fetch(`${API}/api/sites?q=${encodeURIComponent(q)}&t=${Date.now()}`, {cache:"no-store"});
     const sites = await res.json();
 
