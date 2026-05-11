@@ -50,6 +50,7 @@ const upload = multer({
 });
 
 let openai = null;
+
 if (process.env.OPENAI_API_KEY) {
   openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
@@ -82,15 +83,24 @@ function tokenFor(user) {
 
 function normalize(t) {
   return String(t || "").toLowerCase()
-    .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
-    .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c").trim();
+    .replaceAll("ı", "i")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ş", "s")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
+    .trim();
 }
 
 function slugify(text) {
   return String(text || "")
     .toLowerCase()
-    .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
-    .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c")
+    .replaceAll("ı", "i")
+    .replaceAll("ğ", "g")
+    .replaceAll("ü", "u")
+    .replaceAll("ş", "s")
+    .replaceAll("ö", "o")
+    .replaceAll("ç", "c")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -149,6 +159,23 @@ function score(site, q) {
   if (site.phone || site.telefon || site.whatsapp) s += 10;
 
   return Math.round(s);
+}
+
+function distanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
 }
 
 function buildSite(b) {
@@ -219,7 +246,8 @@ app.get("/health", (req, res) => {
     openai: process.env.OPENAI_API_KEY ? "key var" : "key yok",
     jwt: "active",
     upload: "active",
-    autoIndex: "active"
+    autoIndex: "active",
+    nearby: "active"
   });
 });
 
@@ -234,16 +262,30 @@ app.post("/api/register", async (req, res) => {
     }
 
     const exists = await User.findOne({ email });
+
     if (exists) {
       return res.json({ success: false, message: "Bu e-posta kayıtlı" });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    await User.create({ name, email, password: hashed, role: "user" });
 
-    res.json({ success: true, message: "Kayıt başarılı" });
+    await User.create({
+      name,
+      email,
+      password: hashed,
+      role: "user"
+    });
+
+    res.json({
+      success: true,
+      message: "Kayıt başarılı"
+    });
+
   } catch {
-    res.status(500).json({ success: false, message: "Kayıt hatası" });
+    res.status(500).json({
+      success: false,
+      message: "Kayıt hatası"
+    });
   }
 });
 
@@ -252,8 +294,8 @@ app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (
-      (email === "enderadmin" || email === "admin" || email === "reklamhesabim26@gmail.com")
-      && password === "123456"
+      (email === "enderadmin" || email === "admin" || email === "reklamhesabim26@gmail.com") &&
+      password === "123456"
     ) {
       const user = {
         id: "admin",
@@ -271,8 +313,12 @@ app.post("/api/login", async (req, res) => {
     }
 
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+      return res.status(401).json({
+        success: false,
+        message: "E-posta veya şifre hatalı"
+      });
     }
 
     let ok = false;
@@ -281,6 +327,7 @@ app.post("/api/login", async (req, res) => {
       ok = await bcrypt.compare(password, user.password);
     } else {
       ok = user.password === password;
+
       if (ok) {
         user.password = await bcrypt.hash(password, 10);
         await user.save();
@@ -288,7 +335,10 @@ app.post("/api/login", async (req, res) => {
     }
 
     if (!ok) {
-      return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+      return res.status(401).json({
+        success: false,
+        message: "E-posta veya şifre hatalı"
+      });
     }
 
     const safeUser = {
@@ -304,20 +354,36 @@ app.post("/api/login", async (req, res) => {
       token: tokenFor(safeUser),
       user: safeUser
     });
+
   } catch {
-    res.status(500).json({ success: false, message: "Giriş hatası" });
+    res.status(500).json({
+      success: false,
+      message: "Giriş hatası"
+    });
   }
 });
 
 /* UPLOAD */
 
 app.post("/api/upload", upload.single("file"), (req, res) => {
-  if (!req.file) return res.status(400).json({ success: false, message: "Dosya yok" });
-  res.json({ success: true, url: `/uploads/${req.file.filename}` });
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: "Dosya yok"
+    });
+  }
+
+  res.json({
+    success: true,
+    url: `/uploads/${req.file.filename}`
+  });
 });
 
 app.post("/api/upload/multiple", upload.array("files", 10), (req, res) => {
-  res.json({ success: true, urls: (req.files || []).map(f => `/uploads/${f.filename}`) });
+  res.json({
+    success: true,
+    urls: (req.files || []).map(f => `/uploads/${f.filename}`)
+  });
 });
 
 /* AUTO INDEX SYSTEM */
@@ -327,7 +393,10 @@ app.post("/api/auto-index", async (req, res) => {
     let { url, city, district, ownerEmail } = req.body;
 
     if (!url) {
-      return res.json({ success: false, message: "URL gerekli" });
+      return res.json({
+        success: false,
+        message: "URL gerekli"
+      });
     }
 
     if (!url.startsWith("http")) {
@@ -394,10 +463,14 @@ app.post("/api/auto-index", async (req, res) => {
     const keywords = [];
 
     const metaKeywords = $('meta[name="keywords"]').attr("content");
-    if (metaKeywords) keywords.push(...arr(metaKeywords));
+
+    if (metaKeywords) {
+      keywords.push(...arr(metaKeywords));
+    }
 
     $("h1,h2,h3").each((i, el) => {
       const text = $(el).text().trim();
+
       if (text.length > 3 && text.length < 70) {
         keywords.push(text);
       }
@@ -406,6 +479,7 @@ app.post("/api/auto-index", async (req, res) => {
     const full = normalize(`${title} ${description} ${keywords.join(" ")}`);
 
     let detectedCategory = "Genel";
+
     if (full.includes("kombi") || full.includes("servis") || full.includes("tamir")) detectedCategory = "Teknik Servis";
     if (full.includes("restoran") || full.includes("yemek")) detectedCategory = "Restoran";
     if (full.includes("cafe") || full.includes("kahve")) detectedCategory = "Cafe";
@@ -490,15 +564,22 @@ app.post("/api/auto-index", async (req, res) => {
 app.get("/api/sites", async (req, res) => {
   try {
     const q = req.query.q || "";
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(500);
+
+    const sites = await Site.find({
+      status: { $ne: "deleted" },
+      approved: { $ne: false }
+    }).limit(500);
 
     let results = sites;
 
     if (q.trim()) {
       const words = normalize(q).split(/\s+/).filter(Boolean);
+
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
+
         const text = siteText(site);
+
         return words.some(w => text.includes(w));
       });
     }
@@ -511,6 +592,7 @@ app.get("/api/sites", async (req, res) => {
     }).sort((a, b) => b.finalScore - a.finalScore);
 
     res.json(results.slice(0, 60));
+
   } catch {
     res.status(500).json([]);
   }
@@ -519,7 +601,11 @@ app.get("/api/sites", async (req, res) => {
 app.get("/api/search", async (req, res) => {
   try {
     const q = req.query.q || "";
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(500);
+
+    const sites = await Site.find({
+      status: { $ne: "deleted" },
+      approved: { $ne: false }
+    }).limit(500);
 
     const words = normalize(q).split(/\s+/).filter(Boolean);
 
@@ -528,7 +614,9 @@ app.get("/api/search", async (req, res) => {
     if (q.trim()) {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
+
         const text = siteText(site);
+
         return words.some(w => text.includes(w));
       });
     }
@@ -539,8 +627,13 @@ app.get("/api/search", async (req, res) => {
       return o;
     }).sort((a, b) => b.searchScore - a.searchScore);
 
-    const sponsored = results.filter(s => s.sponsored || s.isSponsored || s.sponsorActive).slice(0, 5);
-    const organic = results.filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive)).slice(0, 60);
+    const sponsored = results
+      .filter(s => s.sponsored || s.isSponsored || s.sponsorActive)
+      .slice(0, 5);
+
+    const organic = results
+      .filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive))
+      .slice(0, 60);
 
     let aiAnswer = "";
 
@@ -553,8 +646,14 @@ app.get("/api/search", async (req, res) => {
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: "Sen NetSearch arama asistanısın. Kısa Türkçe cevap ver." },
-            { role: "user", content: `Arama: ${q}\nSonuçlar:\n${summary || "Sonuç yok"}` }
+            {
+              role: "system",
+              content: "Sen NetSearch arama asistanısın. Kısa Türkçe cevap ver."
+            },
+            {
+              role: "user",
+              content: `Arama: ${q}\nSonuçlar:\n${summary || "Sonuç yok"}`
+            }
           ],
           max_tokens: 160
         });
@@ -565,33 +664,144 @@ app.get("/api/search", async (req, res) => {
       console.log("AI hata:", e.message);
     }
 
-    res.json({ aiAnswer, sponsored, results: organic });
+    res.json({
+      aiAnswer,
+      sponsored,
+      results: organic
+    });
+
   } catch {
-    res.status(500).json({ aiAnswer: "", sponsored: [], results: [] });
+    res.status(500).json({
+      aiAnswer: "",
+      sponsored: [],
+      results: []
+    });
   }
 });
 
 app.get("/api/autocomplete", async (req, res) => {
   try {
     const q = normalize(req.query.q || "");
-    if (q.length < 2) return res.json([]);
 
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(300);
+    if (q.length < 2) {
+      return res.json([]);
+    }
+
+    const sites = await Site.find({
+      status: { $ne: "deleted" },
+      approved: { $ne: false }
+    }).limit(300);
+
     const suggestions = [];
 
     sites.forEach(site => {
       [
-        site.title, site.name, site.businessName, site.category,
-        site.city, site.sehir, site.district, site.ilce,
-        ...arr(site.keywords), ...arr(site.tags)
+        site.title,
+        site.name,
+        site.businessName,
+        site.category,
+        site.city,
+        site.sehir,
+        site.district,
+        site.ilce,
+        ...arr(site.keywords),
+        ...arr(site.tags)
       ].forEach(x => {
-        if (x && normalize(x).includes(q)) suggestions.push(x);
+        if (x && normalize(x).includes(q)) {
+          suggestions.push(x);
+        }
       });
     });
 
     res.json([...new Set(suggestions)].slice(0, 10));
+
   } catch {
     res.json([]);
+  }
+});
+
+/* NEARBY SYSTEM */
+
+app.get("/api/nearby", async (req, res) => {
+  try {
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
+    const q = req.query.q || "";
+    const radius = Number(req.query.radius || 50);
+
+    if (!lat || !lng) {
+      return res.json({
+        success: false,
+        message: "Konum gerekli",
+        results: []
+      });
+    }
+
+    const sites = await Site.find({
+      status: { $ne: "deleted" },
+      approved: { $ne: false }
+    }).limit(1000);
+
+    const words = normalize(q).split(/\s+/).filter(Boolean);
+
+    let results = sites
+      .filter(site => Number(site.latitude || 0) && Number(site.longitude || 0))
+      .map(site => {
+        const o = site.toObject();
+
+        o.distanceKm = Number(distanceKm(
+          lat,
+          lng,
+          Number(o.latitude),
+          Number(o.longitude)
+        ).toFixed(2));
+
+        o.searchScore = score(o, q);
+
+        if (o.sponsored || o.isSponsored || o.sponsorActive) {
+          o.searchScore += 30;
+        }
+
+        if (o.verified || o.isVerified) {
+          o.searchScore += 20;
+        }
+
+        return o;
+      })
+      .filter(site => site.distanceKm <= radius);
+
+    if (q.trim()) {
+      results = results.filter(site => {
+        if (hasNegative(site, q)) return false;
+
+        const text = siteText(site);
+
+        return words.length === 0 || words.some(w => text.includes(w));
+      });
+    }
+
+    results = results.sort((a, b) => {
+      const sponsorA = a.sponsored || a.isSponsored || a.sponsorActive ? 1 : 0;
+      const sponsorB = b.sponsored || b.isSponsored || b.sponsorActive ? 1 : 0;
+
+      if (sponsorB !== sponsorA) return sponsorB - sponsorA;
+
+      return a.distanceKm - b.distanceKm;
+    });
+
+    res.json({
+      success: true,
+      count: results.length,
+      results: results.slice(0, 60)
+    });
+
+  } catch (e) {
+    console.log("NEARBY ERROR:", e.message);
+
+    res.status(500).json({
+      success: false,
+      results: []
+    });
   }
 });
 
@@ -606,28 +816,52 @@ app.get("/api/sites/:id", async (req, res) => {
     }
 
     if (!site) {
-      site = await Site.findOne({ slug: req.params.id, status: { $ne: "deleted" } });
+      site = await Site.findOne({
+        slug: req.params.id,
+        status: { $ne: "deleted" }
+      });
     }
 
-    if (!site) return res.status(404).json({ success: false });
+    if (!site) {
+      return res.status(404).json({
+        success: false
+      });
+    }
 
     site.views = Number(site.views || 0) + 1;
     await site.save();
 
-    const comments = await Comment.find({ siteId: site._id, status: { $ne: "deleted" } }).sort({ createdAt: -1 });
+    const comments = await Comment.find({
+      siteId: site._id,
+      status: { $ne: "deleted" }
+    }).sort({ createdAt: -1 });
 
-    res.json({ site, comments });
+    res.json({
+      site,
+      comments
+    });
+
   } catch {
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
 app.post("/api/sites/:id/click", async (req, res) => {
   try {
-    await Site.findByIdAndUpdate(req.params.id, { $inc: { clicks: 1 } });
-    res.json({ success: true });
+    await Site.findByIdAndUpdate(req.params.id, {
+      $inc: { clicks: 1 }
+    });
+
+    res.json({
+      success: true
+    });
+
   } catch {
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
@@ -641,9 +875,14 @@ app.post("/api/comments", async (req, res) => {
       status: "active"
     });
 
-    res.json({ success: true });
+    res.json({
+      success: true
+    });
+
   } catch {
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
@@ -651,8 +890,13 @@ app.post("/api/comments", async (req, res) => {
 
 app.get("/api/admin/stats", async (req, res) => {
   try {
-    const sites = await Site.find({ status: { $ne: "deleted" } });
-    const comments = await Comment.find({ status: { $ne: "deleted" } });
+    const sites = await Site.find({
+      status: { $ne: "deleted" }
+    });
+
+    const comments = await Comment.find({
+      status: { $ne: "deleted" }
+    });
 
     res.json({
       totalSites: sites.length,
@@ -662,15 +906,27 @@ app.get("/api/admin/stats", async (req, res) => {
       totalComments: comments.length,
       totalUsers: await User.countDocuments()
     });
+
   } catch {
-    res.json({ totalSites: 0, pendingSites: 0, approvedSites: 0, activeAds: 0, totalComments: 0, totalUsers: 0 });
+    res.json({
+      totalSites: 0,
+      pendingSites: 0,
+      approvedSites: 0,
+      activeAds: 0,
+      totalComments: 0,
+      totalUsers: 0
+    });
   }
 });
 
 app.get("/api/admin/sites", async (req, res) => {
   try {
-    const sites = await Site.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
+    const sites = await Site.find({
+      status: { $ne: "deleted" }
+    }).sort({ createdAt: -1 });
+
     res.json(sites);
+
   } catch {
     res.status(500).json([]);
   }
@@ -679,36 +935,73 @@ app.get("/api/admin/sites", async (req, res) => {
 app.post("/api/admin/sites", async (req, res) => {
   try {
     const site = await Site.create(buildSite(req.body));
-    res.json({ success: true, site });
+
+    res.json({
+      success: true,
+      site
+    });
+
   } catch {
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
 app.put("/api/admin/sites/:id", async (req, res) => {
   try {
-    const site = await Site.findByIdAndUpdate(req.params.id, buildSite(req.body), { new: true });
-    res.json({ success: true, site });
+    const site = await Site.findByIdAndUpdate(
+      req.params.id,
+      buildSite(req.body),
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      site
+    });
+
   } catch {
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
 app.patch("/api/admin/sites/:id", async (req, res) => {
   try {
-    const site = await Site.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, site });
+    const site = await Site.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      site
+    });
+
   } catch {
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
 app.delete("/api/admin/sites/:id", async (req, res) => {
   try {
-    await Site.findByIdAndUpdate(req.params.id, { status: "deleted" });
-    res.json({ success: true });
+    await Site.findByIdAndUpdate(req.params.id, {
+      status: "deleted"
+    });
+
+    res.json({
+      success: true
+    });
+
   } catch {
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false
+    });
   }
 });
 
@@ -723,10 +1016,14 @@ Sitemap: https://netsearch.com.tr/sitemap.xml`);
 
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).select("_id title slug city category updatedAt");
+    const sites = await Site.find({
+      status: { $ne: "deleted" },
+      approved: { $ne: false }
+    }).select("_id title slug city category updatedAt");
 
     const siteUrls = sites.map(site => {
       const slug = site.slug || slugify(site.title || site._id);
+
       return `
   <url>
     <loc>https://netsearch.com.tr/site/${slug}</loc>
@@ -763,6 +1060,7 @@ app.get("/sitemap.xml", async (req, res) => {
   ${cityCategoryUrls}
   ${siteUrls}
 </urlset>`);
+
   } catch {
     res.status(500).send("Sitemap oluşturulamadı");
   }
@@ -789,6 +1087,7 @@ app.get("/:cityCategory", async (req, res, next) => {
     }
 
     res.sendFile(path.join(__dirname, "public", "index.html"));
+
   } catch {
     next();
   }
