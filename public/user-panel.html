@@ -4,48 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetSearch Reklam Paneli</title>
-
 <link rel="icon" type="image/png" href="/icon-192.png">
-<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0f172a">
 
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f9ff;color:#0f172a}
 header{background:white;border-bottom:1px solid #dbeafe;padding:16px 22px}
-.top{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.logo{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:900}
-.logo img{width:44px;height:44px;border-radius:12px}
-.logo span{color:#0ea5e9}
-.nav{display:flex;gap:10px;flex-wrap:wrap}
-button,a{border:0;border-radius:12px;padding:11px 15px;font-weight:bold;cursor:pointer;text-decoration:none}
-.home{background:#e0f2fe;color:#0369a1}
-.logout{background:#0f172a;color:white}
-.wrap{max-width:1200px;margin:auto;padding:22px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.top{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:28px;font-weight:900}.logo span{color:#0ea5e9}
+.wrap{max-width:1150px;margin:auto;padding:22px}
 .panel{background:white;border:1px solid #dbeafe;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px rgba(15,23,42,.06)}
-.panel h2{margin:0 0 14px;color:#0284c7}
-input,textarea,select{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:13px;font-size:15px;outline:none;background:white;margin-bottom:11px}
-textarea{min-height:86px;resize:vertical}
-label{font-weight:bold;color:#334155;font-size:14px}
-.stat{background:#f8fbff;border:1px solid #dbeafe;border-radius:18px;padding:17px}
-.stat b{font-size:28px;color:#0284c7;display:block}
-.save{background:#16a34a;color:white}
-.stop{background:#dc2626;color:white}
-.start{background:#f59e0b;color:white}
-.pay{background:#2563eb;color:white}
-.msg{text-align:center;font-weight:bold;margin:12px}
-.ok{color:#16a34a}.err{color:#dc2626}
-.adPreview{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:16px}
-.adTitle{color:#1d4ed8;font-size:20px;font-weight:900;margin-bottom:4px}
-.adUrl{color:#16a34a;font-size:14px;font-weight:bold;word-break:break-all}
-.adDesc{color:#334155;line-height:1.5;margin-top:8px}
-.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.badge{background:white;border:1px solid #bae6fd;color:#0369a1;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:bold}
-.adbadge{background:#fef3c7;border-color:#f59e0b;color:#92400e}
-.empty{text-align:center;color:#64748b;padding:35px}
-@media(max-width:700px){.top{flex-direction:column;align-items:flex-start}.nav button,.nav a,button{width:100%}}
+h2{margin:0 0 14px;color:#0284c7}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+input,textarea,select{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:13px;font-size:15px;margin-bottom:10px}
+textarea{min-height:80px}
+label{font-weight:bold;font-size:14px;color:#334155}
+button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:pointer;text-decoration:none}
+.primary{background:#2563eb;color:white}.green{background:#16a34a;color:white}.dark{background:#0f172a;color:white}.red{background:#dc2626;color:white}
+.stat{background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:15px}
+.stat b{font-size:26px;color:#0284c7;display:block}
+.card{border:1px solid #dbeafe;border-radius:18px;padding:16px;margin-top:12px;background:#f8fbff}
+.badge{display:inline-block;border-radius:999px;padding:7px 10px;font-weight:bold;font-size:12px;margin:4px;background:white;border:1px solid #bae6fd;color:#0369a1}
+.pending{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.active{background:#dcfce7;border-color:#86efac;color:#166534}
+.msg{text-align:center;font-weight:bold;margin:10px}.ok{color:#16a34a}.err{color:#dc2626}
 </style>
 </head>
 
@@ -53,13 +36,10 @@ label{font-weight:bold;color:#334155;font-size:14px}
 
 <header>
   <div class="top">
-    <div class="logo">
-      <img src="/icon-192.png" onerror="this.style.display='none'">
-      Net<span>Search Ads</span>
-    </div>
-    <div class="nav">
-      <a class="home" href="/index.html">Ana Sayfa</a>
-      <button class="logout" onclick="logout()">Çıkış Yap</button>
+    <div class="logo">Net<span>Search Ads</span></div>
+    <div>
+      <a class="primary" href="/index.html">Ana Sayfa</a>
+      <button class="dark" onclick="logout()">Çıkış Yap</button>
     </div>
   </div>
 </header>
@@ -69,338 +49,245 @@ label{font-weight:bold;color:#334155;font-size:14px}
   <div class="panel">
     <h2>Reklam Performansı</h2>
     <div class="grid">
-      <div class="stat"><b id="totalSites">0</b>İşletme</div>
+      <div class="stat"><b id="totalSites">0</b>Reklam</div>
       <div class="stat"><b id="totalViews">0</b>Görüntüleme</div>
       <div class="stat"><b id="totalClicks">0</b>Tıklama</div>
-      <div class="stat"><b id="avgCtr">0%</b>CTR</div>
       <div class="stat"><b id="totalBudget">0₺</b>Bakiye</div>
     </div>
   </div>
 
   <div class="panel">
-    <h2>Bakiye Yükleme</h2>
+    <h2>Yeni Reklam Oluştur</h2>
+
     <div class="grid">
       <div>
-        <label>Yüklenecek Tutar</label>
-        <input id="paymentAmount" type="number" placeholder="Örn: 500">
+        <label>İşletme Adı</label>
+        <input id="businessName" placeholder="Örn: Eskişehir Kombi Servisi">
       </div>
       <div>
-        <label>Ödeme Yöntemi</label>
-        <select id="paymentMethod">
-          <option>PayTR / Kredi Kartı</option>
-          <option>Havale / EFT</option>
-        </select>
+        <label>Web Site</label>
+        <input id="website" placeholder="https://siteadresi.com">
+      </div>
+      <div>
+        <label>Telefon</label>
+        <input id="phone" placeholder="0530...">
       </div>
     </div>
-    <button class="pay" onclick="fakePayment()">Bakiye Yükle</button>
-    <div id="paymentMsg" class="msg"></div>
+
+    <div class="grid">
+      <div><label>Başlık 1</label><input id="h1" placeholder="Eskişehir Kombi Servisi"></div>
+      <div><label>Başlık 2</label><input id="h2" placeholder="Aynı Gün Servis"></div>
+      <div><label>Başlık 3</label><input id="h3" placeholder="Hemen Ara"></div>
+    </div>
+
+    <label>Açıklama 1</label>
+    <textarea id="d1" placeholder="İşletme ve reklam açıklaması"></textarea>
+
+    <label>Açıklama 2</label>
+    <textarea id="d2" placeholder="Ek açıklama"></textarea>
+
+    <div class="grid">
+      <div><label>Hedef Şehir</label><input id="city" placeholder="Eskişehir"></div>
+      <div><label>Hedef İlçeler</label><input id="districts" placeholder="Tepebaşı, Odunpazarı"></div>
+      <div><label>Kategori</label><input id="category" placeholder="Teknik Servis"></div>
+    </div>
+
+    <label>Anahtar Kelimeler</label>
+    <textarea id="keywords" placeholder="kombi servisi, kombi tamircisi, beyaz eşya servisi"></textarea>
+
+    <label>Negatif Anahtar Kelimeler</label>
+    <textarea id="negativeKeywords" placeholder="ücretsiz, iş ilanı"></textarea>
+
+    <div class="grid">
+      <div><label>Günlük Bütçe ₺</label><input id="dailyLimit" type="number" placeholder="100"></div>
+      <div><label>CPC / Tıklama Teklifi ₺</label><input id="cpc" type="number" placeholder="10"></div>
+      <div><label>Başlangıç Bakiye ₺</label><input id="budget" type="number" placeholder="500"></div>
+    </div>
+
+    <button class="green" onclick="createAd()">Reklamı Onaya Gönder</button>
+    <div id="createMsg" class="msg"></div>
   </div>
 
   <div class="panel">
-    <h2>İşletmelerim ve Reklamlarım</h2>
-    <div id="siteList">Yükleniyor...</div>
+    <h2>Reklamlarım</h2>
+    <div id="myAds">Yükleniyor...</div>
   </div>
 
 </div>
 
 <script>
-let currentUser = null;
-let ownerSites = [];
+let currentUser=null;
+let mySites=[];
 
-window.onload = function(){
-  const userRaw = localStorage.getItem("user");
-  const token = localStorage.getItem("token");
-
-  if(!token || !userRaw){
-    window.location.href = "/login.html";
-    return;
-  }
-
-  try{
-    currentUser = JSON.parse(userRaw);
-  }catch{
-    logout();
-    return;
-  }
-
-  loadOwnerSites();
+window.onload=()=>{
+  const userRaw=localStorage.getItem("user");
+  const token=localStorage.getItem("token");
+  if(!token || !userRaw){ location.href="/login.html"; return; }
+  currentUser=JSON.parse(userRaw);
+  loadAds();
 };
 
 function logout(){
   localStorage.removeItem("token");
   localStorage.removeItem("user");
-  localStorage.removeItem("netsearch_token");
-  localStorage.removeItem("netsearch_user");
-  window.location.href = "/login.html";
+  location.href="/login.html";
 }
 
-async function loadOwnerSites(){
-  const box = document.getElementById("siteList");
-  box.innerHTML = "Yükleniyor...";
+async function loadAds(){
+  const box=document.getElementById("myAds");
+  box.innerHTML="Yükleniyor...";
 
   try{
-    const res = await fetch(`/api/admin/sites?t=${Date.now()}`, {cache:"no-store"});
-    const allSites = await res.json();
+    const res=await fetch("/api/admin/sites?t="+Date.now(),{cache:"no-store"});
+    const all=await res.json();
 
-    ownerSites = allSites.filter(site => {
-      return String(site.ownerEmail || "").toLowerCase() === String(currentUser.email || "").toLowerCase();
-    });
-
+    mySites=all.filter(s=>String(s.ownerEmail||"").toLowerCase()===String(currentUser.email||"").toLowerCase());
     renderStats();
-    renderSites();
-
+    renderAds();
   }catch{
-    box.innerHTML = "<div class='empty'>Sunucuya bağlanılamadı.</div>";
+    box.innerHTML="Sunucuya bağlanılamadı.";
   }
 }
 
 function renderStats(){
-  let views=0, clicks=0, budget=0;
-
-  ownerSites.forEach(site=>{
-    views += Number(site.views || 0);
-    clicks += Number(site.clicks || 0);
-    budget += Number(site.sponsorBudget || 0);
+  let views=0,clicks=0,budget=0;
+  mySites.forEach(s=>{
+    views+=Number(s.views||0);
+    clicks+=Number(s.clicks||0);
+    budget+=Number(s.sponsorBudget||0);
   });
-
-  document.getElementById("totalSites").innerText = ownerSites.length;
-  document.getElementById("totalViews").innerText = views;
-  document.getElementById("totalClicks").innerText = clicks;
-  document.getElementById("avgCtr").innerText = views ? ((clicks/views)*100).toFixed(1) + "%" : "0%";
-  document.getElementById("totalBudget").innerText = budget + "₺";
+  totalSites.innerText=mySites.length;
+  totalViews.innerText=views;
+  totalClicks.innerText=clicks;
+  totalBudget.innerText=budget+"₺";
 }
 
-function renderSites(){
-  const box = document.getElementById("siteList");
-  box.innerHTML = "";
+function renderAds(){
+  const box=document.getElementById("myAds");
+  box.innerHTML="";
 
-  if(!ownerSites.length){
-    box.innerHTML = `
-      <div class="empty">
-        Bu e-posta adresine bağlı işletme bulunamadı.<br>
-        Admin panelinden işletmeye ownerEmail olarak şu e-postayı ekle:<br>
-        <b>${escapeHtml(currentUser.email || "")}</b>
-      </div>
-    `;
+  if(!mySites.length){
+    box.innerHTML="<p>Henüz reklam oluşturmadın. Yukarıdaki formdan reklamını onaya gönder.</p>";
     return;
   }
 
-  ownerSites.forEach(site=>{
-    const id = site._id;
-    const sponsored = site.sponsored || site.isSponsored || site.sponsorActive;
-
-    const div = document.createElement("div");
-    div.className = "panel";
-
-    div.innerHTML = `
-      <h2>${escapeHtml(site.title || site.name || "İşletme")}</h2>
-
-      <div class="grid">
-        <div>
-          <label>Başlık 1</label>
-          <input id="h1-${id}" value="${escapeAttr(site.adHeadline1 || site.title || "")}" placeholder="Örn: Eskişehir Kombi Servisi">
-        </div>
-        <div>
-          <label>Başlık 2</label>
-          <input id="h2-${id}" value="${escapeAttr(site.adHeadline2 || "")}" placeholder="Örn: Aynı Gün Servis">
-        </div>
-        <div>
-          <label>Başlık 3</label>
-          <input id="h3-${id}" value="${escapeAttr(site.adHeadline3 || "")}" placeholder="Örn: Hemen Ara">
-        </div>
+  mySites.forEach(s=>{
+    const active=s.sponsored||s.isSponsored||s.sponsorActive;
+    const pending=s.status==="pending";
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`
+      <h3>${esc(s.title||s.businessName||"Reklam")}</h3>
+      <div>
+        ${pending?'<span class="badge pending">Onay Bekliyor</span>':active?'<span class="badge active">Aktif Reklam</span>':'<span class="badge">Pasif</span>'}
+        <span class="badge">Görüntüleme: ${s.views||0}</span>
+        <span class="badge">Tıklama: ${s.clicks||0}</span>
+        <span class="badge">Bütçe: ${s.sponsorBudget||0}₺</span>
+        <span class="badge">CPC: ${s.cpc||0}₺</span>
+        <span class="badge">Kalite: ${s.qualityScore||0}</span>
       </div>
-
-      <label>Açıklama 1</label>
-      <textarea id="d1-${id}" placeholder="Reklam açıklaması 1">${escapeHtml(site.adDescription1 || site.description || "")}</textarea>
-
-      <label>Açıklama 2</label>
-      <textarea id="d2-${id}" placeholder="Reklam açıklaması 2">${escapeHtml(site.adDescription2 || "")}</textarea>
-
-      <div class="grid">
-        <div>
-          <label>Hedef Şehirler</label>
-          <input id="cities-${id}" value="${escapeAttr(arrayText(site.targetCities || site.city || site.sehir))}" placeholder="Eskişehir, Ankara">
-        </div>
-        <div>
-          <label>Hedef İlçeler</label>
-          <input id="districts-${id}" value="${escapeAttr(arrayText(site.targetDistricts || site.district || site.ilce))}" placeholder="Tepebaşı, Odunpazarı">
-        </div>
-        <div>
-          <label>Günlük Bütçe</label>
-          <input id="daily-${id}" type="number" value="${site.dailyLimit || 0}" placeholder="100">
-        </div>
-        <div>
-          <label>Tıklama Başı Teklif / CPC</label>
-          <input id="cpc-${id}" type="number" value="${site.cpc || site.sponsorCpc || 0}" placeholder="5">
-        </div>
-      </div>
-
-      <label>Anahtar Kelimeler</label>
-      <textarea id="keywords-${id}" placeholder="kombi servisi, beyaz eşya servisi">${arrayText(site.keywords || site.tags)}</textarea>
-
-      <label>Negatif Anahtar Kelimeler</label>
-      <textarea id="negative-${id}" placeholder="ücretsiz, iş ilanı">${arrayText(site.negativeKeywords)}</textarea>
-
-      <div class="grid">
-        <div>
-          <label>Reklam Bütçesi</label>
-          <input id="budget-${id}" type="number" value="${site.sponsorBudget || 0}">
-        </div>
-        <div>
-          <label>Reklam Durumu</label>
-          <select id="status-${id}">
-            <option value="true" ${sponsored ? "selected" : ""}>Aktif</option>
-            <option value="false" ${!sponsored ? "selected" : ""}>Kapalı</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="adPreview">
-        <div class="badges"><span class="badge adbadge">Reklam Önizleme</span></div>
-        <div class="adTitle" id="previewTitle-${id}">${escapeHtml(site.adHeadline1 || site.title || "")}</div>
-        <div class="adUrl">${escapeHtml(site.url || site.website || "")}</div>
-        <div class="adDesc" id="previewDesc-${id}">${escapeHtml(site.adDescription1 || site.description || "")}</div>
-      </div>
-
-      <br>
-
-      <button class="save" onclick="saveAd('${id}')">Reklamı Kaydet</button>
-      <button class="${sponsored ? "stop" : "start"}" onclick="toggleAd('${id}', ${sponsored ? "false" : "true"})">
-        ${sponsored ? "Reklamı Durdur" : "Reklamı Başlat"}
-      </button>
+      <p>${esc(s.description||"")}</p>
+      <button class="primary" onclick="editAd('${s._id}')">Düzenle</button>
     `;
-
     box.appendChild(div);
-
-    ["h1","h2","h3","d1","d2"].forEach(prefix=>{
-      const el = document.getElementById(`${prefix}-${id}`);
-      if(el){
-        el.addEventListener("input",()=>updatePreview(id));
-      }
-    });
   });
 }
 
-function updatePreview(id){
-  const title = [val(`h1-${id}`), val(`h2-${id}`), val(`h3-${id}`)].filter(Boolean).join(" | ");
-  const desc = [val(`d1-${id}`), val(`d2-${id}`)].filter(Boolean).join(" ");
-  document.getElementById(`previewTitle-${id}`).innerText = title || "Reklam Başlığı";
-  document.getElementById(`previewDesc-${id}`).innerText = desc || "Reklam açıklaması";
-}
+async function createAd(){
+  const msg=document.getElementById("createMsg");
+  msg.className="msg";
+  msg.innerText="";
 
-async function saveAd(id){
-  const payload = {
-    adHeadline1: val(`h1-${id}`),
-    adHeadline2: val(`h2-${id}`),
-    adHeadline3: val(`h3-${id}`),
-    adDescription1: val(`d1-${id}`),
-    adDescription2: val(`d2-${id}`),
+  const name=val("businessName");
+  const url=val("website");
+  const phone=val("phone");
 
-    title: val(`h1-${id}`),
-    name: val(`h1-${id}`),
-    businessName: val(`h1-${id}`),
-    description: val(`d1-${id}`),
+  if(!name || !url){
+    msg.className="msg err";
+    msg.innerText="İşletme adı ve web site zorunlu.";
+    return;
+  }
 
-    targetCities: toArray(val(`cities-${id}`)),
-    targetDistricts: toArray(val(`districts-${id}`)),
+  const payload={
+    title:name,
+    name:name,
+    businessName:name,
+    url:url,
+    website:url,
+    link:url,
+    phone:phone,
+    telefon:phone,
+    whatsapp:phone,
 
-    keywords: val(`keywords-${id}`),
-    tags: val(`keywords-${id}`),
-    negativeKeywords: val(`negative-${id}`),
+    adHeadline1:val("h1")||name,
+    adHeadline2:val("h2"),
+    adHeadline3:val("h3"),
+    adDescription1:val("d1"),
+    adDescription2:val("d2"),
 
-    dailyLimit: Number(val(`daily-${id}`) || 0),
-    cpc: Number(val(`cpc-${id}`) || 0),
-    sponsorCpc: Number(val(`cpc-${id}`) || 0),
-    sponsorBudget: Number(val(`budget-${id}`) || 0),
+    description:val("d1"),
+    desc:val("d1"),
 
-    sponsored: val(`status-${id}`) === "true",
-    isSponsored: val(`status-${id}`) === "true",
-    sponsorActive: val(`status-${id}`) === "true"
+    city:val("city"),
+    sehir:val("city"),
+    targetCities:toArray(val("city")),
+    targetDistricts:toArray(val("districts")),
+    category:val("category")||"Genel",
+
+    keywords:val("keywords"),
+    tags:val("keywords"),
+    negativeKeywords:val("negativeKeywords"),
+
+    dailyLimit:Number(val("dailyLimit")||0),
+    cpc:Number(val("cpc")||0),
+    sponsorCpc:Number(val("cpc")||0),
+    sponsorBudget:Number(val("budget")||0),
+
+    ownerEmail:currentUser.email,
+
+    status:"pending",
+    approved:false,
+    sponsored:false,
+    isSponsored:false,
+    sponsorActive:false,
+    verified:false,
+    isVerified:false
   };
 
   try{
-    const res = await fetch(`/api/admin/sites/${id}`,{
-      method:"PATCH",
+    const res=await fetch("/api/admin/sites",{
+      method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
     });
-
-    const data = await res.json();
+    const data=await res.json();
 
     if(data.success){
-      alert("Reklam ayarları kaydedildi.");
-      loadOwnerSites();
+      msg.className="msg ok";
+      msg.innerText="Reklam onaya gönderildi. Admin onayından sonra yayına alınacak.";
+      clearForm();
+      loadAds();
     }else{
-      alert("Kaydetme başarısız.");
+      msg.className="msg err";
+      msg.innerText="Reklam oluşturulamadı.";
     }
   }catch{
-    alert("Sunucuya bağlanılamadı.");
+    msg.className="msg err";
+    msg.innerText="Sunucuya bağlanılamadı.";
   }
 }
 
-async function toggleAd(id,state){
-  try{
-    await fetch(`/api/admin/sites/${id}`,{
-      method:"PATCH",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        sponsored: state,
-        isSponsored: state,
-        sponsorActive: state
-      })
-    });
-
-    loadOwnerSites();
-  }catch{
-    alert("Sunucuya bağlanılamadı.");
-  }
+function editAd(id){
+  alert("Düzenleme ekranını bir sonraki adımda ekleyeceğiz. Şimdilik reklam oluşturma ve onay sistemi aktif.");
 }
 
-async function fakePayment(){
-  const amount = Number(document.getElementById("paymentAmount").value || 0);
-  const msg = document.getElementById("paymentMsg");
-
-  if(amount <= 0){
-    msg.className = "msg err";
-    msg.innerText = "Tutar gir.";
-    return;
-  }
-
-  if(!ownerSites.length){
-    msg.className = "msg err";
-    msg.innerText = "Bağlı işletme yok.";
-    return;
-  }
-
-  const first = ownerSites[0];
-  const newBudget = Number(first.sponsorBudget || 0) + amount;
-
-  await fetch(`/api/admin/sites/${first._id}`,{
-    method:"PATCH",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({sponsorBudget:newBudget})
-  });
-
-  msg.className = "msg ok";
-  msg.innerText = "Demo bakiye yüklendi.";
-  document.getElementById("paymentAmount").value = "";
-  loadOwnerSites();
+function clearForm(){
+  document.querySelectorAll("input,textarea").forEach(x=>x.value="");
 }
 
-function val(id){return document.getElementById(id).value}
-function toArray(v){return String(v||"").split(",").map(x=>x.trim()).filter(Boolean)}
-function arrayText(v){return Array.isArray(v) ? v.join(", ") : (v || "")}
-
-function escapeHtml(text){
-  return String(text || "")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
-
-function escapeAttr(text){
-  return String(text || "")
-    .replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-}
+function val(id){return document.getElementById(id).value.trim();}
+function toArray(v){return String(v||"").split(",").map(x=>x.trim()).filter(Boolean);}
+function esc(t){return String(t||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
 </script>
 
 </body>
