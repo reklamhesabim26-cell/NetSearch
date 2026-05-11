@@ -690,10 +690,34 @@ app.get("/api/autocomplete", async (req, res) => {
 const viewCache = new Map();
 const clickCache = new Map();
 
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function cacheKey(type, siteId, req) {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "ip";
-  const day = new Date().toISOString().slice(0, 10);
+  const day = todayKey();
   return `${type}:${siteId}:${ip}:${day}`;
+}
+
+function getDailySpent(site) {
+  const today = todayKey();
+
+  if (site.dailySpendDate !== today) {
+    return 0;
+  }
+
+  return Number(site.dailySpent || 0);
+}
+
+function canSpendToday(site, cpc) {
+  const dailyLimit = Number(site.dailyLimit || 0);
+
+  if (dailyLimit <= 0) return true;
+
+  const spentToday = getDailySpent(site);
+
+  return spentToday + cpc <= dailyLimit;
 }
 
 app.post("/api/sites/:id/view", async (req, res) => {
@@ -701,7 +725,11 @@ app.post("/api/sites/:id/view", async (req, res) => {
     const key = cacheKey("view", req.params.id, req);
 
     if (viewCache.has(key)) {
-      return res.json({ success: true, counted: false, message: "Tekrar görüntüleme sayılmadı" });
+      return res.json({
+        success: true,
+        counted: false,
+        message: "Tekrar görüntüleme sayılmadı"
+      });
     }
 
     viewCache.set(key, true);
@@ -718,7 +746,10 @@ app.post("/api/sites/:id/view", async (req, res) => {
       }
     });
 
-    res.json({ success: true, counted: true });
+    res.json({
+      success: true,
+      counted: true
+    });
 
   } catch {
     res.status(500).json({ success: false });
@@ -730,7 +761,11 @@ app.post("/api/sites/:id/click", async (req, res) => {
     const key = cacheKey("click", req.params.id, req);
 
     if (clickCache.has(key)) {
-      return res.json({ success: true, counted: false, message: "Tekrar tıklama sayılmadı" });
+      return res.json({
+        success: true,
+        counted: false,
+        message: "Tekrar tıklama sayılmadı"
+      });
     }
 
     clickCache.set(key, true);
@@ -741,6 +776,9 @@ app.post("/api/sites/:id/click", async (req, res) => {
     const cpc = Number(site.cpc || site.sponsorCpc || 0);
     const budget = Number(site.sponsorBudget || 0);
     const active = site.sponsored || site.isSponsored || site.sponsorActive;
+    const today = todayKey();
+
+    let dailySpent = getDailySpent(site);
 
     const update = {
       $inc: { clicks: 1 },
@@ -752,10 +790,30 @@ app.post("/api/sites/:id/click", async (req, res) => {
     };
 
     if (active && cpc > 0 && budget > 0) {
+
+      if (!canSpendToday(site, cpc)) {
+        update.$set.sponsored = false;
+        update.$set.isSponsored = false;
+        update.$set.sponsorActive = false;
+        update.$set.adStoppedReason = "Günlük bütçe limiti doldu";
+
+        await Site.findByIdAndUpdate(req.params.id, update);
+
+        return res.json({
+          success: true,
+          counted: true,
+          charged: false,
+          message: "Günlük bütçe limiti doldu, reklam durduruldu"
+        });
+      }
+
       const newBudget = Math.max(budget - cpc, 0);
+      const newDailySpent = dailySpent + cpc;
 
       update.$set.sponsorBudget = newBudget;
       update.$set.totalSpent = Number(site.totalSpent || 0) + cpc;
+      update.$set.dailySpent = newDailySpent;
+      update.$set.dailySpendDate = today;
 
       if (newBudget <= 0) {
         update.$set.sponsored = false;
@@ -767,7 +825,11 @@ app.post("/api/sites/:id/click", async (req, res) => {
 
     await Site.findByIdAndUpdate(req.params.id, update);
 
-    res.json({ success: true, counted: true });
+    res.json({
+      success: true,
+      counted: true,
+      charged: active && cpc > 0 && budget > 0
+    });
 
   } catch {
     res.status(500).json({ success: false });
