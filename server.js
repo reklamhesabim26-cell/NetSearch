@@ -50,7 +50,6 @@ const upload = multer({
 });
 
 let openai = null;
-
 if (process.env.OPENAI_API_KEY) {
   openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
@@ -61,6 +60,8 @@ mongoose.connect(MONGO_URL)
 
 const userSchema = new mongoose.Schema({
   name: String,
+  company: String,
+  phone: String,
   email: String,
   password: String,
   role: { type: String, default: "user" }
@@ -113,9 +114,15 @@ function arr(v) {
 function siteText(s) {
   return normalize(`
     ${s.title || ""} ${s.name || ""} ${s.businessName || ""}
-    ${s.description || ""} ${s.desc || ""} ${s.address || ""}
-    ${s.category || ""} ${s.city || ""} ${s.sehir || ""}
-    ${s.district || ""} ${s.ilce || ""} ${arr(s.keywords).join(" ")}
+    ${s.adHeadline1 || ""} ${s.adHeadline2 || ""} ${s.adHeadline3 || ""}
+    ${s.description || ""} ${s.desc || ""}
+    ${s.adDescription1 || ""} ${s.adDescription2 || ""}
+    ${s.address || ""} ${s.category || ""}
+    ${s.city || ""} ${s.sehir || ""}
+    ${s.district || ""} ${s.ilce || ""}
+    ${arr(s.targetCities).join(" ")}
+    ${arr(s.targetDistricts).join(" ")}
+    ${arr(s.keywords).join(" ")}
     ${arr(s.tags).join(" ")}
   `);
 }
@@ -123,6 +130,69 @@ function siteText(s) {
 function hasNegative(site, q) {
   const text = normalize(q);
   return arr(site.negativeKeywords).map(normalize).some(w => w && text.includes(w));
+}
+
+function calcQualityScore(site) {
+  let q = 0;
+
+  if (site.logo || site.logoUrl || site.image) q += 10;
+  if (site.cover || site.coverUrl) q += 8;
+  if (site.phone || site.telefon || site.whatsapp) q += 10;
+  if (site.verified || site.isVerified) q += 15;
+
+  if ((site.description || site.desc || "").length > 50) q += 10;
+  if ((site.adHeadline1 || "").length > 5) q += 8;
+  if ((site.adHeadline2 || "").length > 5) q += 6;
+  if ((site.adHeadline3 || "").length > 5) q += 6;
+  if ((site.adDescription1 || "").length > 30) q += 10;
+  if ((site.adDescription2 || "").length > 30) q += 8;
+
+  if (arr(site.keywords).length >= 3) q += 8;
+  if (arr(site.negativeKeywords).length >= 1) q += 6;
+  if (arr(site.targetCities).length || site.city || site.sehir) q += 8;
+  if (arr(site.targetDistricts).length || site.district || site.ilce) q += 6;
+
+  const views = Number(site.views || 0);
+  const clicks = Number(site.clicks || 0);
+  const ctr = views > 0 ? clicks / views : 0;
+
+  if (ctr > 0.02) q += 8;
+  if (ctr > 0.05) q += 12;
+  if (ctr > 0.10) q += 16;
+
+  return Math.min(Math.round(q), 100);
+}
+
+function adScore(site, q) {
+  const cpc = Number(site.cpc || site.sponsorCpc || 0);
+  const budget = Number(site.sponsorBudget || 0);
+  const dailyLimit = Number(site.dailyLimit || 0);
+  const quality = calcQualityScore(site);
+  const ai = Number(site.aiScore || 0);
+  const views = Number(site.views || 0);
+  const clicks = Number(site.clicks || 0);
+  const ctr = views > 0 ? (clicks / views) * 100 : 0;
+
+  let s = 0;
+  s += Math.min(cpc * 8, 80);
+  s += quality;
+  s += Math.min(ai, 40);
+  s += Math.min(ctr * 10, 60);
+  s += Math.min(budget / 20, 80);
+  s += Math.min(dailyLimit / 20, 50);
+
+  if (site.verified || site.isVerified) s += 25;
+  if (textMatchStrong(site, q)) s += 50;
+
+  return Math.round(s);
+}
+
+function textMatchStrong(site, q) {
+  const query = normalize(q);
+  if (!query) return true;
+  const title = normalize(site.title || site.name || site.businessName || "");
+  const text = siteText(site);
+  return title.includes(query) || text.includes(query);
 }
 
 function score(site, q) {
@@ -143,13 +213,11 @@ function score(site, q) {
   });
 
   if (site.sponsored || site.isSponsored || site.sponsorActive) {
-    s += 80;
-    s += Math.min(Number(site.sponsorBudget || 0) / 10, 50);
-    s += Math.min(Number(site.cpc || site.sponsorCpc || 0) * 5, 35);
+    s += adScore(site, q);
   }
 
   s += Math.min(Number(site.aiScore || 0), 40);
-  s += Math.min(Number(site.qualityScore || 0), 40);
+  s += Math.min(calcQualityScore(site), 70);
   s += Math.min(Number(site.views || 0) / 20, 25);
   s += Math.min(Number(site.clicks || 0) / 5, 35);
 
@@ -173,27 +241,25 @@ function distanceKm(lat1, lon1, lat2, lon2) {
     Math.sin(dLon / 2) *
     Math.sin(dLon / 2);
 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
 function buildSite(b) {
-  return {
+  const fixed = {
     ...b,
 
-    title: b.title || b.name || b.businessName || "",
-    name: b.name || b.title || b.businessName || "",
-    businessName: b.businessName || b.title || b.name || "",
+    title: b.title || b.name || b.businessName || b.adHeadline1 || "",
+    name: b.name || b.title || b.businessName || b.adHeadline1 || "",
+    businessName: b.businessName || b.title || b.name || b.adHeadline1 || "",
 
-    slug: b.slug || slugify(b.title || b.name || b.businessName || ""),
+    slug: b.slug || slugify(b.title || b.name || b.businessName || b.adHeadline1 || ""),
 
     url: b.url || b.website || b.link || "",
     website: b.website || b.url || b.link || "",
     link: b.link || b.url || b.website || "",
 
-    description: b.description || b.desc || "",
-    desc: b.desc || b.description || "",
+    description: b.description || b.desc || b.adDescription1 || "",
+    desc: b.desc || b.description || b.adDescription1 || "",
 
     city: b.city || b.sehir || "",
     sehir: b.sehir || b.city || "",
@@ -207,6 +273,8 @@ function buildSite(b) {
     keywords: arr(b.keywords || b.tags),
     tags: arr(b.tags || b.keywords),
     negativeKeywords: arr(b.negativeKeywords),
+    targetCities: arr(b.targetCities),
+    targetDistricts: arr(b.targetDistricts),
 
     gallery: arr(b.gallery),
 
@@ -226,14 +294,17 @@ function buildSite(b) {
     sponsorCpc: Number(b.sponsorCpc || b.cpc || 0),
 
     aiScore: Number(b.aiScore || 10),
-    qualityScore: Number(b.qualityScore || 0),
-
     latitude: Number(b.latitude || 0),
     longitude: Number(b.longitude || 0),
 
     views: Number(b.views || 0),
     clicks: Number(b.clicks || 0)
   };
+
+  fixed.qualityScore = calcQualityScore(fixed);
+  fixed.adScore = adScore(fixed, "");
+
+  return fixed;
 }
 
 /* HEALTH */
@@ -247,7 +318,8 @@ app.get("/health", (req, res) => {
     jwt: "active",
     upload: "active",
     autoIndex: "active",
-    nearby: "active"
+    nearby: "active",
+    adsEngine: "active"
   });
 });
 
@@ -255,14 +327,13 @@ app.get("/health", (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, company, phone, email, password } = req.body;
 
     if (!email || !password) {
       return res.json({ success: false, message: "E-posta ve şifre gerekli" });
     }
 
     const exists = await User.findOne({ email });
-
     if (exists) {
       return res.json({ success: false, message: "Bu e-posta kayıtlı" });
     }
@@ -271,21 +342,17 @@ app.post("/api/register", async (req, res) => {
 
     await User.create({
       name,
+      company,
+      phone,
       email,
       password: hashed,
       role: "user"
     });
 
-    res.json({
-      success: true,
-      message: "Kayıt başarılı"
-    });
+    res.json({ success: true, message: "Kayıt başarılı" });
 
   } catch {
-    res.status(500).json({
-      success: false,
-      message: "Kayıt hatası"
-    });
+    res.status(500).json({ success: false, message: "Kayıt hatası" });
   }
 });
 
@@ -294,8 +361,8 @@ app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (
-      (email === "enderadmin" || email === "admin" || email === "reklamhesabim26@gmail.com") &&
-      password === "123456"
+      (email === "enderadmin" || email === "admin" || email === "reklamhesabim26@gmail.com")
+      && password === "123456"
     ) {
       const user = {
         id: "admin",
@@ -313,12 +380,8 @@ app.post("/api/login", async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "E-posta veya şifre hatalı"
-      });
+      return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
     }
 
     let ok = false;
@@ -327,7 +390,6 @@ app.post("/api/login", async (req, res) => {
       ok = await bcrypt.compare(password, user.password);
     } else {
       ok = user.password === password;
-
       if (ok) {
         user.password = await bcrypt.hash(password, 10);
         await user.save();
@@ -335,15 +397,14 @@ app.post("/api/login", async (req, res) => {
     }
 
     if (!ok) {
-      return res.status(401).json({
-        success: false,
-        message: "E-posta veya şifre hatalı"
-      });
+      return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
     }
 
     const safeUser = {
       id: user._id,
       name: user.name,
+      company: user.company,
+      phone: user.phone,
       email: user.email,
       role: user.role || "user"
     };
@@ -356,80 +417,46 @@ app.post("/api/login", async (req, res) => {
     });
 
   } catch {
-    res.status(500).json({
-      success: false,
-      message: "Giriş hatası"
-    });
+    res.status(500).json({ success: false, message: "Giriş hatası" });
   }
 });
 
 /* UPLOAD */
 
 app.post("/api/upload", upload.single("file"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({
-      success: false,
-      message: "Dosya yok"
-    });
-  }
-
-  res.json({
-    success: true,
-    url: `/uploads/${req.file.filename}`
-  });
+  if (!req.file) return res.status(400).json({ success: false, message: "Dosya yok" });
+  res.json({ success: true, url: `/uploads/${req.file.filename}` });
 });
 
 app.post("/api/upload/multiple", upload.array("files", 10), (req, res) => {
-  res.json({
-    success: true,
-    urls: (req.files || []).map(f => `/uploads/${f.filename}`)
-  });
+  res.json({ success: true, urls: (req.files || []).map(f => `/uploads/${f.filename}`) });
 });
 
-/* AUTO INDEX SYSTEM */
+/* AUTO INDEX */
 
 app.post("/api/auto-index", async (req, res) => {
   try {
     let { url, city, district, ownerEmail } = req.body;
 
-    if (!url) {
-      return res.json({
-        success: false,
-        message: "URL gerekli"
-      });
-    }
-
-    if (!url.startsWith("http")) {
-      url = "https://" + url;
-    }
+    if (!url) return res.json({ success: false, message: "URL gerekli" });
+    if (!url.startsWith("http")) url = "https://" + url;
 
     const already = await Site.findOne({
-      $or: [
-        { url },
-        { website: url },
-        { link: url }
-      ],
+      $or: [{ url }, { website: url }, { link: url }],
       status: { $ne: "deleted" }
     });
 
     if (already) {
-      return res.json({
-        success: false,
-        message: "Bu site zaten kayıtlı",
-        site: already
-      });
+      return res.json({ success: false, message: "Bu site zaten kayıtlı", site: already });
     }
 
     const response = await axios.get(url, {
       timeout: 15000,
       maxRedirects: 5,
-      headers: {
-        "User-Agent": "NetSearchBot/1.0 (+https://netsearch.com.tr)"
-      }
+      headers: { "User-Agent": "NetSearchBot/1.0 (+https://netsearch.com.tr)" }
     });
 
-    const html = response.data;
-    const $ = cheerio.load(html);
+    const $ = cheerio.load(response.data);
 
     const title =
       $("title").first().text().trim() ||
@@ -447,115 +474,74 @@ app.post("/api/auto-index", async (req, res) => {
       $('link[rel="shortcut icon"]').attr("href") ||
       "/favicon.ico";
 
-    if (favicon && !favicon.startsWith("http")) {
-      favicon = new URL(favicon, url).href;
-    }
+    if (favicon && !favicon.startsWith("http")) favicon = new URL(favicon, url).href;
 
     let image =
       $('meta[property="og:image"]').attr("content") ||
       $('meta[name="twitter:image"]').attr("content") ||
       "";
 
-    if (image && !image.startsWith("http")) {
-      image = new URL(image, url).href;
-    }
+    if (image && !image.startsWith("http")) image = new URL(image, url).href;
 
     const keywords = [];
-
     const metaKeywords = $('meta[name="keywords"]').attr("content");
-
-    if (metaKeywords) {
-      keywords.push(...arr(metaKeywords));
-    }
+    if (metaKeywords) keywords.push(...arr(metaKeywords));
 
     $("h1,h2,h3").each((i, el) => {
       const text = $(el).text().trim();
-
-      if (text.length > 3 && text.length < 70) {
-        keywords.push(text);
-      }
+      if (text.length > 3 && text.length < 70) keywords.push(text);
     });
 
     const full = normalize(`${title} ${description} ${keywords.join(" ")}`);
 
     let detectedCategory = "Genel";
-
     if (full.includes("kombi") || full.includes("servis") || full.includes("tamir")) detectedCategory = "Teknik Servis";
     if (full.includes("restoran") || full.includes("yemek")) detectedCategory = "Restoran";
     if (full.includes("cafe") || full.includes("kahve")) detectedCategory = "Cafe";
     if (full.includes("doktor") || full.includes("hastane") || full.includes("klinik")) detectedCategory = "Sağlık";
     if (full.includes("avukat") || full.includes("hukuk")) detectedCategory = "Hukuk";
     if (full.includes("otel") || full.includes("hotel")) detectedCategory = "Otel";
-    if (full.includes("market") || full.includes("alışveriş") || full.includes("alisveris")) detectedCategory = "Market";
-    if (full.includes("okul") || full.includes("kurs") || full.includes("eğitim") || full.includes("egitim")) detectedCategory = "Eğitim";
+    if (full.includes("market") || full.includes("alisveris") || full.includes("alışveriş")) detectedCategory = "Market";
+    if (full.includes("okul") || full.includes("kurs") || full.includes("egitim") || full.includes("eğitim")) detectedCategory = "Eğitim";
 
     const newSite = await Site.create(buildSite({
       title,
       name: title,
       businessName: title,
-
       description,
       desc: description,
-
       url,
       website: url,
       link: url,
-
       logo: favicon,
       logoUrl: favicon,
       image: favicon,
-
       cover: image,
       coverUrl: image,
       gallery: image ? [image] : [],
-
       keywords: [...new Set(keywords)].slice(0, 20),
       tags: [...new Set(keywords)].slice(0, 20),
-
       category: detectedCategory,
-
       city: city || "",
       sehir: city || "",
       district: district || "",
       ilce: district || "",
-
       ownerEmail: ownerEmail || "",
-
       approved: true,
       verified: false,
-      isVerified: false,
-
       sponsored: false,
-      isSponsored: false,
       sponsorActive: false,
-
       aiScore: 25,
-      qualityScore: 20,
-
-      views: 0,
-      clicks: 0,
-
-      sponsorBudget: 0,
-      cpc: 0,
-
       status: "active",
       createdBy: "auto-index",
       indexedAt: new Date()
     }));
 
-    res.json({
-      success: true,
-      message: "Site başarıyla otomatik indexlendi",
-      site: newSite
-    });
+    res.json({ success: true, message: "Site başarıyla otomatik indexlendi", site: newSite });
 
   } catch (e) {
     console.log("AUTO INDEX ERROR:", e.message);
-
-    res.status(500).json({
-      success: false,
-      message: "Site taranamadı"
-    });
+    res.status(500).json({ success: false, message: "Site taranamadı" });
   }
 });
 
@@ -574,18 +560,17 @@ app.get("/api/sites", async (req, res) => {
 
     if (q.trim()) {
       const words = normalize(q).split(/\s+/).filter(Boolean);
-
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
-
         const text = siteText(site);
-
         return words.some(w => text.includes(w));
       });
     }
 
     results = results.map(site => {
       const o = site.toObject();
+      o.qualityScore = calcQualityScore(o);
+      o.adScore = adScore(o, q);
       o.finalScore = score(o, q);
       o.searchScore = o.finalScore;
       return o;
@@ -614,25 +599,30 @@ app.get("/api/search", async (req, res) => {
     if (q.trim()) {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
-
         const text = siteText(site);
-
         return words.some(w => text.includes(w));
       });
     }
 
     results = results.map(site => {
       const o = site.toObject();
+      o.qualityScore = calcQualityScore(o);
+      o.adScore = adScore(o, q);
       o.searchScore = score(o, q);
       return o;
     }).sort((a, b) => b.searchScore - a.searchScore);
 
     const sponsored = results
-      .filter(s => s.sponsored || s.isSponsored || s.sponsorActive)
+      .filter(s =>
+        (s.sponsored || s.isSponsored || s.sponsorActive) &&
+        Number(s.sponsorBudget || 0) > 0 &&
+        Number(s.cpc || s.sponsorCpc || 0) > 0
+      )
+      .sort((a, b) => b.adScore - a.adScore)
       .slice(0, 5);
 
     const organic = results
-      .filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive))
+      .filter(s => !sponsored.some(ad => String(ad._id) === String(s._id)))
       .slice(0, 60);
 
     let aiAnswer = "";
@@ -646,14 +636,8 @@ app.get("/api/search", async (req, res) => {
         const completion = await openai.chat.completions.create({
           model: "gpt-4o-mini",
           messages: [
-            {
-              role: "system",
-              content: "Sen NetSearch arama asistanısın. Kısa Türkçe cevap ver."
-            },
-            {
-              role: "user",
-              content: `Arama: ${q}\nSonuçlar:\n${summary || "Sonuç yok"}`
-            }
+            { role: "system", content: "Sen NetSearch arama asistanısın. Kısa Türkçe cevap ver." },
+            { role: "user", content: `Arama: ${q}\nSonuçlar:\n${summary || "Sonuç yok"}` }
           ],
           max_tokens: 160
         });
@@ -664,28 +648,17 @@ app.get("/api/search", async (req, res) => {
       console.log("AI hata:", e.message);
     }
 
-    res.json({
-      aiAnswer,
-      sponsored,
-      results: organic
-    });
+    res.json({ aiAnswer, sponsored, results: organic });
 
   } catch {
-    res.status(500).json({
-      aiAnswer: "",
-      sponsored: [],
-      results: []
-    });
+    res.status(500).json({ aiAnswer: "", sponsored: [], results: [] });
   }
 });
 
 app.get("/api/autocomplete", async (req, res) => {
   try {
     const q = normalize(req.query.q || "");
-
-    if (q.length < 2) {
-      return res.json([]);
-    }
+    if (q.length < 2) return res.json([]);
 
     const sites = await Site.find({
       status: { $ne: "deleted" },
@@ -707,9 +680,7 @@ app.get("/api/autocomplete", async (req, res) => {
         ...arr(site.keywords),
         ...arr(site.tags)
       ].forEach(x => {
-        if (x && normalize(x).includes(q)) {
-          suggestions.push(x);
-        }
+        if (x && normalize(x).includes(q)) suggestions.push(x);
       });
     });
 
@@ -720,7 +691,55 @@ app.get("/api/autocomplete", async (req, res) => {
   }
 });
 
-/* NEARBY SYSTEM */
+/* AD CLICK ENGINE */
+
+app.post("/api/sites/:id/click", async (req, res) => {
+  try {
+    const site = await Site.findById(req.params.id);
+    if (!site) return res.status(404).json({ success: false });
+
+    const cpc = Number(site.cpc || site.sponsorCpc || 0);
+    const budget = Number(site.sponsorBudget || 0);
+    const active = site.sponsored || site.isSponsored || site.sponsorActive;
+
+    const update = { $inc: { clicks: 1 } };
+
+    if (active && cpc > 0 && budget > 0) {
+      const newBudget = Math.max(budget - cpc, 0);
+
+      update.$set = {
+        sponsorBudget: newBudget,
+        qualityScore: calcQualityScore(site),
+        lastClickAt: new Date()
+      };
+
+      if (newBudget <= 0) {
+        update.$set.sponsored = false;
+        update.$set.isSponsored = false;
+        update.$set.sponsorActive = false;
+        update.$set.adStoppedReason = "Bütçe bitti";
+      }
+    }
+
+    await Site.findByIdAndUpdate(req.params.id, update);
+
+    res.json({ success: true });
+
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
+
+app.post("/api/sites/:id/view", async (req, res) => {
+  try {
+    await Site.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
+
+/* NEARBY */
 
 app.get("/api/nearby", async (req, res) => {
   try {
@@ -730,11 +749,7 @@ app.get("/api/nearby", async (req, res) => {
     const radius = Number(req.query.radius || 50);
 
     if (!lat || !lng) {
-      return res.json({
-        success: false,
-        message: "Konum gerekli",
-        results: []
-      });
+      return res.json({ success: false, message: "Konum gerekli", results: [] });
     }
 
     const sites = await Site.find({
@@ -749,22 +764,10 @@ app.get("/api/nearby", async (req, res) => {
       .map(site => {
         const o = site.toObject();
 
-        o.distanceKm = Number(distanceKm(
-          lat,
-          lng,
-          Number(o.latitude),
-          Number(o.longitude)
-        ).toFixed(2));
-
+        o.distanceKm = Number(distanceKm(lat, lng, Number(o.latitude), Number(o.longitude)).toFixed(2));
+        o.qualityScore = calcQualityScore(o);
+        o.adScore = adScore(o, q);
         o.searchScore = score(o, q);
-
-        if (o.sponsored || o.isSponsored || o.sponsorActive) {
-          o.searchScore += 30;
-        }
-
-        if (o.verified || o.isVerified) {
-          o.searchScore += 20;
-        }
 
         return o;
       })
@@ -773,9 +776,7 @@ app.get("/api/nearby", async (req, res) => {
     if (q.trim()) {
       results = results.filter(site => {
         if (hasNegative(site, q)) return false;
-
         const text = siteText(site);
-
         return words.length === 0 || words.some(w => text.includes(w));
       });
     }
@@ -785,27 +786,18 @@ app.get("/api/nearby", async (req, res) => {
       const sponsorB = b.sponsored || b.isSponsored || b.sponsorActive ? 1 : 0;
 
       if (sponsorB !== sponsorA) return sponsorB - sponsorA;
-
       return a.distanceKm - b.distanceKm;
     });
 
-    res.json({
-      success: true,
-      count: results.length,
-      results: results.slice(0, 60)
-    });
+    res.json({ success: true, count: results.length, results: results.slice(0, 60) });
 
   } catch (e) {
     console.log("NEARBY ERROR:", e.message);
-
-    res.status(500).json({
-      success: false,
-      results: []
-    });
+    res.status(500).json({ success: false, results: [] });
   }
 });
 
-/* SITE DETAIL / COMMENT */
+/* DETAIL / COMMENT */
 
 app.get("/api/sites/:id", async (req, res) => {
   try {
@@ -822,13 +814,11 @@ app.get("/api/sites/:id", async (req, res) => {
       });
     }
 
-    if (!site) {
-      return res.status(404).json({
-        success: false
-      });
-    }
+    if (!site) return res.status(404).json({ success: false });
 
     site.views = Number(site.views || 0) + 1;
+    site.qualityScore = calcQualityScore(site);
+    site.adScore = adScore(site, "");
     await site.save();
 
     const comments = await Comment.find({
@@ -836,32 +826,10 @@ app.get("/api/sites/:id", async (req, res) => {
       status: { $ne: "deleted" }
     }).sort({ createdAt: -1 });
 
-    res.json({
-      site,
-      comments
-    });
+    res.json({ site, comments });
 
   } catch {
-    res.status(500).json({
-      success: false
-    });
-  }
-});
-
-app.post("/api/sites/:id/click", async (req, res) => {
-  try {
-    await Site.findByIdAndUpdate(req.params.id, {
-      $inc: { clicks: 1 }
-    });
-
-    res.json({
-      success: true
-    });
-
-  } catch {
-    res.status(500).json({
-      success: false
-    });
+    res.status(500).json({ success: false });
   }
 });
 
@@ -875,14 +843,10 @@ app.post("/api/comments", async (req, res) => {
       status: "active"
     });
 
-    res.json({
-      success: true
-    });
+    res.json({ success: true });
 
   } catch {
-    res.status(500).json({
-      success: false
-    });
+    res.status(500).json({ success: false });
   }
 });
 
@@ -890,13 +854,8 @@ app.post("/api/comments", async (req, res) => {
 
 app.get("/api/admin/stats", async (req, res) => {
   try {
-    const sites = await Site.find({
-      status: { $ne: "deleted" }
-    });
-
-    const comments = await Comment.find({
-      status: { $ne: "deleted" }
-    });
+    const sites = await Site.find({ status: { $ne: "deleted" } });
+    const comments = await Comment.find({ status: { $ne: "deleted" } });
 
     res.json({
       totalSites: sites.length,
@@ -908,25 +867,14 @@ app.get("/api/admin/stats", async (req, res) => {
     });
 
   } catch {
-    res.json({
-      totalSites: 0,
-      pendingSites: 0,
-      approvedSites: 0,
-      activeAds: 0,
-      totalComments: 0,
-      totalUsers: 0
-    });
+    res.json({ totalSites: 0, pendingSites: 0, approvedSites: 0, activeAds: 0, totalComments: 0, totalUsers: 0 });
   }
 });
 
 app.get("/api/admin/sites", async (req, res) => {
   try {
-    const sites = await Site.find({
-      status: { $ne: "deleted" }
-    }).sort({ createdAt: -1 });
-
+    const sites = await Site.find({ status: { $ne: "deleted" } }).sort({ createdAt: -1 });
     res.json(sites);
-
   } catch {
     res.status(500).json([]);
   }
@@ -935,73 +883,43 @@ app.get("/api/admin/sites", async (req, res) => {
 app.post("/api/admin/sites", async (req, res) => {
   try {
     const site = await Site.create(buildSite(req.body));
-
-    res.json({
-      success: true,
-      site
-    });
-
+    res.json({ success: true, site });
   } catch {
-    res.status(500).json({
-      success: false
-    });
+    res.status(500).json({ success: false });
   }
 });
 
 app.put("/api/admin/sites/:id", async (req, res) => {
   try {
-    const site = await Site.findByIdAndUpdate(
-      req.params.id,
-      buildSite(req.body),
-      { new: true }
-    );
-
-    res.json({
-      success: true,
-      site
-    });
-
+    const fixed = buildSite(req.body);
+    fixed.qualityScore = calcQualityScore(fixed);
+    fixed.adScore = adScore(fixed, "");
+    const site = await Site.findByIdAndUpdate(req.params.id, fixed, { new: true });
+    res.json({ success: true, site });
   } catch {
-    res.status(500).json({
-      success: false
-    });
+    res.status(500).json({ success: false });
   }
 });
 
 app.patch("/api/admin/sites/:id", async (req, res) => {
   try {
-    const site = await Site.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-
-    res.json({
-      success: true,
-      site
-    });
-
+    const oldSite = await Site.findById(req.params.id);
+    const merged = buildSite({ ...(oldSite ? oldSite.toObject() : {}), ...req.body });
+    merged.qualityScore = calcQualityScore(merged);
+    merged.adScore = adScore(merged, "");
+    const site = await Site.findByIdAndUpdate(req.params.id, merged, { new: true });
+    res.json({ success: true, site });
   } catch {
-    res.status(500).json({
-      success: false
-    });
+    res.status(500).json({ success: false });
   }
 });
 
 app.delete("/api/admin/sites/:id", async (req, res) => {
   try {
-    await Site.findByIdAndUpdate(req.params.id, {
-      status: "deleted"
-    });
-
-    res.json({
-      success: true
-    });
-
+    await Site.findByIdAndUpdate(req.params.id, { status: "deleted" });
+    res.json({ success: true });
   } catch {
-    res.status(500).json({
-      success: false
-    });
+    res.status(500).json({ success: false });
   }
 });
 
@@ -1066,7 +984,7 @@ app.get("/sitemap.xml", async (req, res) => {
   }
 });
 
-/* SEO SLUG ROUTES */
+/* ROUTES */
 
 app.get("/site/:slug", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "site.html"));
