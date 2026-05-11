@@ -11,7 +11,7 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f9ff;color:#0f172a}
 header{background:white;border-bottom:1px solid #dbeafe;padding:16px 22px}
-.top{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.top{max-width:1150px;margin:auto;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:28px;font-weight:900}.logo span{color:#0ea5e9}
 .wrap{max-width:1150px;margin:auto;padding:22px}
 .panel{background:white;border:1px solid #dbeafe;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px rgba(15,23,42,.06)}
@@ -21,13 +21,14 @@ input,textarea,select{width:100%;padding:14px;border:1px solid #cbd5e1;border-ra
 textarea{min-height:80px}
 label{font-weight:bold;font-size:14px;color:#334155}
 button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:pointer;text-decoration:none}
-.primary{background:#2563eb;color:white}.green{background:#16a34a;color:white}.dark{background:#0f172a;color:white}.red{background:#dc2626;color:white}
+.primary{background:#2563eb;color:white}.green{background:#16a34a;color:white}.dark{background:#0f172a;color:white}.red{background:#dc2626;color:white}.gray{background:#64748b;color:white}
 .stat{background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:15px}
 .stat b{font-size:26px;color:#0284c7;display:block}
 .card{border:1px solid #dbeafe;border-radius:18px;padding:16px;margin-top:12px;background:#f8fbff}
 .badge{display:inline-block;border-radius:999px;padding:7px 10px;font-weight:bold;font-size:12px;margin:4px;background:white;border:1px solid #bae6fd;color:#0369a1}
 .pending{background:#fef3c7;border-color:#f59e0b;color:#92400e}
 .active{background:#dcfce7;border-color:#86efac;color:#166534}
+.rejected{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
 .msg{text-align:center;font-weight:bold;margin:10px}.ok{color:#16a34a}.err{color:#dc2626}
 </style>
 </head>
@@ -57,21 +58,14 @@ button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:p
   </div>
 
   <div class="panel">
-    <h2>Yeni Reklam Oluştur</h2>
+    <h2 id="formTitle">Yeni Reklam Oluştur</h2>
+
+    <input type="hidden" id="editingId">
 
     <div class="grid">
-      <div>
-        <label>İşletme Adı</label>
-        <input id="businessName" placeholder="Örn: Eskişehir Kombi Servisi">
-      </div>
-      <div>
-        <label>Web Site</label>
-        <input id="website" placeholder="https://siteadresi.com">
-      </div>
-      <div>
-        <label>Telefon</label>
-        <input id="phone" placeholder="0530...">
-      </div>
+      <div><label>İşletme Adı</label><input id="businessName" placeholder="Örn: Eskişehir Kombi Servisi"></div>
+      <div><label>Web Site</label><input id="website" placeholder="https://siteadresi.com"></div>
+      <div><label>Telefon</label><input id="phone" placeholder="0530..."></div>
     </div>
 
     <div class="grid">
@@ -101,10 +95,11 @@ button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:p
     <div class="grid">
       <div><label>Günlük Bütçe ₺</label><input id="dailyLimit" type="number" placeholder="100"></div>
       <div><label>CPC / Tıklama Teklifi ₺</label><input id="cpc" type="number" placeholder="10"></div>
-      <div><label>Başlangıç Bakiye ₺</label><input id="budget" type="number" placeholder="500"></div>
+      <div><label>Bakiye ₺</label><input id="budget" type="number" placeholder="500"></div>
     </div>
 
-    <button class="green" onclick="createAd()">Reklamı Onaya Gönder</button>
+    <button class="green" onclick="saveAd()">Onaya Gönder / Kaydet</button>
+    <button class="gray" onclick="clearForm()">Formu Temizle</button>
     <div id="createMsg" class="msg"></div>
   </div>
 
@@ -174,12 +169,13 @@ function renderAds(){
   mySites.forEach(s=>{
     const active=s.sponsored||s.isSponsored||s.sponsorActive;
     const pending=s.status==="pending";
+    const rejected=s.status==="rejected";
     const div=document.createElement("div");
     div.className="card";
     div.innerHTML=`
       <h3>${esc(s.title||s.businessName||"Reklam")}</h3>
       <div>
-        ${pending?'<span class="badge pending">Onay Bekliyor</span>':active?'<span class="badge active">Aktif Reklam</span>':'<span class="badge">Pasif</span>'}
+        ${pending?'<span class="badge pending">Onay Bekliyor</span>':active?'<span class="badge active">Aktif Reklam</span>':rejected?'<span class="badge rejected">Reddedildi</span>':'<span class="badge">Pasif</span>'}
         <span class="badge">Görüntüleme: ${s.views||0}</span>
         <span class="badge">Tıklama: ${s.clicks||0}</span>
         <span class="badge">Bütçe: ${s.sponsorBudget||0}₺</span>
@@ -187,17 +183,46 @@ function renderAds(){
         <span class="badge">Kalite: ${s.qualityScore||0}</span>
       </div>
       <p>${esc(s.description||"")}</p>
+      ${s.rejectReason ? `<p style="color:#dc2626"><b>Red nedeni:</b> ${esc(s.rejectReason)}</p>` : ""}
       <button class="primary" onclick="editAd('${s._id}')">Düzenle</button>
+      <button class="red" onclick="deleteAd('${s._id}')">Sil</button>
     `;
     box.appendChild(div);
   });
 }
 
-async function createAd(){
+function editAd(id){
+  const s=mySites.find(x=>x._id===id);
+  if(!s) return;
+
+  formTitle.innerText="Reklamı Düzenle";
+  set("editingId",s._id);
+  set("businessName",s.title||s.businessName||"");
+  set("website",s.url||s.website||"");
+  set("phone",s.phone||s.telefon||"");
+  set("h1",s.adHeadline1||s.title||"");
+  set("h2",s.adHeadline2||"");
+  set("h3",s.adHeadline3||"");
+  set("d1",s.adDescription1||s.description||"");
+  set("d2",s.adDescription2||"");
+  set("city",s.city||s.sehir||arrayText(s.targetCities));
+  set("districts",arrayText(s.targetDistricts)||s.district||s.ilce||"");
+  set("category",s.category||"");
+  set("keywords",arrayText(s.keywords||s.tags));
+  set("negativeKeywords",arrayText(s.negativeKeywords));
+  set("dailyLimit",s.dailyLimit||0);
+  set("cpc",s.cpc||s.sponsorCpc||0);
+  set("budget",s.sponsorBudget||0);
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function saveAd(){
   const msg=document.getElementById("createMsg");
   msg.className="msg";
   msg.innerText="";
 
+  const id=val("editingId");
   const name=val("businessName");
   const url=val("website");
   const phone=val("phone");
@@ -250,26 +275,30 @@ async function createAd(){
     sponsored:false,
     isSponsored:false,
     sponsorActive:false,
-    verified:false,
-    isVerified:false
+    rejectReason:"",
+    adStoppedReason:"Kullanıcı düzenledi, tekrar onay bekliyor"
   };
 
   try{
-    const res=await fetch("/api/admin/sites",{
-      method:"POST",
+    const endpoint=id ? "/api/admin/sites/"+id : "/api/admin/sites";
+    const method=id ? "PATCH" : "POST";
+
+    const res=await fetch(endpoint,{
+      method,
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
     });
+
     const data=await res.json();
 
     if(data.success){
       msg.className="msg ok";
-      msg.innerText="Reklam onaya gönderildi. Admin onayından sonra yayına alınacak.";
+      msg.innerText=id ? "Reklam güncellendi ve tekrar onaya gönderildi." : "Reklam onaya gönderildi.";
       clearForm();
       loadAds();
     }else{
       msg.className="msg err";
-      msg.innerText="Reklam oluşturulamadı.";
+      msg.innerText="İşlem başarısız.";
     }
   }catch{
     msg.className="msg err";
@@ -277,16 +306,26 @@ async function createAd(){
   }
 }
 
-function editAd(id){
-  alert("Düzenleme ekranını bir sonraki adımda ekleyeceğiz. Şimdilik reklam oluşturma ve onay sistemi aktif.");
+async function deleteAd(id){
+  if(!confirm("Reklam silinsin mi?")) return;
+
+  try{
+    await fetch("/api/admin/sites/"+id,{method:"DELETE"});
+    loadAds();
+  }catch{
+    alert("Sunucuya bağlanılamadı.");
+  }
 }
 
 function clearForm(){
+  formTitle.innerText="Yeni Reklam Oluştur";
   document.querySelectorAll("input,textarea").forEach(x=>x.value="");
 }
 
 function val(id){return document.getElementById(id).value.trim();}
+function set(id,v){document.getElementById(id).value=v||"";}
 function toArray(v){return String(v||"").split(",").map(x=>x.trim()).filter(Boolean);}
+function arrayText(v){return Array.isArray(v) ? v.join(", ") : (v || "");}
 function esc(t){return String(t||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
 </script>
 
