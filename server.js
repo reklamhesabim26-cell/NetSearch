@@ -84,24 +84,16 @@ function tokenFor(user) {
 
 function normalize(t) {
   return String(t || "").toLowerCase()
-    .replaceAll("ı", "i")
-    .replaceAll("ğ", "g")
-    .replaceAll("ü", "u")
-    .replaceAll("ş", "s")
-    .replaceAll("ö", "o")
-    .replaceAll("ç", "c")
+    .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
+    .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c")
     .trim();
 }
 
 function slugify(text) {
   return String(text || "")
     .toLowerCase()
-    .replaceAll("ı", "i")
-    .replaceAll("ğ", "g")
-    .replaceAll("ü", "u")
-    .replaceAll("ş", "s")
-    .replaceAll("ö", "o")
-    .replaceAll("ç", "c")
+    .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
+    .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -163,6 +155,14 @@ function calcQualityScore(site) {
   return Math.min(Math.round(q), 100);
 }
 
+function textMatchStrong(site, q) {
+  const query = normalize(q);
+  if (!query) return true;
+  const title = normalize(site.title || site.name || site.businessName || "");
+  const text = siteText(site);
+  return title.includes(query) || text.includes(query);
+}
+
 function adScore(site, q) {
   const cpc = Number(site.cpc || site.sponsorCpc || 0);
   const budget = Number(site.sponsorBudget || 0);
@@ -185,14 +185,6 @@ function adScore(site, q) {
   if (textMatchStrong(site, q)) s += 50;
 
   return Math.round(s);
-}
-
-function textMatchStrong(site, q) {
-  const query = normalize(q);
-  if (!query) return true;
-  const title = normalize(site.title || site.name || site.businessName || "");
-  const text = siteText(site);
-  return title.includes(query) || text.includes(query);
 }
 
 function score(site, q) {
@@ -292,6 +284,7 @@ function buildSite(b) {
     dailyLimit: Number(b.dailyLimit || 0),
     cpc: Number(b.cpc || b.sponsorCpc || 0),
     sponsorCpc: Number(b.sponsorCpc || b.cpc || 0),
+    totalSpent: Number(b.totalSpent || 0),
 
     aiScore: Number(b.aiScore || 10),
     latitude: Number(b.latitude || 0),
@@ -319,7 +312,8 @@ app.get("/health", (req, res) => {
     upload: "active",
     autoIndex: "active",
     nearby: "active",
-    adsEngine: "active"
+    adsEngine: "active",
+    antiRefresh: "active"
   });
 });
 
@@ -691,10 +685,56 @@ app.get("/api/autocomplete", async (req, res) => {
   }
 });
 
-/* AD CLICK ENGINE */
+/* AD VIEW / CLICK ENGINE */
+
+const viewCache = new Map();
+const clickCache = new Map();
+
+function cacheKey(type, siteId, req) {
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "ip";
+  const day = new Date().toISOString().slice(0, 10);
+  return `${type}:${siteId}:${ip}:${day}`;
+}
+
+app.post("/api/sites/:id/view", async (req, res) => {
+  try {
+    const key = cacheKey("view", req.params.id, req);
+
+    if (viewCache.has(key)) {
+      return res.json({ success: true, counted: false, message: "Tekrar görüntüleme sayılmadı" });
+    }
+
+    viewCache.set(key, true);
+
+    const site = await Site.findById(req.params.id);
+    if (!site) return res.status(404).json({ success: false });
+
+    await Site.findByIdAndUpdate(req.params.id, {
+      $inc: { views: 1 },
+      $set: {
+        lastViewAt: new Date(),
+        qualityScore: calcQualityScore(site),
+        adScore: adScore(site, "")
+      }
+    });
+
+    res.json({ success: true, counted: true });
+
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
 
 app.post("/api/sites/:id/click", async (req, res) => {
   try {
+    const key = cacheKey("click", req.params.id, req);
+
+    if (clickCache.has(key)) {
+      return res.json({ success: true, counted: false, message: "Tekrar tıklama sayılmadı" });
+    }
+
+    clickCache.set(key, true);
+
     const site = await Site.findById(req.params.id);
     if (!site) return res.status(404).json({ success: false });
 
@@ -702,16 +742,20 @@ app.post("/api/sites/:id/click", async (req, res) => {
     const budget = Number(site.sponsorBudget || 0);
     const active = site.sponsored || site.isSponsored || site.sponsorActive;
 
-    const update = { $inc: { clicks: 1 } };
+    const update = {
+      $inc: { clicks: 1 },
+      $set: {
+        lastClickAt: new Date(),
+        qualityScore: calcQualityScore(site),
+        adScore: adScore(site, "")
+      }
+    };
 
     if (active && cpc > 0 && budget > 0) {
       const newBudget = Math.max(budget - cpc, 0);
 
-      update.$set = {
-        sponsorBudget: newBudget,
-        qualityScore: calcQualityScore(site),
-        lastClickAt: new Date()
-      };
+      update.$set.sponsorBudget = newBudget;
+      update.$set.totalSpent = Number(site.totalSpent || 0) + cpc;
 
       if (newBudget <= 0) {
         update.$set.sponsored = false;
@@ -723,17 +767,8 @@ app.post("/api/sites/:id/click", async (req, res) => {
 
     await Site.findByIdAndUpdate(req.params.id, update);
 
-    res.json({ success: true });
+    res.json({ success: true, counted: true });
 
-  } catch {
-    res.status(500).json({ success: false });
-  }
-});
-
-app.post("/api/sites/:id/view", async (req, res) => {
-  try {
-    await Site.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
-    res.json({ success: true });
   } catch {
     res.status(500).json({ success: false });
   }
