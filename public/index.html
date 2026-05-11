@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NetSearch - AI Destekli Arama Motoru</title>
-<meta name="description" content="NetSearch ile işletmeleri, web sitelerini ve yapay zeka destekli arama sonuçlarını keşfedin.">
+<meta name="description" content="NetSearch ile işletmeleri, web sitelerini, yakındaki işletmeleri ve yapay zeka destekli arama sonuçlarını keşfedin.">
 <meta name="robots" content="index, follow">
 
 <link rel="icon" type="image/png" href="/icon-192.png">
@@ -79,7 +79,7 @@ body{
 .brandText .search{color:#0ea5e9}
 
 .searchBox{
-  width:min(720px,92vw);
+  width:min(760px,92vw);
   position:relative;
 }
 
@@ -123,6 +123,12 @@ body{
 
 .voice{
   background:#16a34a!important;
+  padding:12px 15px!important;
+  margin-left:6px;
+}
+
+.nearBtn{
+  background:#9333ea!important;
   padding:12px 15px!important;
   margin-left:6px;
 }
@@ -314,6 +320,12 @@ body{
   border-color:#86efac;
 }
 
+.badge.near{
+  color:#6b21a8;
+  background:#f3e8ff;
+  border-color:#d8b4fe;
+}
+
 .actions{
   display:flex;
   gap:9px;
@@ -362,47 +374,35 @@ footer a{
 }
 
 @media(max-width:700px){
-  .top{
-    padding:14px;
-  }
+  .top{padding:14px}
 
   .mainLogo{
     width:110px;
     height:110px;
   }
 
-  .brandText{
-    font-size:48px;
-  }
+  .brandText{font-size:48px}
 
   .searchRow{
     padding-left:14px;
   }
 
-  .searchRow input{
-    font-size:16px;
-  }
+  .searchRow input{font-size:16px}
 
   .searchRow button{
-    padding:11px 16px;
+    padding:11px 13px;
   }
 
-  .buttons{
-    gap:8px;
-  }
+  .buttons{gap:8px}
 
-  .buttons button{
-    width:100%;
-  }
+  .buttons button{width:100%}
 
   .actions a,.actions button{
     width:100%;
     text-align:center;
   }
 
-  footer{
-    padding-bottom:24px;
-  }
+  footer{padding-bottom:24px}
 }
 </style>
 </head>
@@ -429,6 +429,7 @@ footer a{
       <input id="searchInput" type="text" placeholder="NetSearch'te ara..." autocomplete="off">
       <button onclick="searchSites()">Ara</button>
       <button class="voice" onclick="voiceSearch()">🎙️</button>
+      <button class="nearBtn" onclick="nearbySearch()">📍</button>
     </div>
 
     <div id="suggestions" class="suggestions"></div>
@@ -436,7 +437,7 @@ footer a{
 
   <div class="buttons">
     <button onclick="quickSearch('Eskişehir kombi servisi')">NetSearch'te Ara</button>
-    <button onclick="quickSearch('Yakınımdaki işletmeler')">Kendimi Şanslı Hissediyorum</button>
+    <button onclick="nearbySearch()">Yakınımdaki İşletmeler</button>
   </div>
 
 </section>
@@ -501,6 +502,17 @@ document.addEventListener("click", function(e){
   }
 });
 
+function prepareResults(){
+  document.getElementById("hero").style.justifyContent = "flex-start";
+  document.getElementById("hero").style.paddingTop = "35px";
+  document.getElementById("hero").style.paddingBottom = "30px";
+  document.getElementById("resultsWrap").style.display = "block";
+  document.getElementById("results").innerHTML = `<div class="loading">Aranıyor...</div>`;
+  document.getElementById("sponsoredResults").innerHTML = "";
+  document.getElementById("sponsoredTitle").style.display = "none";
+  document.getElementById("organicTitle").style.display = "none";
+}
+
 async function loadSuggestions(q){
   try{
     const res = await fetch("/api/autocomplete?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {
@@ -545,14 +557,7 @@ async function searchSites(){
   const q = input.value.trim();
 
   suggestionsBox.style.display = "none";
-
-  document.getElementById("hero").style.justifyContent = "flex-start";
-  document.getElementById("hero").style.paddingTop = "35px";
-  document.getElementById("hero").style.paddingBottom = "30px";
-
-  document.getElementById("resultsWrap").style.display = "block";
-  document.getElementById("results").innerHTML = `<div class="loading">Aranıyor...</div>`;
-  document.getElementById("sponsoredResults").innerHTML = "";
+  prepareResults();
 
   try{
     const res = await fetch("/api/search?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {
@@ -575,8 +580,6 @@ async function searchSites(){
       sponsored.forEach(site=>{
         document.getElementById("sponsoredResults").appendChild(createCard(site,true));
       });
-    }else{
-      document.getElementById("sponsoredTitle").style.display = "none";
     }
 
     if(organic.length){
@@ -584,21 +587,79 @@ async function searchSites(){
       organic.forEach(site=>{
         document.getElementById("results").appendChild(createCard(site,false));
       });
-    }else{
-      document.getElementById("organicTitle").style.display = "none";
-
-      if(!sponsored.length){
-        document.getElementById("results").innerHTML =
-          `<div class="empty">Sonuç bulunamadı.</div>`;
-      }
+    }else if(!sponsored.length){
+      document.getElementById("results").innerHTML =
+        `<div class="empty">Sonuç bulunamadı.</div>`;
     }
 
     document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
 
-  }catch(err){
+  }catch{
     document.getElementById("results").innerHTML =
       `<div class="empty">Sunucu bağlantı hatası.</div>`;
   }
+}
+
+function nearbySearch(){
+  const q = input.value.trim();
+
+  if(!navigator.geolocation){
+    alert("Tarayıcı konum desteklemiyor.");
+    return;
+  }
+
+  prepareResults();
+
+  document.getElementById("aiText").innerText =
+    "Konum izni bekleniyor. Yakındaki işletmeler aranıyor...";
+
+  navigator.geolocation.getCurrentPosition(async function(pos){
+
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+
+    try{
+      const res = await fetch(
+        `/api/nearby?lat=${lat}&lng=${lng}&q=${encodeURIComponent(q)}&radius=50&t=${Date.now()}`,
+        {cache:"no-store"}
+      );
+
+      const data = await res.json();
+      const results = data.results || [];
+
+      document.getElementById("results").innerHTML = "";
+      document.getElementById("sponsoredResults").innerHTML = "";
+      document.getElementById("sponsoredTitle").style.display = "none";
+
+      document.getElementById("aiText").innerText =
+        results.length
+        ? `Konumuna göre ${results.length} yakın işletme bulundu. En yakın ve sponsorlu sonuçlar önce gösterilir.`
+        : "Konumuna yakın kayıtlı işletme bulunamadı. Admin panelden işletmelere enlem/boylam eklenirse burada görünür.";
+
+      if(results.length){
+        document.getElementById("organicTitle").style.display = "block";
+        document.getElementById("organicTitle").innerText = "Yakındaki İşletmeler";
+
+        results.forEach(site=>{
+          document.getElementById("results").appendChild(createCard(site,false));
+        });
+      }else{
+        document.getElementById("organicTitle").style.display = "none";
+        document.getElementById("results").innerHTML =
+          `<div class="empty">Yakında işletme bulunamadı.</div>`;
+      }
+
+      document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
+
+    }catch{
+      document.getElementById("results").innerHTML =
+        `<div class="empty">Yakındaki işletmeler alınamadı.</div>`;
+    }
+
+  }, function(){
+    document.getElementById("results").innerHTML =
+      `<div class="empty">Konum izni verilmedi. Yakındaki işletmeleri göstermek için konum izni gerekli.</div>`;
+  });
 }
 
 function createCard(site,isSponsored){
@@ -617,6 +678,7 @@ function createCard(site,isSponsored){
   const phone = site.phone || site.telefon || "";
   const whatsapp = site.whatsapp || phone;
   const score = site.searchScore || site.finalScore || site.aiScore || "";
+  const distance = site.distanceKm;
   const firstLetter = title.charAt(0).toUpperCase() || "N";
 
   div.innerHTML = `
@@ -638,6 +700,7 @@ function createCard(site,isSponsored){
     <div class="badges">
       ${isSponsored ? `<span class="badge ad">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
       ${verified ? `<span class="badge verified">✅ Doğrulanmış</span>` : ""}
+      ${distance !== undefined ? `<span class="badge near">📍 ${distance} km yakınında</span>` : ""}
       <span class="badge">${escapeHtml(category)}</span>
       ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
       ${score ? `<span class="badge">AI Skor: ${Math.round(score)}</span>` : ""}
@@ -658,8 +721,12 @@ function createCard(site,isSponsored){
 
 async function trackClick(id){
   if(!id) return;
+
   try{
-    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {method:"POST",cache:"no-store"});
+    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {
+      method:"POST",
+      cache:"no-store"
+    });
   }catch{}
 }
 
