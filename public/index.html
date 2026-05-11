@@ -288,6 +288,7 @@ main{
   height:210px;
   object-fit:cover;
   background:#dbeafe;
+  display:block;
 }
 
 .cardBody{padding:22px}
@@ -305,6 +306,21 @@ main{
   object-fit:cover;
   background:#e0f2fe;
   border:1px solid #dbeafe;
+  flex-shrink:0;
+}
+
+.logoLetter{
+  width:74px;
+  height:74px;
+  border-radius:20px;
+  background:#e0f2fe;
+  border:1px solid #dbeafe;
+  color:#0284c7;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:30px;
   flex-shrink:0;
 }
 
@@ -401,9 +417,7 @@ main{
   font-weight:bold;
 }
 
-.mobileBar{
-  display:none;
-}
+.mobileBar{display:none}
 
 footer{
   background:white;
@@ -443,13 +457,21 @@ footer{
     padding:16px;
   }
 
-  .cover{height:165px}
+  .cover{
+    height:165px;
+  }
+
+  .cardBody{
+    padding:18px;
+  }
 
   .cardTop{
     align-items:flex-start;
   }
 
-  .title{font-size:22px}
+  .title{
+    font-size:22px;
+  }
 
   .actions a,
   .actions button{
@@ -698,8 +720,12 @@ function createCard(site,isSponsored){
   const title = site.title || site.name || site.businessName || "İsimsiz Site";
   const url = site.url || site.website || site.link || "#";
   const desc = site.description || site.desc || site.address || "Açıklama bulunamadı.";
-  const logo = site.logo || site.logoUrl || site.image || "https://via.placeholder.com/120x120.png?text=NS";
-  const cover = site.cover || site.coverUrl || site.image || "https://via.placeholder.com/1200x400.png?text=NetSearch";
+
+  const logo = site.logo || site.logoUrl || site.image || "";
+  const cover = site.cover || site.coverUrl || "";
+  const hasLogo = logo && String(logo).trim() !== "";
+  const hasCover = cover && String(cover).trim() !== "";
+
   const category = site.category || "Genel";
   const city = site.city || site.sehir || "";
   const district = site.district || site.ilce || "";
@@ -708,12 +734,21 @@ function createCard(site,isSponsored){
   const verified = site.verified || site.isVerified;
   const score = site.searchScore || site.finalScore || site.aiScore || "";
 
+  const firstLetter = title.trim().charAt(0).toUpperCase() || "N";
+
   card.innerHTML = `
-    <img class="cover" src="${escapeHtml(cover)}" onerror="this.src='https://via.placeholder.com/1200x400.png?text=NetSearch'">
+    ${hasCover ? `
+      <img class="cover" src="${escapeHtml(cover)}" onerror="this.remove()">
+    ` : ""}
 
     <div class="cardBody">
       <div class="cardTop">
-        <img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.src='https://via.placeholder.com/120x120.png?text=NS'">
+        ${
+          hasLogo
+          ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(firstLetter)}</div>'">`
+          : `<div class="logoLetter">${escapeHtml(firstLetter)}</div>`
+        }
+
         <div>
           <div class="title">${escapeHtml(title)}</div>
           <div class="url">${escapeHtml(url)}</div>
