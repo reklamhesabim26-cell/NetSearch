@@ -164,14 +164,31 @@ body{
   z-index:20;
 }
 
-.suggestions div{
+.suggestionItem{
   padding:13px 18px;
   cursor:pointer;
   border-bottom:1px solid #f1f5f9;
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
 }
 
-.suggestions div:hover{
+.suggestionItem:hover{
   background:#f8fafc;
+}
+
+.suggestionText{
+  font-weight:bold;
+  color:#111827;
+}
+
+.suggestionType{
+  font-size:12px;
+  color:#64748b;
+  background:#f1f5f9;
+  border-radius:999px;
+  padding:4px 8px;
 }
 
 .resultsWrap{
@@ -451,8 +468,83 @@ footer a{
 </footer>
 
 <script>
+const input = document.getElementById("searchInput");
+const suggestionsBox = document.getElementById("suggestions");
+let suggestionTimer = null;
+
+input.addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    suggestionsBox.style.display = "none";
+    searchSites();
+  }
+});
+
+input.addEventListener("input", function(){
+  clearTimeout(suggestionTimer);
+
+  const q = input.value.trim();
+
+  if(q.length < 2){
+    suggestionsBox.style.display = "none";
+    suggestionsBox.innerHTML = "";
+    return;
+  }
+
+  suggestionTimer = setTimeout(() => {
+    loadSuggestions(q);
+  }, 180);
+});
+
+document.addEventListener("click", function(e){
+  if(!e.target.closest(".searchBox")){
+    suggestionsBox.style.display = "none";
+  }
+});
+
+async function loadSuggestions(q){
+  try{
+    const res = await fetch("/api/autocomplete?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {
+      cache:"no-store"
+    });
+
+    const data = await res.json();
+
+    suggestionsBox.innerHTML = "";
+
+    if(!Array.isArray(data) || data.length === 0){
+      suggestionsBox.style.display = "none";
+      return;
+    }
+
+    data.slice(0,8).forEach(item => {
+      const div = document.createElement("div");
+      div.className = "suggestionItem";
+
+      div.innerHTML = `
+        <span class="suggestionText">🔎 ${escapeHtml(item)}</span>
+        <span class="suggestionType">Öneri</span>
+      `;
+
+      div.onclick = () => {
+        input.value = item;
+        suggestionsBox.style.display = "none";
+        searchSites();
+      };
+
+      suggestionsBox.appendChild(div);
+    });
+
+    suggestionsBox.style.display = "block";
+
+  }catch{
+    suggestionsBox.style.display = "none";
+  }
+}
+
 async function searchSites(){
-  const q = document.getElementById("searchInput").value.trim();
+  const q = input.value.trim();
+
+  suggestionsBox.style.display = "none";
 
   document.getElementById("hero").style.justifyContent = "flex-start";
   document.getElementById("hero").style.paddingTop = "35px";
@@ -463,7 +555,10 @@ async function searchSites(){
   document.getElementById("sponsoredResults").innerHTML = "";
 
   try{
-    const res = await fetch("/api/search?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {cache:"no-store"});
+    const res = await fetch("/api/search?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {
+      cache:"no-store"
+    });
+
     const data = await res.json();
 
     const sponsored = data.sponsored || [];
@@ -522,13 +617,14 @@ function createCard(site,isSponsored){
   const phone = site.phone || site.telefon || "";
   const whatsapp = site.whatsapp || phone;
   const score = site.searchScore || site.finalScore || site.aiScore || "";
+  const firstLetter = title.charAt(0).toUpperCase() || "N";
 
   div.innerHTML = `
     <div class="cardTop">
       ${
         logo
-        ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(title.charAt(0).toUpperCase())}</div>'">`
-        : `<div class="logoLetter">${escapeHtml(title.charAt(0).toUpperCase())}</div>`
+        ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(firstLetter)}</div>'">`
+        : `<div class="logoLetter">${escapeHtml(firstLetter)}</div>`
       }
 
       <div>
@@ -568,7 +664,7 @@ async function trackClick(id){
 }
 
 function quickSearch(text){
-  document.getElementById("searchInput").value = text;
+  input.value = text;
   searchSites();
 }
 
@@ -585,7 +681,7 @@ function voiceSearch(){
   recognition.start();
 
   recognition.onresult = function(event){
-    document.getElementById("searchInput").value = event.results[0][0].transcript;
+    input.value = event.results[0][0].transcript;
     searchSites();
   };
 }
@@ -621,10 +717,6 @@ function escapeAttr(text){
     .replaceAll("'","\\'")
     .replaceAll('"',"&quot;");
 }
-
-document.getElementById("searchInput").addEventListener("keydown", function(e){
-  if(e.key === "Enter") searchSites();
-});
 </script>
 
 </body>
