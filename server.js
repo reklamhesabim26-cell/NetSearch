@@ -541,14 +541,41 @@ Sitemap: https://netsearch.com.tr/sitemap.xml`);
 
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).select("_id updatedAt");
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).select("_id title city category updatedAt");
 
-    const urls = sites.map(site => `
+    const slugify = (text) => String(text || "")
+      .toLowerCase()
+      .replaceAll("ı","i").replaceAll("ğ","g").replaceAll("ü","u")
+      .replaceAll("ş","s").replaceAll("ö","o").replaceAll("ç","c")
+      .replace(/[^a-z0-9]+/g,"-")
+      .replace(/^-+|-+$/g,"");
+
+    const siteUrls = sites.map(site => {
+      const slug = slugify(site.title || site._id);
+      return `
+  <url>
+    <loc>https://netsearch.com.tr/site/${slug}</loc>
+    <lastmod>${new Date(site.updatedAt || Date.now()).toISOString()}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <url>
     <loc>https://netsearch.com.tr/site.html?id=${site._id}</loc>
     <lastmod>${new Date(site.updatedAt || Date.now()).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
+  </url>`;
+    }).join("");
+
+    const cityCategoryUrls = [...new Set(
+      sites
+        .map(site => `${slugify(site.city)}-${slugify(site.category)}`)
+        .filter(x => x && x !== "-")
+    )].map(slug => `
+  <url>
+    <loc>https://netsearch.com.tr/${slug}</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>`).join("");
 
     res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?>
@@ -558,10 +585,37 @@ app.get("/sitemap.xml", async (req, res) => {
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  ${urls}
+  ${cityCategoryUrls}
+  ${siteUrls}
 </urlset>`);
   } catch {
     res.status(500).send("Sitemap oluşturulamadı");
+  }
+});
+
+/* SEO SLUG ROUTES - app.listen üstünde kalmalı */
+
+app.get("/site/:slug", async (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "site.html"));
+});
+
+app.get("/:cityCategory", async (req, res, next) => {
+  try {
+    const slug = req.params.cityCategory || "";
+
+    if (
+      slug.includes(".") ||
+      slug.startsWith("api") ||
+      slug === "health" ||
+      slug === "robots.txt" ||
+      slug === "sitemap.xml"
+    ) {
+      return next();
+    }
+
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  } catch {
+    next();
   }
 });
 
