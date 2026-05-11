@@ -50,7 +50,7 @@ body{
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  padding:35px 16px 80px;
+  padding:35px 16px 70px;
 }
 
 .logoArea{
@@ -79,7 +79,7 @@ body{
 .brandText .search{color:#0ea5e9}
 
 .searchBox{
-  width:min(760px,92vw);
+  width:min(720px,92vw);
   position:relative;
 }
 
@@ -94,17 +94,15 @@ body{
   background:white;
 }
 
-.searchRow:hover{
-  box-shadow:0 4px 18px rgba(0,0,0,.12);
-}
-
 .searchIcon{
   color:#64748b;
   margin-right:10px;
+  flex-shrink:0;
 }
 
 .searchRow input{
   flex:1;
+  min-width:0;
   border:0;
   outline:0;
   font-size:18px;
@@ -113,31 +111,45 @@ body{
 
 .searchRow button{
   border:0;
-  background:#0ea5e9;
   color:white;
   font-weight:bold;
-  padding:12px 22px;
   border-radius:999px;
   cursor:pointer;
+  flex-shrink:0;
+}
+
+.searchBtn{
+  background:#0ea5e9;
+  padding:12px 22px;
 }
 
 .voice{
-  background:#16a34a!important;
-  padding:12px 15px!important;
+  background:#16a34a;
+  padding:12px 15px;
   margin-left:6px;
 }
 
-.nearBtn{
-  background:#9333ea!important;
-  padding:12px 15px!important;
-  margin-left:6px;
+.locationLine{
+  margin-top:18px;
+  display:flex;
+  justify-content:center;
+}
+
+.locationBtn{
+  border:1px solid #ddd6fe;
+  background:#f5f3ff;
+  color:#6d28d9;
+  padding:11px 16px;
+  border-radius:999px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 .buttons{
   display:flex;
   justify-content:center;
   gap:12px;
-  margin-top:24px;
+  margin-top:18px;
   flex-wrap:wrap;
 }
 
@@ -149,11 +161,6 @@ body{
   cursor:pointer;
   color:#111827;
   font-weight:bold;
-}
-
-.buttons button:hover{
-  border-color:#bae6fd;
-  background:#eff6ff;
 }
 
 .suggestions{
@@ -180,22 +187,9 @@ body{
   align-items:center;
 }
 
-.suggestionItem:hover{
-  background:#f8fafc;
-}
-
-.suggestionText{
-  font-weight:bold;
-  color:#111827;
-}
-
-.suggestionType{
-  font-size:12px;
-  color:#64748b;
-  background:#f1f5f9;
-  border-radius:999px;
-  padding:4px 8px;
-}
+.suggestionItem:hover{background:#f8fafc}
+.suggestionText{font-weight:bold;color:#111827}
+.suggestionType{font-size:12px;color:#64748b;background:#f1f5f9;border-radius:999px;padding:4px 8px}
 
 .resultsWrap{
   display:none;
@@ -217,21 +211,9 @@ body{
   font-size:20px;
 }
 
-.aiBox p{
-  margin:0;
-  line-height:1.6;
-  color:#334155;
-}
-
-.sectionTitle{
-  margin:24px 0 12px;
-  font-size:22px;
-}
-
-.resultGrid{
-  display:grid;
-  gap:16px;
-}
+.aiBox p{margin:0;line-height:1.6;color:#334155}
+.sectionTitle{margin:24px 0 12px;font-size:22px}
+.resultGrid{display:grid;gap:16px}
 
 .card{
   border:1px solid #e5e7eb;
@@ -246,11 +228,7 @@ body{
   box-shadow:0 12px 30px rgba(14,165,233,.14);
 }
 
-.cardTop{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
+.cardTop{display:flex;align-items:center;gap:14px}
 
 .siteLogo,.logoLetter{
   width:58px;
@@ -271,32 +249,11 @@ body{
   font-weight:900;
 }
 
-.title{
-  font-size:23px;
-  color:#0284c7;
-  font-weight:900;
-  margin-bottom:4px;
-}
+.title{font-size:23px;color:#0284c7;font-weight:900;margin-bottom:4px}
+.url{color:#16a34a;font-weight:bold;font-size:14px;word-break:break-all}
+.desc{color:#334155;line-height:1.6;margin:14px 0}
 
-.url{
-  color:#16a34a;
-  font-weight:bold;
-  font-size:14px;
-  word-break:break-all;
-}
-
-.desc{
-  color:#334155;
-  line-height:1.6;
-  margin:14px 0;
-}
-
-.badges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:14px;
-}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 
 .badge{
   background:#f8fafc;
@@ -308,29 +265,11 @@ body{
   font-weight:bold;
 }
 
-.badge.ad{
-  color:#92400e;
-  background:#fef3c7;
-  border-color:#f59e0b;
-}
+.badge.ad{color:#92400e;background:#fef3c7;border-color:#f59e0b}
+.badge.verified{color:#166534;background:#dcfce7;border-color:#86efac}
+.badge.near{color:#6b21a8;background:#f3e8ff;border-color:#d8b4fe}
 
-.badge.verified{
-  color:#166534;
-  background:#dcfce7;
-  border-color:#86efac;
-}
-
-.badge.near{
-  color:#6b21a8;
-  background:#f3e8ff;
-  border-color:#d8b4fe;
-}
-
-.actions{
-  display:flex;
-  gap:9px;
-  flex-wrap:wrap;
-}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
 
 .actions a,.actions button{
   border:0;
@@ -356,53 +295,84 @@ body{
 }
 
 footer{
+  margin-top:auto;
   background:#f8fafc;
   border-top:1px solid #e5e7eb;
-  padding:14px 22px;
-  display:flex;
-  justify-content:space-between;
-  flex-wrap:wrap;
-  gap:12px;
+  padding:22px;
   color:#64748b;
   font-size:14px;
+}
+
+.footerInner{
+  max-width:1100px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  flex-wrap:wrap;
+}
+
+.footerLinks{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
 }
 
 footer a{
   color:#475569;
   text-decoration:none;
-  margin-right:14px;
+  font-weight:bold;
+}
+
+.legalText{
+  max-width:1100px;
+  margin:14px auto 0;
+  font-size:12px;
+  line-height:1.5;
+  color:#64748b;
 }
 
 @media(max-width:700px){
   .top{padding:14px}
-
-  .mainLogo{
-    width:110px;
-    height:110px;
-  }
-
+  .mainLogo{width:110px;height:110px}
   .brandText{font-size:48px}
 
+  .searchBox{width:94vw}
+
   .searchRow{
-    padding-left:14px;
+    padding:7px 7px 7px 14px;
   }
 
-  .searchRow input{font-size:16px}
+  .searchRow input{
+    font-size:15px;
+    padding:12px 6px;
+  }
 
-  .searchRow button{
+  .searchBtn{
     padding:11px 13px;
   }
 
-  .buttons{gap:8px}
+  .voice{
+    padding:11px 12px;
+    margin-left:5px;
+  }
 
-  .buttons button{width:100%}
+  .buttons{gap:8px}
+  .buttons button,.locationBtn{width:100%}
 
   .actions a,.actions button{
     width:100%;
     text-align:center;
   }
 
-  footer{padding-bottom:24px}
+  .footerInner{
+    flex-direction:column;
+  }
+
+  .footerLinks{
+    flex-direction:column;
+    gap:8px;
+  }
 }
 </style>
 </head>
@@ -418,26 +388,26 @@ footer a{
 
   <div class="logoArea">
     <img src="/icon-512.png" class="mainLogo" alt="NetSearch Logo">
-    <div class="brandText">
-      <span class="net">Net</span><span class="search">Search</span>
-    </div>
+    <div class="brandText"><span class="net">Net</span><span class="search">Search</span></div>
   </div>
 
   <div class="searchBox">
     <div class="searchRow">
       <span class="searchIcon">🔎</span>
       <input id="searchInput" type="text" placeholder="NetSearch'te ara..." autocomplete="off">
-      <button onclick="searchSites()">Ara</button>
+      <button class="searchBtn" onclick="searchSites()">Ara</button>
       <button class="voice" onclick="voiceSearch()">🎙️</button>
-      <button class="nearBtn" onclick="nearbySearch()">📍</button>
     </div>
-
     <div id="suggestions" class="suggestions"></div>
+  </div>
+
+  <div class="locationLine">
+    <button class="locationBtn" onclick="nearbySearch()">📍 Yakınımdaki İşletmeleri Göster</button>
   </div>
 
   <div class="buttons">
     <button onclick="quickSearch('Eskişehir kombi servisi')">NetSearch'te Ara</button>
-    <button onclick="nearbySearch()">Yakınımdaki İşletmeler</button>
+    <button onclick="quickSearch('Teknik servis')">Teknik Servis Ara</button>
   </div>
 
 </section>
@@ -458,20 +428,39 @@ footer a{
 </main>
 
 <footer>
-  <div>
-    <a href="#">Hakkında</a>
-    <a href="#">Reklam</a>
-    <a href="/login.html">İşletme</a>
-    <a href="#">Arama nasıl çalışır?</a>
+  <div class="footerInner">
+    <div>
+      <b>NetSearch</b><br>
+      AI destekli yeni nesil arama ve reklam platformu.
+    </div>
+
+    <div class="footerLinks">
+      <a href="/index.html">Ana Sayfa</a>
+      <a href="/login.html">Reklam Ver</a>
+      <a href="#">Hakkımızda</a>
+      <a href="#">Bize Ulaşın</a>
+      <a href="#">Gizlilik Politikası</a>
+      <a href="#">KVKK</a>
+      <a href="#">Çerez Politikası</a>
+      <a href="#">Kullanım Şartları</a>
+    </div>
+
+    <div>
+      © 2026 NetSearch
+    </div>
   </div>
 
-  <div>© 2026 NetSearch</div>
+  <div class="legalText">
+    NetSearch kullanıcı deneyimini geliştirmek, güvenliği sağlamak ve reklam performansını ölçmek amacıyla çerezler ve benzeri teknolojiler kullanabilir.
+    Gizlilik, KVKK, çerez ve kullanım şartları sayfaları ilerleyen aşamada detaylı olarak yayınlanacaktır.
+  </div>
 </footer>
 
 <script>
 const input = document.getElementById("searchInput");
 const suggestionsBox = document.getElementById("suggestions");
 let suggestionTimer = null;
+let viewedAds = new Set();
 
 input.addEventListener("keydown", function(e){
   if(e.key === "Enter"){
@@ -482,7 +471,6 @@ input.addEventListener("keydown", function(e){
 
 input.addEventListener("input", function(){
   clearTimeout(suggestionTimer);
-
   const q = input.value.trim();
 
   if(q.length < 2){
@@ -491,9 +479,7 @@ input.addEventListener("input", function(){
     return;
   }
 
-  suggestionTimer = setTimeout(() => {
-    loadSuggestions(q);
-  }, 180);
+  suggestionTimer = setTimeout(() => loadSuggestions(q), 180);
 });
 
 document.addEventListener("click", function(e){
@@ -515,10 +501,7 @@ function prepareResults(){
 
 async function loadSuggestions(q){
   try{
-    const res = await fetch("/api/autocomplete?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {
-      cache:"no-store"
-    });
-
+    const res = await fetch("/api/autocomplete?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {cache:"no-store"});
     const data = await res.json();
 
     suggestionsBox.innerHTML = "";
@@ -531,18 +514,12 @@ async function loadSuggestions(q){
     data.slice(0,8).forEach(item => {
       const div = document.createElement("div");
       div.className = "suggestionItem";
-
-      div.innerHTML = `
-        <span class="suggestionText">🔎 ${escapeHtml(item)}</span>
-        <span class="suggestionType">Öneri</span>
-      `;
-
+      div.innerHTML = `<span class="suggestionText">🔎 ${escapeHtml(item)}</span><span class="suggestionType">Öneri</span>`;
       div.onclick = () => {
         input.value = item;
         suggestionsBox.style.display = "none";
         searchSites();
       };
-
       suggestionsBox.appendChild(div);
     });
 
@@ -555,15 +532,11 @@ async function loadSuggestions(q){
 
 async function searchSites(){
   const q = input.value.trim();
-
   suggestionsBox.style.display = "none";
   prepareResults();
 
   try{
-    const res = await fetch("/api/search?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {
-      cache:"no-store"
-    });
-
+    const res = await fetch("/api/search?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {cache:"no-store"});
     const data = await res.json();
 
     const sponsored = data.sponsored || [];
@@ -579,24 +552,24 @@ async function searchSites(){
       document.getElementById("sponsoredTitle").style.display = "block";
       sponsored.forEach(site=>{
         document.getElementById("sponsoredResults").appendChild(createCard(site,true));
+        trackView(site._id);
       });
     }
 
     if(organic.length){
       document.getElementById("organicTitle").style.display = "block";
+      document.getElementById("organicTitle").innerText = "Arama Sonuçları";
       organic.forEach(site=>{
         document.getElementById("results").appendChild(createCard(site,false));
       });
     }else if(!sponsored.length){
-      document.getElementById("results").innerHTML =
-        `<div class="empty">Sonuç bulunamadı.</div>`;
+      document.getElementById("results").innerHTML = `<div class="empty">Sonuç bulunamadı.</div>`;
     }
 
     document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
 
   }catch{
-    document.getElementById("results").innerHTML =
-      `<div class="empty">Sunucu bağlantı hatası.</div>`;
+    document.getElementById("results").innerHTML = `<div class="empty">Sunucu bağlantı hatası.</div>`;
   }
 }
 
@@ -614,16 +587,11 @@ function nearbySearch(){
     "Konum izni bekleniyor. Yakındaki işletmeler aranıyor...";
 
   navigator.geolocation.getCurrentPosition(async function(pos){
-
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
 
     try{
-      const res = await fetch(
-        `/api/nearby?lat=${lat}&lng=${lng}&q=${encodeURIComponent(q)}&radius=50&t=${Date.now()}`,
-        {cache:"no-store"}
-      );
-
+      const res = await fetch(`/api/nearby?lat=${lat}&lng=${lng}&q=${encodeURIComponent(q)}&radius=50&t=${Date.now()}`, {cache:"no-store"});
       const data = await res.json();
       const results = data.results || [];
 
@@ -633,27 +601,24 @@ function nearbySearch(){
 
       document.getElementById("aiText").innerText =
         results.length
-        ? `Konumuna göre ${results.length} yakın işletme bulundu. En yakın ve sponsorlu sonuçlar önce gösterilir.`
-        : "Konumuna yakın kayıtlı işletme bulunamadı. Admin panelden işletmelere enlem/boylam eklenirse burada görünür.";
+        ? `Konumuna göre ${results.length} yakın işletme bulundu.`
+        : "Konumuna yakın kayıtlı işletme bulunamadı.";
 
       if(results.length){
         document.getElementById("organicTitle").style.display = "block";
         document.getElementById("organicTitle").innerText = "Yakındaki İşletmeler";
-
         results.forEach(site=>{
           document.getElementById("results").appendChild(createCard(site,false));
         });
       }else{
         document.getElementById("organicTitle").style.display = "none";
-        document.getElementById("results").innerHTML =
-          `<div class="empty">Yakında işletme bulunamadı.</div>`;
+        document.getElementById("results").innerHTML = `<div class="empty">Yakında işletme bulunamadı.</div>`;
       }
 
       document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
 
     }catch{
-      document.getElementById("results").innerHTML =
-        `<div class="empty">Yakındaki işletmeler alınamadı.</div>`;
+      document.getElementById("results").innerHTML = `<div class="empty">Yakındaki işletmeler alınamadı.</div>`;
     }
 
   }, function(){
@@ -719,14 +684,19 @@ function createCard(site,isSponsored){
   return div;
 }
 
-async function trackClick(id){
-  if(!id) return;
+async function trackView(id){
+  if(!id || viewedAds.has(id)) return;
+  viewedAds.add(id);
 
   try{
-    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {
-      method:"POST",
-      cache:"no-store"
-    });
+    await fetch(`/api/sites/${id}/view?t=${Date.now()}`, {method:"POST",cache:"no-store"});
+  }catch{}
+}
+
+async function trackClick(id){
+  if(!id) return;
+  try{
+    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {method:"POST",cache:"no-store"});
   }catch{}
 }
 
