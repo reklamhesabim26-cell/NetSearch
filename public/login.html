@@ -5,49 +5,86 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetSearch Giriş</title>
 
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f172a">
+
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,sans-serif;
   min-height:100vh;
+  background:#f4f9ff;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:linear-gradient(135deg,#e0f2fe,#ffffff,#dbeafe);
+  color:#0f172a;
 }
+
 .box{
-  width:420px;
+  width:430px;
   max-width:92%;
   background:white;
   border:1px solid #dbeafe;
   border-radius:28px;
   padding:34px;
-  box-shadow:0 25px 70px rgba(2,132,199,.16);
+  box-shadow:0 25px 70px rgba(2,132,199,.14);
 }
-.logo{
-  text-align:center;
-  font-size:48px;
+
+.logoArea{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  margin-bottom:24px;
+}
+
+.logoImg{
+  width:92px;
+  height:92px;
+  object-fit:cover;
+  border-radius:24px;
+  box-shadow:0 16px 38px rgba(14,165,233,.25);
+}
+
+.logoText{
+  font-size:42px;
   font-weight:900;
-  margin-bottom:26px;
+  letter-spacing:-2px;
 }
-.logo span{color:#0ea5e9}
+
+.logoText .net{color:#111827}
+.logoText .search{color:#0ea5e9}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin:12px 0 7px;
+  color:#334155;
+}
+
 input{
   width:100%;
   padding:16px;
-  margin-bottom:14px;
   border:1px solid #cbd5e1;
   border-radius:15px;
   font-size:16px;
   outline:none;
+  background:#fff;
 }
+
 input:focus{
   border-color:#38bdf8;
   box-shadow:0 0 0 4px #e0f2fe;
 }
+
 button{
   width:100%;
   padding:16px;
+  margin-top:18px;
   border:0;
   border-radius:15px;
   background:linear-gradient(135deg,#0ea5e9,#2563eb);
@@ -56,21 +93,42 @@ button{
   font-weight:900;
   cursor:pointer;
 }
+
+.secondary{
+  background:#0f172a;
+}
+
 .msg{
   text-align:center;
   margin-top:15px;
   font-weight:bold;
+  min-height:22px;
 }
+
 .err{color:#dc2626}
 .ok{color:#16a34a}
+
 .bottom{
   text-align:center;
   margin-top:20px;
+  line-height:1.9;
 }
+
 a{
   color:#0369a1;
   font-weight:bold;
   text-decoration:none;
+}
+
+.note{
+  margin-top:14px;
+  background:#f8fbff;
+  border:1px solid #dbeafe;
+  padding:12px;
+  border-radius:14px;
+  font-size:13px;
+  color:#475569;
+  line-height:1.5;
 }
 </style>
 </head>
@@ -78,38 +136,47 @@ a{
 <body>
 
 <div class="box">
-  <div class="logo">Net<span>Search</span></div>
 
-  <input id="email" placeholder="E-posta veya kullanıcı adı">
-  <input id="password" type="password" placeholder="Şifre">
+  <div class="logoArea">
+    <img class="logoImg" src="/icon-512.png" alt="NetSearch Logo" onerror="this.style.display='none'">
+    <div class="logoText">
+      <span class="net">Net</span><span class="search">Search</span>
+    </div>
+  </div>
+
+  <label>E-posta</label>
+  <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email">
+
+  <label>Şifre</label>
+  <input id="password" type="password" placeholder="Şifreniz" autocomplete="current-password">
 
   <button onclick="login()">Giriş Yap</button>
+  <button class="secondary" onclick="clearSession()">Eski Girişi Temizle / Çıkış Yap</button>
 
   <div id="message" class="msg"></div>
 
+  <div class="note">
+    Artık giriş sadece e-posta ve şifre ile yapılır. Farklı hesapla girmek için önce “Eski Girişi Temizle” butonuna basabilirsin.
+  </div>
+
   <div class="bottom">
-    Hesabın yok mu? <a href="/register.html">Kayıt Ol</a><br><br>
+    Hesabın yok mu? <a href="/register.html">Kayıt Ol</a><br>
     <a href="/index.html">Ana Sayfaya Dön</a>
   </div>
+
 </div>
 
 <script>
-window.onload = function(){
-  const token = localStorage.getItem("token");
-  const userRaw = localStorage.getItem("user");
+function clearSession(){
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("netsearch_token");
+  localStorage.removeItem("netsearch_user");
 
-  if(token && userRaw){
-    try{
-      const user = JSON.parse(userRaw);
-
-      if(user.role === "admin"){
-        window.location.href = "/admin.html";
-      }else{
-        window.location.href = "/user-panel.html";
-      }
-    }catch{}
-  }
-};
+  const msg = document.getElementById("message");
+  msg.className = "msg ok";
+  msg.innerText = "Eski giriş temizlendi. Şimdi farklı hesapla giriş yapabilirsin.";
+}
 
 async function login(){
   const email = document.getElementById("email").value.trim();
@@ -139,15 +206,16 @@ async function login(){
       localStorage.setItem("user", JSON.stringify(data.user || {}));
 
       msg.className = "msg ok";
-      msg.innerText = "Giriş başarılı, yönlendiriliyorsun...";
+      msg.innerText = "Giriş başarılı. Yönlendiriliyorsun...";
 
       setTimeout(()=>{
-        if(data.user?.role === "admin"){
+        if(data.user && data.user.role === "admin"){
           window.location.href = "/admin.html";
         }else{
           window.location.href = "/user-panel.html";
         }
       },600);
+
     }else{
       msg.className = "msg err";
       msg.innerText = data.message || "Giriş başarısız.";
@@ -158,6 +226,10 @@ async function login(){
     msg.innerText = "Sunucuya bağlanılamadı.";
   }
 }
+
+document.getElementById("password").addEventListener("keydown", function(e){
+  if(e.key === "Enter") login();
+});
 </script>
 
 </body>
