@@ -4,774 +4,255 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetSearch Admin Panel</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
 
 <style>
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#eef6ff;
-  color:#0f172a;
-}
-
-header{
-  background:linear-gradient(135deg,#0ea5e9,#2563eb);
-  color:white;
-  padding:22px;
-}
-
-.wrap{
-  max-width:1250px;
-  margin:auto;
-  padding:20px;
-}
-
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-
-h1{margin:0;font-size:30px}
-
-button,a{
-  border:0;
-  border-radius:12px;
-  padding:10px 14px;
-  font-weight:bold;
-  cursor:pointer;
-  text-decoration:none;
-}
-
-.logout{
-  background:white;
-  color:#2563eb;
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:14px;
-  margin:20px 0;
-}
-
-.stat{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:18px;
-  padding:18px;
-  box-shadow:0 10px 30px rgba(15,23,42,.06);
-}
-
-.stat b{
-  font-size:30px;
-  color:#0284c7;
-  display:block;
-}
-
-.panel{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:22px;
-  padding:18px;
-  margin-bottom:20px;
-  box-shadow:0 12px 35px rgba(15,23,42,.07);
-}
-
-.panel h2{
-  margin-top:0;
-  color:#0284c7;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px;
-}
-
-input,select,textarea{
-  width:100%;
-  padding:13px;
-  border:1px solid #cbd5e1;
-  border-radius:12px;
-  font-size:14px;
-  outline:none;
-  background:white;
-}
-
-textarea{
-  min-height:80px;
-  resize:vertical;
-}
-
-.uploadBox{
-  border:2px dashed #bae6fd;
-  background:#f8fbff;
-  border-radius:18px;
-  padding:16px;
-}
-
-.uploadBox h3{
-  margin:0 0 10px;
-  color:#0369a1;
-}
-
-.preview{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:10px;
-}
-
-.preview img{
-  width:90px;
-  height:70px;
-  object-fit:cover;
-  border-radius:12px;
-  border:1px solid #dbeafe;
-  background:white;
-}
-
-.save{background:#16a34a;color:white}
-.clear{background:#64748b;color:white}
-.edit{background:#2563eb;color:white}
-.delete{background:#dc2626;color:white}
-.sponsor{background:#f59e0b;color:white}
-.verify{background:#16a34a;color:white}
-.unverify{background:#64748b;color:white}
-
-.list{
-  display:grid;
-  gap:14px;
-}
-
-.card{
-  background:#f8fbff;
-  border:1px solid #dbeafe;
-  border-radius:18px;
-  padding:16px;
-}
-
-.cardTop{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:flex-start;
-}
-
-.cardInfo{
-  display:flex;
-  gap:14px;
-  align-items:flex-start;
-}
-
-.cardLogo{
-  width:72px;
-  height:72px;
-  border-radius:18px;
-  object-fit:cover;
-  background:#dbeafe;
-  border:1px solid #bae6fd;
-  flex-shrink:0;
-}
-
-.card h3{
-  margin:0 0 6px;
-  color:#0284c7;
-}
-
-.url{
-  color:#16a34a;
-  word-break:break-all;
-  font-weight:bold;
-  font-size:14px;
-}
-
-.desc{
-  color:#475569;
-  line-height:1.5;
-}
-
-.badges{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin:10px 0;
-}
-
-.badge{
-  background:white;
-  border:1px solid #bae6fd;
-  color:#0369a1;
-  border-radius:999px;
-  padding:7px 10px;
-  font-size:12px;
-  font-weight:bold;
-}
-
-.verifiedBadge{
-  background:#dcfce7;
-  border-color:#86efac;
-  color:#166534;
-}
-
-.sponsoredBadge{
-  background:#fef3c7;
-  border-color:#f59e0b;
-  color:#92400e;
-}
-
-.actions{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:12px;
-}
-
-.msg{
-  text-align:center;
-  font-weight:bold;
-  margin:10px 0;
-}
-
-.ok{color:#16a34a}
-.err{color:#dc2626}
-
-@media(max-width:700px){
-  .top,.cardTop,.cardInfo{
-    flex-direction:column;
-  }
-
-  .actions button{
-    width:100%;
-  }
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f9ff;color:#0f172a}
+header{background:white;border-bottom:1px solid #dbeafe;padding:16px 22px}
+.top{max-width:1250px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-size:28px;font-weight:900}.logo span{color:#0ea5e9}
+.wrap{max-width:1250px;margin:auto;padding:22px}
+.panel{background:white;border:1px solid #dbeafe;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px rgba(15,23,42,.06)}
+h2{margin:0 0 14px;color:#0284c7}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.stat{background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:15px}
+.stat b{display:block;font-size:28px;color:#0284c7}
+input,textarea,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;margin-bottom:9px}
+button,a{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:pointer;text-decoration:none;margin:3px}
+.blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}.dark{background:#0f172a;color:white}.orange{background:#f59e0b;color:white}
+.card{border:1px solid #dbeafe;background:#f8fbff;border-radius:18px;padding:16px;margin:12px 0}
+.badge{display:inline-block;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:bold;margin:4px;background:white;border:1px solid #bae6fd;color:#0369a1}
+.pending{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.active{background:#dcfce7;border-color:#86efac;color:#166534}
+.rejected{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+.small{font-size:13px;color:#64748b}
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="wrap top">
-    <h1>NetSearch Admin Panel</h1>
-    <a class="logout" href="/index.html">Siteye Dön</a>
+  <div class="top">
+    <div class="logo">Net<span>Search Admin</span></div>
+    <div>
+      <a class="blue" href="/index.html">Ana Sayfa</a>
+      <button class="dark" onclick="logout()">Çıkış Yap</button>
+    </div>
   </div>
 </header>
 
 <div class="wrap">
 
-  <div class="stats">
-    <div class="stat"><b id="totalSites">0</b>Toplam Site</div>
-    <div class="stat"><b id="approvedSites">0</b>Onaylı Site</div>
-    <div class="stat"><b id="pendingSites">0</b>Bekleyen</div>
-    <div class="stat"><b id="activeAds">0</b>Aktif Reklam</div>
-    <div class="stat"><b id="verifiedCount">0</b>Doğrulanmış</div>
+  <div class="panel">
+    <h2>Genel Durum</h2>
+    <div class="grid">
+      <div class="stat"><b id="totalSites">0</b>Toplam İşletme</div>
+      <div class="stat"><b id="pendingSites">0</b>Onay Bekleyen</div>
+      <div class="stat"><b id="activeAds">0</b>Aktif Reklam</div>
+      <div class="stat"><b id="totalUsers">0</b>Kullanıcı</div>
+    </div>
   </div>
 
   <div class="panel">
-
-    <h2 id="formTitle">Yeni İşletme / Site Ekle</h2>
-
-    <input type="hidden" id="siteId">
-    <input type="hidden" id="logo">
-    <input type="hidden" id="cover">
-    <input type="hidden" id="gallery">
-
-    <div class="grid">
-      <input id="title" placeholder="İşletme Başlığı">
-      <input id="url" placeholder="Site Linki">
-      <input id="phone" placeholder="Telefon">
-      <input id="whatsapp" placeholder="WhatsApp">
-      <input id="city" placeholder="Şehir">
-      <input id="district" placeholder="İlçe">
-      <input id="ownerEmail" placeholder="İşletme Sahibi E-posta">
-      <input id="address" placeholder="Adres">
-    </div>
-
-    <br>
-
-    <textarea id="description" placeholder="Açıklama"></textarea>
-
-    <br><br>
-
-    <div class="grid">
-      <textarea id="keywords" placeholder="Anahtar kelimeler"></textarea>
-      <textarea id="negativeKeywords" placeholder="Negatif anahtar kelimeler"></textarea>
-    </div>
-
-    <br><br>
-
-    <div class="grid">
-
-      <div class="uploadBox">
-        <h3>Logo Yükle</h3>
-        <input type="file" id="logoFile" accept="image/*" onchange="uploadSingle('logoFile','logo','logoPreview')">
-        <div id="logoPreview" class="preview"></div>
-      </div>
-
-      <div class="uploadBox">
-        <h3>Kapak Görseli</h3>
-        <input type="file" id="coverFile" accept="image/*" onchange="uploadSingle('coverFile','cover','coverPreview')">
-        <div id="coverPreview" class="preview"></div>
-      </div>
-
-      <div class="uploadBox">
-        <h3>Galeri</h3>
-        <input type="file" id="galleryFiles" multiple accept="image/*" onchange="uploadMultiple('galleryFiles','gallery','galleryPreview')">
-        <div id="galleryPreview" class="preview"></div>
-      </div>
-
-    </div>
-
-    <br>
-
-    <div class="grid">
-
-      <select id="verified">
-        <option value="false">Doğrulanmamış</option>
-        <option value="true">Doğrulanmış İşletme</option>
-      </select>
-
-      <select id="approved">
-        <option value="true">Onaylı</option>
-        <option value="false">Beklemede</option>
-      </select>
-
-      <select id="sponsored">
-        <option value="false">Organik</option>
-        <option value="true">Sponsorlu</option>
-      </select>
-
-      <input id="sponsorBudget" type="number" placeholder="Reklam Bütçesi">
-      <input id="dailyLimit" type="number" placeholder="Günlük Limit">
-      <input id="cpc" type="number" placeholder="Tıklama Başı Maliyet">
-
-      <input id="latitude" placeholder="Enlem (Latitude)">
-      <input id="longitude" placeholder="Boylam (Longitude)">
-
-      <input id="qualityScore" type="number" placeholder="Reklam Kalite Puanı">
-      <input id="aiScore" type="number" placeholder="AI Skor">
-
-    </div>
-
-    <br>
-
-    <button class="save" onclick="saveSite()">Kaydet</button>
-    <button class="clear" onclick="clearForm()">Temizle</button>
-
-    <div id="message" class="msg"></div>
-
-  </div>
-
-  <div class="panel">
-    <h2>İşletmeler</h2>
-    <div id="siteList" class="list"></div>
+    <h2>Reklam / İşletme Listesi</h2>
+    <input id="searchBox" placeholder="İşletme, e-posta, şehir ara..." oninput="renderSites()">
+    <select id="filterStatus" onchange="renderSites()">
+      <option value="all">Tümü</option>
+      <option value="pending">Onay Bekleyenler</option>
+      <option value="active">Aktif Reklamlar</option>
+      <option value="rejected">Reddedilenler</option>
+    </select>
+    <div id="siteList">Yükleniyor...</div>
   </div>
 
 </div>
 
 <script>
-const API = "";
+let allSites=[];
 
-document.addEventListener("DOMContentLoaded",()=>{
-  loadStats();
-  loadSites();
-});
+window.onload=()=>{
+  const userRaw=localStorage.getItem("user");
+  const token=localStorage.getItem("token");
 
-function msg(text,type="ok"){
-  const el=document.getElementById("message");
-  el.className="msg " + type;
-  el.innerText=text;
-  setTimeout(()=>el.innerText="",3500);
-}
-
-async function uploadSingle(inputId, hiddenId, previewId){
-  const file=document.getElementById(inputId).files[0];
-  if(!file) return;
-
-  const fd=new FormData();
-  fd.append("file",file);
-
-  const res=await fetch("/api/upload",{method:"POST",body:fd});
-  const data=await res.json();
-
-  if(data.success){
-    set(hiddenId,data.url);
-    showPreview(previewId,[data.url]);
-    msg("Görsel yüklendi");
-  }
-}
-
-async function uploadMultiple(inputId, hiddenId, previewId){
-  const files=document.getElementById(inputId).files;
-  if(!files.length) return;
-
-  const fd=new FormData();
-
-  Array.from(files).forEach(file=>{
-    fd.append("files",file);
-  });
-
-  const res=await fetch("/api/upload/multiple",{
-    method:"POST",
-    body:fd
-  });
-
-  const data=await res.json();
-
-  if(data.success){
-    set(hiddenId,data.urls.join(","));
-    showPreview(previewId,data.urls);
-    msg("Galeri yüklendi");
-  }
-}
-
-function showPreview(id,arr){
-  const box=document.getElementById(id);
-  box.innerHTML="";
-
-  arr.forEach(url=>{
-    const img=document.createElement("img");
-    img.src=url;
-    box.appendChild(img);
-  });
-}
-
-async function loadStats(){
-  try{
-    const res=await fetch("/api/admin/stats?t="+Date.now());
-    const s=await res.json();
-
-    document.getElementById("totalSites").innerText=s.totalSites||0;
-    document.getElementById("approvedSites").innerText=s.approvedSites||0;
-    document.getElementById("pendingSites").innerText=s.pendingSites||0;
-    document.getElementById("activeAds").innerText=s.activeAds||0;
-
-    const sites=await (await fetch("/api/admin/sites?t="+Date.now())).json();
-    document.getElementById("verifiedCount").innerText=
-      sites.filter(x=>x.verified || x.isVerified).length;
-
-  }catch{}
-}
-
-async function loadSites(){
-  const box=document.getElementById("siteList");
-  box.innerHTML="Yükleniyor...";
-
-  try{
-    const res=await fetch("/api/admin/sites?t="+Date.now());
-    const sites=await res.json();
-
-    if(!sites.length){
-      box.innerHTML="Kayıt yok";
-      return;
-    }
-
-    box.innerHTML="";
-
-    sites.forEach(site=>{
-
-      const title=site.title || site.name || site.businessName || "İsimsiz";
-      const logo=site.logo || site.logoUrl || site.image || "";
-      const verified=site.verified || site.isVerified;
-      const sponsored=site.sponsored || site.isSponsored || site.sponsorActive;
-
-      const div=document.createElement("div");
-      div.className="card";
-
-      div.innerHTML=`
-        <div class="cardTop">
-
-          <div class="cardInfo">
-
-            <img class="cardLogo"
-              src="${logo || 'https://via.placeholder.com/120x120.png?text=NS'}">
-
-            <div>
-              <h3>${escapeHtml(title)}</h3>
-              <div class="url">${escapeHtml(site.url || "")}</div>
-              <p class="desc">${escapeHtml(site.description || "")}</p>
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="badges">
-
-          ${verified
-            ? `<span class="badge verifiedBadge">✅ Doğrulanmış</span>`
-            : `<span class="badge">Doğrulanmamış</span>`}
-
-          ${sponsored
-            ? `<span class="badge sponsoredBadge">⭐ Sponsorlu</span>`
-            : `<span class="badge">Organik</span>`}
-
-          <span class="badge">AI: ${site.aiScore || 0}</span>
-          <span class="badge">Kalite: ${site.qualityScore || 0}</span>
-          <span class="badge">Bütçe: ${site.sponsorBudget || 0}₺</span>
-          <span class="badge">Tıklama: ${site.clicks || 0}</span>
-
-        </div>
-
-        <div class="actions">
-
-          <button class="edit"
-            onclick='editSite(${JSON.stringify(site).replaceAll("'","&#039;")})'>
-            Düzenle
-          </button>
-
-          <button class="${verified ? 'unverify' : 'verify'}"
-            onclick="toggleVerify('${site._id}', ${verified ? 'false':'true'})">
-            ${verified ? 'Rozeti Kaldır' : 'Doğrula'}
-          </button>
-
-          <button class="sponsor"
-            onclick="toggleSponsor('${site._id}', ${sponsored ? 'false':'true'})">
-            ${sponsored ? 'Reklamı Kapat' : 'Sponsor Yap'}
-          </button>
-
-          <button class="delete"
-            onclick="deleteSite('${site._id}')">
-            Sil
-          </button>
-
-        </div>
-      `;
-
-      box.appendChild(div);
-
-    });
-
-  }catch(err){
-    console.log(err);
-    box.innerHTML="Sunucuya bağlanılamadı.";
-  }
-}
-
-function getPayload(){
-  return {
-
-    title:val("title"),
-    name:val("title"),
-    businessName:val("title"),
-
-    url:val("url"),
-    website:val("url"),
-    link:val("url"),
-
-    phone:val("phone"),
-    telefon:val("phone"),
-
-    whatsapp:val("whatsapp"),
-
-    city:val("city"),
-    sehir:val("city"),
-
-    district:val("district"),
-    ilce:val("district"),
-
-    ownerEmail:val("ownerEmail"),
-
-    address:val("address"),
-
-    description:val("description"),
-    desc:val("description"),
-
-    keywords:val("keywords"),
-    tags:val("keywords"),
-
-    negativeKeywords:val("negativeKeywords"),
-
-    logo:val("logo"),
-    logoUrl:val("logo"),
-    image:val("logo"),
-
-    cover:val("cover"),
-    coverUrl:val("cover"),
-
-    gallery:val("gallery").split(",").filter(Boolean),
-
-    verified:val("verified")==="true",
-    isVerified:val("verified")==="true",
-
-    approved:val("approved")==="true",
-
-    sponsored:val("sponsored")==="true",
-    isSponsored:val("sponsored")==="true",
-    sponsorActive:val("sponsored")==="true",
-
-    sponsorBudget:Number(val("sponsorBudget")||0),
-    dailyLimit:Number(val("dailyLimit")||0),
-
-    cpc:Number(val("cpc")||0),
-    sponsorCpc:Number(val("cpc")||0),
-
-    latitude:Number(val("latitude")||0),
-    longitude:Number(val("longitude")||0),
-
-    qualityScore:Number(val("qualityScore")||0),
-    aiScore:Number(val("aiScore")||0)
-
-  };
-}
-
-async function saveSite(){
-
-  const id=val("siteId");
-  const payload=getPayload();
-
-  if(!payload.title){
-    msg("Başlık gerekli","err");
+  if(!token || !userRaw){
+    location.href="/login.html";
     return;
   }
 
-  try{
+  const user=JSON.parse(userRaw);
+  if(user.role!=="admin"){
+    alert("Admin yetkisi gerekli.");
+    location.href="/login.html";
+    return;
+  }
 
-    const res=await fetch(
-      id ? `/api/admin/sites/${id}` : `/api/admin/sites`,
-      {
-        method:id ? "PUT":"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(payload)
-      }
-    );
+  loadData();
+};
+
+function logout(){
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  location.href="/login.html";
+}
+
+async function loadData(){
+  try{
+    const statsRes=await fetch("/api/admin/stats?t="+Date.now(),{cache:"no-store"});
+    const stats=await statsRes.json();
+
+    totalSites.innerText=stats.totalSites||0;
+    pendingSites.innerText=stats.pendingSites||0;
+    activeAds.innerText=stats.activeAds||0;
+    totalUsers.innerText=stats.totalUsers||0;
+
+    const sitesRes=await fetch("/api/admin/sites?t="+Date.now(),{cache:"no-store"});
+    allSites=await sitesRes.json();
+
+    renderSites();
+  }catch{
+    siteList.innerHTML="Sunucuya bağlanılamadı.";
+  }
+}
+
+function renderSites(){
+  const q=document.getElementById("searchBox").value.toLowerCase();
+  const filter=document.getElementById("filterStatus").value;
+  const box=document.getElementById("siteList");
+  box.innerHTML="";
+
+  let list=allSites.filter(s=>{
+    const text=JSON.stringify(s).toLowerCase();
+    const active=s.sponsored||s.isSponsored||s.sponsorActive;
+
+    if(q && !text.includes(q)) return false;
+    if(filter==="pending" && s.status!=="pending") return false;
+    if(filter==="active" && !active) return false;
+    if(filter==="rejected" && s.status!=="rejected") return false;
+
+    return true;
+  });
+
+  if(!list.length){
+    box.innerHTML="<p>Sonuç bulunamadı.</p>";
+    return;
+  }
+
+  list.forEach(s=>{
+    const active=s.sponsored||s.isSponsored||s.sponsorActive;
+    const pending=s.status==="pending";
+    const rejected=s.status==="rejected";
+
+    const div=document.createElement("div");
+    div.className="card";
+
+    div.innerHTML=`
+      <h3>${esc(s.title||s.businessName||"İsimsiz İşletme")}</h3>
+
+      <div>
+        ${pending?'<span class="badge pending">Onay Bekliyor</span>':""}
+        ${active?'<span class="badge active">Aktif Reklam</span>':""}
+        ${rejected?'<span class="badge rejected">Reddedildi</span>':""}
+        <span class="badge">Owner: ${esc(s.ownerEmail||"Yok")}</span>
+        <span class="badge">Şehir: ${esc(s.city||s.sehir||"")}</span>
+        <span class="badge">Bütçe: ${s.sponsorBudget||0}₺</span>
+        <span class="badge">CPC: ${s.cpc||s.sponsorCpc||0}₺</span>
+        <span class="badge">Görüntüleme: ${s.views||0}</span>
+        <span class="badge">Tıklama: ${s.clicks||0}</span>
+        <span class="badge">Kalite: ${s.qualityScore||0}</span>
+      </div>
+
+      <p>${esc(s.description||s.desc||"")}</p>
+      <p class="small">${esc(s.url||s.website||"")}</p>
+
+      <button class="green" onclick="approveAd('${s._id}')">Onayla ve Yayına Al</button>
+      <button class="orange" onclick="pauseAd('${s._id}')">Reklamı Durdur</button>
+      <button class="red" onclick="rejectAd('${s._id}')">Reddet</button>
+      <button class="dark" onclick="deleteAd('${s._id}')">Sil</button>
+      <button class="blue" onclick="editOwner('${s._id}')">Owner E-posta Düzenle</button>
+    `;
+
+    box.appendChild(div);
+  });
+}
+
+async function approveAd(id){
+  await updateSite(id,{
+    status:"active",
+    approved:true,
+    sponsored:true,
+    isSponsored:true,
+    sponsorActive:true,
+    verified:true,
+    isVerified:true,
+    adStoppedReason:""
+  });
+}
+
+async function pauseAd(id){
+  await updateSite(id,{
+    sponsored:false,
+    isSponsored:false,
+    sponsorActive:false,
+    adStoppedReason:"Admin durdurdu"
+  });
+}
+
+async function rejectAd(id){
+  const reason=prompt("Red nedeni:", "Eksik veya hatalı bilgi");
+  await updateSite(id,{
+    status:"rejected",
+    approved:false,
+    sponsored:false,
+    isSponsored:false,
+    sponsorActive:false,
+    rejectReason:reason||"Reddedildi"
+  });
+}
+
+async function deleteAd(id){
+  if(!confirm("Silinsin mi?")) return;
+
+  await fetch("/api/admin/sites/"+id,{
+    method:"DELETE"
+  });
+
+  loadData();
+}
+
+async function editOwner(id){
+  const site=allSites.find(x=>x._id===id);
+  const email=prompt("Owner e-posta:", site.ownerEmail||"");
+  if(email===null) return;
+
+  await updateSite(id,{ownerEmail:email});
+}
+
+async function updateSite(id,payload){
+  try{
+    const res=await fetch("/api/admin/sites/"+id,{
+      method:"PATCH",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
 
     const data=await res.json();
 
     if(data.success){
-      msg("Kaydedildi");
-      clearForm();
-      loadStats();
-      loadSites();
+      loadData();
     }else{
-      msg("İşlem başarısız","err");
+      alert("İşlem başarısız.");
     }
-
   }catch{
-    msg("Sunucuya bağlanılamadı","err");
+    alert("Sunucuya bağlanılamadı.");
   }
 }
 
-function editSite(site){
-
-  set("siteId",site._id || "");
-  set("title",site.title || site.name || "");
-  set("url",site.url || "");
-  set("phone",site.phone || "");
-  set("whatsapp",site.whatsapp || "");
-  set("city",site.city || site.sehir || "");
-  set("district",site.district || site.ilce || "");
-  set("ownerEmail",site.ownerEmail || "");
-  set("address",site.address || "");
-  set("description",site.description || "");
-  set("keywords",Array.isArray(site.keywords)?site.keywords.join(", "):site.keywords||"");
-  set("negativeKeywords",Array.isArray(site.negativeKeywords)?site.negativeKeywords.join(", "):site.negativeKeywords||"");
-
-  set("logo",site.logo || "");
-  set("cover",site.cover || "");
-
-  set("gallery",Array.isArray(site.gallery)?site.gallery.join(","):"");
-
-  set("verified",(site.verified || site.isVerified) ? "true":"false");
-
-  set("approved",site.approved===false?"false":"true");
-
-  set("sponsored",
-    (site.sponsored || site.isSponsored || site.sponsorActive)
-    ? "true":"false");
-
-  set("sponsorBudget",site.sponsorBudget || 0);
-  set("dailyLimit",site.dailyLimit || 0);
-
-  set("cpc",site.cpc || site.sponsorCpc || 0);
-
-  set("latitude",site.latitude || "");
-  set("longitude",site.longitude || "");
-
-  set("qualityScore",site.qualityScore || 0);
-  set("aiScore",site.aiScore || 0);
-
-  showPreview("logoPreview",[site.logo || ""]);
-  showPreview("coverPreview",[site.cover || ""]);
-  showPreview("galleryPreview",site.gallery || []);
-
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-async function toggleVerify(id,state){
-
-  await fetch(`/api/admin/sites/${id}`,{
-    method:"PATCH",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      verified:state,
-      isVerified:state
-    })
-  });
-
-  loadStats();
-  loadSites();
-}
-
-async function toggleSponsor(id,state){
-
-  await fetch(`/api/admin/sites/${id}`,{
-    method:"PATCH",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      sponsored:state,
-      isSponsored:state,
-      sponsorActive:state
-    })
-  });
-
-  loadStats();
-  loadSites();
-}
-
-async function deleteSite(id){
-
-  if(!confirm("Silinsin mi?")) return;
-
-  await fetch(`/api/admin/sites/${id}`,{
-    method:"DELETE"
-  });
-
-  loadStats();
-  loadSites();
-}
-
-function clearForm(){
-
-  document.querySelectorAll("input,textarea").forEach(x=>x.value="");
-
-  set("verified","false");
-  set("approved","true");
-  set("sponsored","false");
-
-  document.getElementById("logoPreview").innerHTML="";
-  document.getElementById("coverPreview").innerHTML="";
-  document.getElementById("galleryPreview").innerHTML="";
-}
-
-function val(id){
-  return document.getElementById(id).value;
-}
-
-function set(id,v){
-  document.getElementById(id).value=v;
-}
-
-function escapeHtml(text){
-  return String(text || "")
+function esc(t){
+  return String(t||"")
     .replaceAll("&","&amp;")
     .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll(">","&gt;");
 }
 </script>
 
