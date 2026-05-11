@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>NetSearch - AI Destekli Yeni Nesil Arama Motoru</title>
-<meta name="description" content="NetSearch ile işletmeleri, web sitelerini, sponsorlu sonuçları ve yapay zeka destekli cevapları keşfedin.">
+<title>NetSearch - AI Destekli Arama Motoru</title>
+<meta name="description" content="NetSearch ile işletmeleri, web sitelerini ve yapay zeka destekli arama sonuçlarını keşfedin.">
 <meta name="robots" content="index, follow">
 
 <style>
@@ -14,383 +14,279 @@
 body{
   margin:0;
   font-family:Arial,sans-serif;
-  background:linear-gradient(180deg,#eef7ff,#ffffff);
-  color:#0f172a;
-}
-
-header{
-  background:linear-gradient(135deg,#dff4ff,#ffffff,#dbeafe);
-  padding:24px 18px 70px;
-  border-bottom:1px solid #dbeafe;
+  background:#fff;
+  color:#111827;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
 }
 
 .top{
-  max-width:1200px;
-  margin:auto;
   display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:14px;
+  justify-content:flex-end;
+  gap:12px;
+  padding:18px 24px;
 }
 
-.logo{
-  font-size:34px;
-  font-weight:900;
-  letter-spacing:-1px;
-}
-
-.logo span{color:#0284c7}
-
-.nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.nav a{
+.top a{
   text-decoration:none;
-  background:white;
-  border:1px solid #bae6fd;
   color:#0369a1;
-  padding:10px 16px;
-  border-radius:999px;
   font-weight:bold;
-  box-shadow:0 8px 22px rgba(14,165,233,.12);
+  border:1px solid #bae6fd;
+  padding:9px 15px;
+  border-radius:999px;
+  background:white;
 }
 
 .hero{
-  max-width:980px;
-  margin:68px auto 0;
-  text-align:center;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 16px 80px;
 }
 
-.hero h1{
-  margin:0;
-  font-size:60px;
-  line-height:1.05;
-  letter-spacing:-1.8px;
+.logo{
+  font-size:76px;
+  font-weight:900;
+  letter-spacing:-3px;
+  margin-bottom:28px;
 }
 
-.hero h1 span{color:#0284c7}
+.logo .net{color:#111827}
+.logo .search{color:#0ea5e9}
 
-.hero p{
-  color:#475569;
-  font-size:19px;
-  line-height:1.6;
-  max-width:780px;
-  margin:18px auto 0;
-}
-
-.searchPanel{
-  max-width:980px;
-  margin:-42px auto 24px;
-  background:rgba(255,255,255,.95);
-  border:1px solid #dbeafe;
-  border-radius:30px;
-  padding:18px;
-  box-shadow:0 26px 75px rgba(2,132,199,.18);
+.searchBox{
+  width:min(720px,92vw);
   position:relative;
-  z-index:5;
 }
 
 .searchRow{
+  width:100%;
   display:flex;
-  gap:10px;
+  align-items:center;
+  border:1px solid #d1d5db;
+  border-radius:999px;
+  padding:8px 10px 8px 20px;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+  background:white;
+}
+
+.searchRow:hover{
+  box-shadow:0 4px 18px rgba(0,0,0,.12);
+}
+
+.searchIcon{
+  color:#64748b;
+  margin-right:10px;
 }
 
 .searchRow input{
   flex:1;
-  padding:19px 22px;
-  border:1px solid #cbd5e1;
-  border-radius:20px;
+  border:0;
+  outline:0;
   font-size:18px;
-  outline:none;
-}
-
-.searchRow input:focus{
-  border-color:#38bdf8;
-  box-shadow:0 0 0 4px #e0f2fe;
+  padding:13px 8px;
 }
 
 .searchRow button{
   border:0;
-  border-radius:20px;
-  padding:0 34px;
-  background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  background:#0ea5e9;
   color:white;
-  font-size:17px;
-  font-weight:900;
+  font-weight:bold;
+  padding:12px 22px;
+  border-radius:999px;
   cursor:pointer;
 }
 
-.voiceBtn{
-  background:linear-gradient(135deg,#22c55e,#16a34a)!important;
-  padding:0 20px!important;
+.voice{
+  background:#16a34a!important;
+  padding:12px 15px!important;
+  margin-left:6px;
+}
+
+.buttons{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:24px;
+  flex-wrap:wrap;
+}
+
+.buttons button{
+  border:1px solid #e5e7eb;
+  background:#f8fafc;
+  padding:11px 17px;
+  border-radius:8px;
+  cursor:pointer;
+  color:#111827;
+  font-weight:bold;
+}
+
+.buttons button:hover{
+  border-color:#bae6fd;
+  background:#eff6ff;
 }
 
 .suggestions{
   display:none;
   position:absolute;
-  left:18px;
-  right:18px;
-  top:82px;
+  left:0;
+  right:0;
+  top:62px;
   background:white;
-  border:1px solid #dbeafe;
+  border:1px solid #e5e7eb;
   border-radius:18px;
   overflow:hidden;
-  box-shadow:0 20px 45px rgba(15,23,42,.14);
+  box-shadow:0 15px 35px rgba(0,0,0,.14);
   z-index:20;
 }
 
 .suggestions div{
-  padding:13px 16px;
+  padding:13px 18px;
+  cursor:pointer;
   border-bottom:1px solid #f1f5f9;
-  cursor:pointer;
-  font-weight:bold;
 }
 
-.suggestions div:hover{background:#f0f9ff}
-
-.chips{
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-top:14px;
+.suggestions div:hover{
+  background:#f8fafc;
 }
 
-.chip{
-  background:#f8fbff;
-  border:1px solid #bae6fd;
-  color:#0369a1;
-  padding:9px 14px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.chip:hover{background:#e0f2fe}
-
-main{
-  max-width:1180px;
-  margin:auto;
-  padding:28px 16px 76px;
-}
-
-.categories{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:14px;
-  margin-bottom:28px;
-}
-
-.cat{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:20px;
-  padding:18px;
-  text-align:center;
-  font-weight:bold;
-  color:#0369a1;
-  cursor:pointer;
-  box-shadow:0 10px 28px rgba(15,23,42,.06);
-}
-
-.cat:hover{background:#f0f9ff}
-
-.trendBox{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:24px;
-  padding:18px;
-  margin-bottom:24px;
-  box-shadow:0 14px 38px rgba(15,23,42,.06);
-}
-
-.trendBox h2{
-  margin:0 0 14px;
-  color:#0284c7;
-  font-size:22px;
-}
-
-.trends{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.trend{
-  background:#f8fbff;
-  border:1px solid #bae6fd;
-  color:#0369a1;
-  border-radius:999px;
-  padding:9px 13px;
-  cursor:pointer;
-  font-weight:bold;
-  font-size:13px;
+.resultsWrap{
+  display:none;
+  width:min(960px,94vw);
+  margin:0 auto 70px;
 }
 
 .aiBox{
-  display:none;
-  background:linear-gradient(135deg,#ffffff,#eff6ff);
+  background:#f8fbff;
   border:1px solid #bfdbfe;
-  border-radius:26px;
-  padding:22px;
-  margin-bottom:22px;
-  box-shadow:0 18px 45px rgba(37,99,235,.12);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:18px;
 }
 
 .aiBox h2{
-  margin:0 0 10px;
+  margin:0 0 8px;
   color:#0284c7;
+  font-size:20px;
 }
 
 .aiBox p{
   margin:0;
+  line-height:1.6;
   color:#334155;
-  line-height:1.7;
 }
 
 .sectionTitle{
-  display:none;
-  margin:28px 0 16px;
-  font-size:25px;
-  color:#0f172a;
+  margin:24px 0 12px;
+  font-size:22px;
 }
 
 .resultGrid{
   display:grid;
-  gap:20px;
+  gap:16px;
 }
 
 .card{
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  padding:18px;
   background:white;
-  border:1px solid #e2e8f0;
-  border-radius:28px;
-  overflow:hidden;
-  box-shadow:0 18px 50px rgba(15,23,42,.08);
-  transition:.18s;
-}
-
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 25px 65px rgba(15,23,42,.12);
+  box-shadow:0 8px 24px rgba(15,23,42,.06);
 }
 
 .card.sponsored{
-  border:2px solid #38bdf8;
-  box-shadow:0 22px 65px rgba(14,165,233,.2);
+  border-color:#38bdf8;
+  box-shadow:0 12px 30px rgba(14,165,233,.14);
 }
-
-.cover{
-  width:100%;
-  height:210px;
-  object-fit:cover;
-  background:#dbeafe;
-  display:block;
-}
-
-.cardBody{padding:22px}
 
 .cardTop{
   display:flex;
-  gap:16px;
   align-items:center;
+  gap:14px;
 }
 
-.siteLogo{
-  width:74px;
-  height:74px;
-  border-radius:20px;
-  object-fit:cover;
+.siteLogo,.logoLetter{
+  width:58px;
+  height:58px;
+  border-radius:16px;
   background:#e0f2fe;
-  border:1px solid #dbeafe;
+  border:1px solid #bae6fd;
+  object-fit:cover;
   flex-shrink:0;
 }
 
 .logoLetter{
-  width:74px;
-  height:74px;
-  border-radius:20px;
-  background:#e0f2fe;
-  border:1px solid #dbeafe;
-  color:#0284c7;
   display:flex;
   align-items:center;
   justify-content:center;
+  color:#0284c7;
+  font-size:24px;
   font-weight:900;
-  font-size:30px;
-  flex-shrink:0;
 }
 
 .title{
-  font-size:27px;
+  font-size:23px;
   color:#0284c7;
   font-weight:900;
-  margin-bottom:5px;
+  margin-bottom:4px;
 }
 
 .url{
   color:#16a34a;
   font-weight:bold;
-  word-break:break-all;
   font-size:14px;
+  word-break:break-all;
 }
 
 .desc{
   color:#334155;
   line-height:1.6;
-  margin:18px 0;
+  margin:14px 0;
 }
 
 .badges{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
-  margin-bottom:18px;
+  margin-bottom:14px;
 }
 
 .badge{
-  background:#f8fbff;
-  border:1px solid #dbeafe;
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
   color:#0369a1;
   border-radius:999px;
-  padding:8px 12px;
-  font-size:13px;
+  padding:7px 10px;
+  font-size:12px;
   font-weight:bold;
 }
 
 .badge.ad{
+  color:#92400e;
   background:#fef3c7;
   border-color:#f59e0b;
-  color:#92400e;
 }
 
 .badge.verified{
+  color:#166534;
   background:#dcfce7;
   border-color:#86efac;
-  color:#166534;
-}
-
-.badge.ai{
-  background:#e0f2fe;
-  border-color:#7dd3fc;
-  color:#075985;
 }
 
 .actions{
   display:flex;
-  gap:10px;
+  gap:9px;
   flex-wrap:wrap;
 }
 
-.actions a,
-.actions button{
+.actions a,.actions button{
   border:0;
   text-decoration:none;
   color:white;
-  padding:12px 18px;
+  padding:10px 14px;
   border-radius:999px;
   font-weight:bold;
   cursor:pointer;
@@ -402,103 +298,67 @@ main{
 .whatsapp{background:#22c55e}
 .share{background:#9333ea}
 
-.empty{
+.empty,.loading{
   text-align:center;
-  padding:60px 10px;
   color:#64748b;
-  font-size:20px;
-}
-
-.loading{
-  text-align:center;
-  padding:40px;
-  color:#0284c7;
-  font-size:20px;
+  padding:30px;
   font-weight:bold;
 }
 
-.mobileBar{display:none}
-
 footer{
-  background:white;
-  border-top:1px solid #e2e8f0;
-  text-align:center;
+  background:#f8fafc;
+  border-top:1px solid #e5e7eb;
+  padding:14px 22px;
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
   color:#64748b;
-  padding:35px;
+  font-size:14px;
 }
 
-@media(max-width:760px){
+footer a{
+  color:#475569;
+  text-decoration:none;
+  margin-right:14px;
+}
+
+@media(max-width:700px){
   .top{
-    flex-direction:column;
-    align-items:flex-start;
+    padding:14px;
   }
 
-  .hero{
-    margin-top:38px;
-  }
-
-  .hero h1{
-    font-size:38px;
-  }
-
-  .hero p{
-    font-size:16px;
-  }
-
-  .searchPanel{
-    margin:-30px 12px 20px;
+  .logo{
+    font-size:54px;
   }
 
   .searchRow{
-    flex-direction:column;
+    padding-left:14px;
+  }
+
+  .searchRow input{
+    font-size:16px;
   }
 
   .searchRow button{
-    padding:16px;
+    padding:11px 16px;
   }
 
-  .cover{
-    height:165px;
+  .buttons{
+    gap:8px;
   }
 
-  .cardBody{
-    padding:18px;
+  .buttons button{
+    width:100%;
   }
 
-  .cardTop{
-    align-items:flex-start;
-  }
-
-  .title{
-    font-size:22px;
-  }
-
-  .actions a,
-  .actions button{
+  .actions a,.actions button{
     width:100%;
     text-align:center;
   }
 
-  .mobileBar{
-    display:flex;
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    background:white;
-    border-top:1px solid #dbeafe;
-    box-shadow:0 -8px 30px rgba(15,23,42,.08);
-    z-index:99;
-  }
-
-  .mobileBar button{
-    flex:1;
-    border:0;
-    background:white;
-    padding:12px 6px;
-    color:#0369a1;
-    font-weight:bold;
-    font-size:12px;
+  footer{
+    padding-bottom:24px;
   }
 }
 </style>
@@ -506,86 +366,52 @@ footer{
 
 <body>
 
-<header>
-  <div class="top">
-    <div class="logo">Net<span>Search</span></div>
-    <div class="nav">
-      <a href="/login.html">Giriş</a>
-      <a href="/register.html">Kayıt Ol</a>
-    </div>
-  </div>
-
-  <div class="hero">
-    <h1>AI Destekli <span>Yeni Nesil</span> Arama Motoru</h1>
-    <p>İşletmeleri, web sitelerini, sponsorlu sonuçları ve akıllı cevapları tek ekranda keşfet.</p>
-  </div>
-</header>
-
-<div class="searchPanel">
-  <div class="searchRow">
-    <input id="searchInput" type="text" placeholder="Ne aramak istiyorsun? Örn: Eskişehir kombi servisi" autocomplete="off">
-    <button onclick="searchSites()">Ara</button>
-    <button class="voiceBtn" onclick="voiceSearch()">🎙️</button>
-  </div>
-
-  <div id="suggestions" class="suggestions"></div>
-
-  <div class="chips">
-    <div class="chip" onclick="quickSearch('Eskişehir kombi servisi')">Eskişehir kombi servisi</div>
-    <div class="chip" onclick="quickSearch('Teknik Servis')">Teknik Servis</div>
-    <div class="chip" onclick="quickSearch('Restoran')">Restoran</div>
-    <div class="chip" onclick="quickSearch('Yapay zeka')">Yapay Zeka</div>
-    <div class="chip" onclick="quickSearch('E-Devlet')">E-Devlet</div>
-    <div class="chip" onclick="quickSearch('Sağlık')">Sağlık</div>
-  </div>
+<div class="top">
+  <a href="/login.html">Giriş</a>
+  <a href="/register.html">Kayıt Ol</a>
 </div>
 
-<main>
+<section class="hero" id="hero">
+  <div class="logo"><span class="net">Net</span><span class="search">Search</span></div>
 
-  <div class="categories">
-    <div class="cat" onclick="quickSearch('Teknik Servis')">🔧 Teknik Servis</div>
-    <div class="cat" onclick="quickSearch('Restoran')">🍽️ Restoran</div>
-    <div class="cat" onclick="quickSearch('Market')">🛒 Market</div>
-    <div class="cat" onclick="quickSearch('Sağlık')">🏥 Sağlık</div>
-    <div class="cat" onclick="quickSearch('Eğitim')">🎓 Eğitim</div>
-    <div class="cat" onclick="quickSearch('Resmi Kurum')">🏛️ Resmi Kurum</div>
-  </div>
-
-  <div class="trendBox">
-    <h2>Trend Aramalar</h2>
-    <div class="trends">
-      <div class="trend" onclick="quickSearch('Eskişehir kombi servisi')">Eskişehir kombi servisi</div>
-      <div class="trend" onclick="quickSearch('Beyaz eşya servisi')">Beyaz eşya servisi</div>
-      <div class="trend" onclick="quickSearch('Yapay zeka')">Yapay zeka</div>
-      <div class="trend" onclick="quickSearch('Restoran')">Restoran</div>
-      <div class="trend" onclick="quickSearch('E-Devlet')">E-Devlet</div>
-      <div class="trend" onclick="quickSearch('Sağlık')">Sağlık</div>
-      <div class="trend" onclick="quickSearch('Yakınımdaki işletmeler')">Yakınımdaki işletmeler</div>
+  <div class="searchBox">
+    <div class="searchRow">
+      <span class="searchIcon">🔎</span>
+      <input id="searchInput" type="text" placeholder="NetSearch'te ara..." autocomplete="off">
+      <button onclick="searchSites()">Ara</button>
+      <button class="voice" onclick="voiceSearch()">🎙️</button>
     </div>
+
+    <div id="suggestions" class="suggestions"></div>
   </div>
 
+  <div class="buttons">
+    <button onclick="quickSearch('Eskişehir kombi servisi')">NetSearch'te Ara</button>
+    <button onclick="quickSearch('Yakınımdaki işletmeler')">Kendimi Şanslı Hissediyorum</button>
+  </div>
+</section>
+
+<main id="resultsWrap" class="resultsWrap">
   <div id="aiBox" class="aiBox">
     <h2>NetSearch AI Özeti</h2>
     <p id="aiText"></p>
   </div>
 
-  <h2 id="sponsoredTitle" class="sectionTitle">Sponsorlu Sonuçlar</h2>
+  <h2 id="sponsoredTitle" class="sectionTitle" style="display:none;">Sponsorlu Sonuçlar</h2>
   <div id="sponsoredResults" class="resultGrid"></div>
 
-  <h2 id="organicTitle" class="sectionTitle">Arama Sonuçları</h2>
+  <h2 id="organicTitle" class="sectionTitle" style="display:none;">Arama Sonuçları</h2>
   <div id="results" class="resultGrid"></div>
-
 </main>
 
-<div class="mobileBar">
-  <button onclick="window.location.href='/'">Ara</button>
-  <button onclick="quickSearch('Trend')">Trend</button>
-  <button onclick="quickSearch('Yakınımdaki işletmeler')">Yakınımda</button>
-  <button onclick="window.location.href='/login.html'">Giriş</button>
-</div>
-
 <footer>
-  © 2026 NetSearch.com.tr - AI destekli yeni nesil arama motoru
+  <div>
+    <a href="#">Hakkında</a>
+    <a href="#">Reklam</a>
+    <a href="/login.html">İşletme</a>
+    <a href="#">Arama nasıl çalışır?</a>
+  </div>
+  <div>© 2026 NetSearch</div>
 </footer>
 
 <script>
@@ -665,7 +491,11 @@ function voiceSearch(){
 async function searchSites(){
   const q = input.value.trim();
 
-  document.getElementById("aiBox").style.display = "none";
+  document.getElementById("hero").style.justifyContent = "flex-start";
+  document.getElementById("hero").style.paddingTop = "35px";
+  document.getElementById("hero").style.paddingBottom = "30px";
+  document.getElementById("resultsWrap").style.display = "block";
+
   document.getElementById("sponsoredTitle").style.display = "none";
   document.getElementById("organicTitle").style.display = "none";
   document.getElementById("sponsoredResults").innerHTML = "";
@@ -681,8 +511,7 @@ async function searchSites(){
     document.getElementById("results").innerHTML = "";
 
     document.getElementById("aiText").innerText =
-      data.aiAnswer || `"${q || "Tüm sonuçlar"}" için NetSearch veritabanındaki en alakalı sonuçlar listelendi.`;
-    document.getElementById("aiBox").style.display = "block";
+      data.aiAnswer || `"${q || "Tüm sonuçlar"}" için en alakalı sonuçlar listelendi.`;
 
     if(sponsored.length){
       document.getElementById("sponsoredTitle").style.display = "block";
@@ -699,16 +528,15 @@ async function searchSites(){
     }
 
     if(!sponsored.length && !organic.length){
-      document.getElementById("results").innerHTML = `
-        <div class="empty">Sonuç bulunamadı. Daha farklı kelimelerle tekrar ara.</div>
-      `;
+      document.getElementById("results").innerHTML =
+        `<div class="empty">Sonuç bulunamadı. Daha farklı kelimelerle tekrar ara.</div>`;
     }
 
+    document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
+
   }catch(err){
-    console.log(err);
-    document.getElementById("results").innerHTML = `
-      <div class="empty" style="color:#dc2626;">Sunucu bağlantı hatası.</div>
-    `;
+    document.getElementById("results").innerHTML =
+      `<div class="empty" style="color:#dc2626;">Sunucu bağlantı hatası.</div>`;
   }
 }
 
@@ -722,9 +550,7 @@ function createCard(site,isSponsored){
   const desc = site.description || site.desc || site.address || "Açıklama bulunamadı.";
 
   const logo = site.logo || site.logoUrl || site.image || "";
-  const cover = site.cover || site.coverUrl || "";
   const hasLogo = logo && String(logo).trim() !== "";
-  const hasCover = cover && String(cover).trim() !== "";
 
   const category = site.category || "Genel";
   const city = site.city || site.sehir || "";
@@ -733,46 +559,39 @@ function createCard(site,isSponsored){
   const whatsapp = site.whatsapp || phone;
   const verified = site.verified || site.isVerified;
   const score = site.searchScore || site.finalScore || site.aiScore || "";
-
   const firstLetter = title.trim().charAt(0).toUpperCase() || "N";
 
   card.innerHTML = `
-    ${hasCover ? `
-      <img class="cover" src="${escapeHtml(cover)}" onerror="this.remove()">
-    ` : ""}
+    <div class="cardTop">
+      ${
+        hasLogo
+        ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(firstLetter)}</div>'">`
+        : `<div class="logoLetter">${escapeHtml(firstLetter)}</div>`
+      }
 
-    <div class="cardBody">
-      <div class="cardTop">
-        ${
-          hasLogo
-          ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(firstLetter)}</div>'">`
-          : `<div class="logoLetter">${escapeHtml(firstLetter)}</div>`
-        }
-
-        <div>
-          <div class="title">${escapeHtml(title)}</div>
-          <div class="url">${escapeHtml(url)}</div>
-        </div>
+      <div>
+        <div class="title">${escapeHtml(title)}</div>
+        <div class="url">${escapeHtml(url)}</div>
       </div>
+    </div>
 
-      <p class="desc">${escapeHtml(desc)}</p>
+    <p class="desc">${escapeHtml(desc)}</p>
 
-      <div class="badges">
-        ${isSponsored ? `<span class="badge ad">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
-        ${verified ? `<span class="badge verified">✅ Doğrulanmış</span>` : ""}
-        <span class="badge">${escapeHtml(category)}</span>
-        ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
-        ${score ? `<span class="badge ai">AI Skor: ${Math.round(score)}</span>` : ""}
-        ${phone ? `<span class="badge">📞 ${escapeHtml(phone)}</span>` : ""}
-      </div>
+    <div class="badges">
+      ${isSponsored ? `<span class="badge ad">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
+      ${verified ? `<span class="badge verified">✅ Doğrulanmış</span>` : ""}
+      <span class="badge">${escapeHtml(category)}</span>
+      ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
+      ${score ? `<span class="badge">AI Skor: ${Math.round(score)}</span>` : ""}
+      ${phone ? `<span class="badge">📞 ${escapeHtml(phone)}</span>` : ""}
+    </div>
 
-      <div class="actions">
-        <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
-        <a class="detail" href="/site.html?id=${id}">Detay Sayfası</a>
-        ${phone ? `<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
-        ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
-        <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
-      </div>
+    <div class="actions">
+      <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
+      <a class="detail" href="/site.html?id=${id}">Detay Sayfası</a>
+      ${phone ? `<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
+      ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
+      <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
     </div>
   `;
 
@@ -781,12 +600,8 @@ function createCard(site,isSponsored){
 
 async function trackClick(id){
   if(!id) return;
-
   try{
-    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {
-      method:"POST",
-      cache:"no-store"
-    });
+    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {method:"POST",cache:"no-store"});
   }catch{}
 }
 
@@ -821,10 +636,6 @@ function escapeAttr(text){
     .replaceAll("'","\\'")
     .replaceAll('"',"&quot;");
 }
-
-window.onload = function(){
-  searchSites();
-};
 </script>
 
 </body>
