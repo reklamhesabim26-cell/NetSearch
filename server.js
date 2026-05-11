@@ -6,6 +6,9 @@ const cors = require("cors");
 const path = require("path");
 const multer = require("multer");
 const fs = require("fs");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 const OpenAI = require("openai");
 
 const app = express();
@@ -14,34 +17,32 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
+app.use(rateLimit({
+  windowMs: 60 * 1000,
+  max: 120
+}));
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URL = process.env.MONGODB_URI || process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET || "netsearch_secret";
 
 if (!fs.existsSync(path.join(__dirname, "uploads"))) {
   fs.mkdirSync(path.join(__dirname, "uploads"));
 }
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const safeName = Date.now() + "-" + Math.round(Math.random() * 1e9) + ext;
-    cb(null, safeName);
-  }
-});
-
 const upload = multer({
-  storage,
-  limits: { fileSize: 8 * 1024 * 1024 },
-  fileFilter: function (req, file, cb) {
-    if (!file.mimetype.startsWith("image/")) {
-      return cb(new Error("Sadece görsel yüklenebilir"));
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, "uploads/"),
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname));
     }
+  }),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) return cb(new Error("Sadece görsel yüklenebilir"));
     cb(null, true);
   }
 });
@@ -51,10 +52,9 @@ if (process.env.OPENAI_API_KEY) {
   openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 }
 
-mongoose
-  .connect(MONGO_URL)
+mongoose.connect(MONGO_URL)
   .then(() => console.log("MongoDB bağlantısı başarılı"))
-  .catch((err) => console.log("MongoDB bağlantı hatası:", err.message));
+  .catch(err => console.log("MongoDB bağlantı hatası:", err.message));
 
 const userSchema = new mongoose.Schema({
   name: String,
@@ -63,257 +63,154 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: "user" }
 }, { timestamps: true, strict: false });
 
-const siteSchema = new mongoose.Schema({
-  title: String,
-  name: String,
-  businessName: String,
-  url: String,
-  website: String,
-  link: String,
-  description: String,
-  desc: String,
-  address: String,
-  category: String,
-  city: String,
-  sehir: String,
-  district: String,
-  ilce: String,
-  phone: String,
-  telefon: String,
-  whatsapp: String,
-  keywords: mongoose.Schema.Types.Mixed,
-  tags: mongoose.Schema.Types.Mixed,
-  negativeKeywords: mongoose.Schema.Types.Mixed,
-  logo: String,
-  logoUrl: String,
-  image: String,
-  cover: String,
-  coverUrl: String,
-  gallery: [String],
-  approved: { type: Boolean, default: true },
-  status: { type: String, default: "active" },
-  sponsored: { type: Boolean, default: false },
-  isSponsored: { type: Boolean, default: false },
-  sponsorActive: { type: Boolean, default: false },
-  sponsorBudget: { type: Number, default: 0 },
-  cpc: { type: Number, default: 0 },
-  sponsorCpc: { type: Number, default: 0 },
-  dailyLimit: { type: Number, default: 0 },
-  views: { type: Number, default: 0 },
-  clicks: { type: Number, default: 0 },
-  aiScore: { type: Number, default: 10 },
-  cityScore: { type: Number, default: 10 },
-  popularityScore: { type: Number, default: 10 },
-  commentScore: { type: Number, default: 0 },
-  rating: { type: Number, default: 0 },
-  reviewCount: { type: Number, default: 0 },
-  ownerEmail: String
-}, { timestamps: true, strict: false });
-
-const commentSchema = new mongoose.Schema({
-  siteId: { type: mongoose.Schema.Types.ObjectId, ref: "Site" },
-  name: String,
-  comment: String,
-  rating: Number,
-  status: { type: String, default: "active" }
-}, { timestamps: true, strict: false });
+const siteSchema = new mongoose.Schema({}, { timestamps: true, strict: false });
+const commentSchema = new mongoose.Schema({}, { timestamps: true, strict: false });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 const Site = mongoose.models.Site || mongoose.model("Site", siteSchema);
 const Comment = mongoose.models.Comment || mongoose.model("Comment", commentSchema);
 
-function normalize(text) {
-  return String(text || "")
-    .toLowerCase()
-    .replaceAll("ı", "i")
-    .replaceAll("ğ", "g")
-    .replaceAll("ü", "u")
-    .replaceAll("ş", "s")
-    .replaceAll("ö", "o")
-    .replaceAll("ç", "c")
-    .trim();
+function tokenFor(user) {
+  return jwt.sign({
+    id: user.id || user._id,
+    email: user.email,
+    role: user.role
+  }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-function toText(value) {
-  if (Array.isArray(value)) return value.join(" ");
-  return String(value || "");
+function auth(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.replace("Bearer ", "");
+
+  if (!token) return res.status(401).json({ success: false, message: "Token yok" });
+
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ success: false, message: "Token geçersiz" });
+  }
 }
 
-function toArray(value) {
-  if (Array.isArray(value)) return value;
-  return String(value || "").split(",").map(x => x.trim()).filter(Boolean);
+function adminOnly(req, res, next) {
+  auth(req, res, () => {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Admin yetkisi gerekli" });
+    }
+    next();
+  });
 }
 
-function siteSearchText(site) {
+function normalize(t) {
+  return String(t || "").toLowerCase()
+    .replaceAll("ı","i").replaceAll("ğ","g").replaceAll("ü","u")
+    .replaceAll("ş","s").replaceAll("ö","o").replaceAll("ç","c").trim();
+}
+
+function arr(v) {
+  if (Array.isArray(v)) return v;
+  return String(v || "").split(",").map(x => x.trim()).filter(Boolean);
+}
+
+function siteText(s) {
   return normalize(`
-    ${site.title || ""}
-    ${site.name || ""}
-    ${site.businessName || ""}
-    ${site.description || ""}
-    ${site.desc || ""}
-    ${site.address || ""}
-    ${site.category || ""}
-    ${site.city || ""}
-    ${site.sehir || ""}
-    ${site.district || ""}
-    ${site.ilce || ""}
-    ${toText(site.keywords)}
-    ${toText(site.tags)}
+    ${s.title || ""} ${s.name || ""} ${s.businessName || ""}
+    ${s.description || ""} ${s.desc || ""} ${s.address || ""}
+    ${s.category || ""} ${s.city || ""} ${s.sehir || ""}
+    ${s.district || ""} ${s.ilce || ""} ${arr(s.keywords).join(" ")}
+    ${arr(s.tags).join(" ")}
   `);
 }
 
-function calculateScore(site, query) {
-  const q = normalize(query);
-  const words = q.split(/\s+/).filter(Boolean);
-  const text = siteSearchText(site);
-  let score = 0;
+function hasNegative(site, q) {
+  const text = normalize(q);
+  return arr(site.negativeKeywords).map(normalize).some(w => w && text.includes(w));
+}
 
+function score(site, q) {
+  const query = normalize(q);
+  const words = query.split(/\s+/).filter(Boolean);
+  const text = siteText(site);
   const title = normalize(site.title || site.name || site.businessName);
-  const category = normalize(site.category);
-  const city = normalize(site.city || site.sehir);
-  const district = normalize(site.district || site.ilce);
 
-  if (title === q) score += 120;
-  if (title.includes(q)) score += 80;
-  if (text.includes(q)) score += 45;
+  let s = 0;
 
-  words.forEach(word => {
-    if (title.includes(word)) score += 24;
-    if (category.includes(word)) score += 18;
-    if (city.includes(word)) score += 16;
-    if (district.includes(word)) score += 14;
-    if (text.includes(word)) score += 10;
+  if (title === query) s += 120;
+  if (title.includes(query)) s += 80;
+  if (text.includes(query)) s += 45;
+
+  words.forEach(w => {
+    if (title.includes(w)) s += 24;
+    if (text.includes(w)) s += 10;
   });
 
   if (site.sponsored || site.isSponsored || site.sponsorActive) {
-    score += 80;
-    score += Math.min(Number(site.sponsorBudget || 0) / 10, 50);
-    score += Math.min(Number(site.cpc || site.sponsorCpc || 0) * 5, 35);
+    s += 80;
+    s += Math.min(Number(site.sponsorBudget || 0) / 10, 50);
+    s += Math.min(Number(site.cpc || site.sponsorCpc || 0) * 5, 35);
   }
 
-  score += Math.min(Number(site.aiScore || 0), 40);
-  score += Math.min(Number(site.cityScore || 0), 30);
-  score += Math.min(Number(site.popularityScore || 0), 30);
-  score += Math.min(Number(site.commentScore || 0), 30);
-  score += Math.min(Number(site.rating || 0) * 8, 40);
-  score += Math.min(Number(site.reviewCount || 0) * 2, 30);
-  score += Math.min(Number(site.clicks || 0) / 5, 35);
-  score += Math.min(Number(site.views || 0) / 20, 25);
+  s += Math.min(Number(site.aiScore || 0), 40);
+  s += Math.min(Number(site.qualityScore || 0), 40);
+  s += Math.min(Number(site.views || 0) / 20, 25);
+  s += Math.min(Number(site.clicks || 0) / 5, 35);
 
-  if (site.logo || site.logoUrl || site.image) score += 8;
-  if (site.cover || site.coverUrl) score += 8;
-  if (site.phone || site.telefon || site.whatsapp) score += 10;
+  if (site.verified || site.isVerified) s += 35;
+  if (site.logo || site.logoUrl || site.image) s += 8;
+  if (site.cover || site.coverUrl) s += 8;
+  if (site.phone || site.telefon || site.whatsapp) s += 10;
 
-  return Math.round(score);
+  return Math.round(s);
 }
 
-function hasNegativeKeyword(site, query) {
-  const q = normalize(query);
-  const negatives = toArray(site.negativeKeywords).map(normalize);
-  return negatives.some(word => word && q.includes(word));
-}
-
-function buildSiteFromBody(b) {
+function buildSite(b) {
   return {
+    ...b,
     title: b.title || b.name || b.businessName || "",
     name: b.name || b.title || b.businessName || "",
     businessName: b.businessName || b.title || b.name || "",
+
     url: b.url || b.website || b.link || "",
     website: b.website || b.url || b.link || "",
     link: b.link || b.url || b.website || "",
-    description: b.description || b.desc || b.address || "",
-    desc: b.desc || b.description || b.address || "",
-    address: b.address || "",
-    category: b.category || "Genel",
+
+    description: b.description || b.desc || "",
+    desc: b.desc || b.description || "",
+
     city: b.city || b.sehir || "",
     sehir: b.sehir || b.city || "",
     district: b.district || b.ilce || "",
     ilce: b.ilce || b.district || "",
+
     phone: b.phone || b.telefon || "",
     telefon: b.telefon || b.phone || "",
-    whatsapp: b.whatsapp || b.phone || b.telefon || "",
-    keywords: toArray(b.keywords || b.tags),
-    tags: toArray(b.tags || b.keywords),
-    negativeKeywords: toArray(b.negativeKeywords),
-    logo: b.logo || b.logoUrl || "",
-    logoUrl: b.logoUrl || b.logo || "",
-    image: b.image || b.logo || b.logoUrl || "",
-    cover: b.cover || b.coverUrl || "",
-    coverUrl: b.coverUrl || b.cover || "",
-    gallery: toArray(b.gallery),
+
+    keywords: arr(b.keywords || b.tags),
+    tags: arr(b.tags || b.keywords),
+    negativeKeywords: arr(b.negativeKeywords),
+
+    gallery: arr(b.gallery),
+
     approved: b.approved !== false && b.approved !== "false",
     status: b.status || "active",
+
     sponsored: b.sponsored === true || b.sponsored === "true",
     isSponsored: b.isSponsored === true || b.isSponsored === "true",
     sponsorActive: b.sponsorActive === true || b.sponsorActive === "true",
+
+    verified: b.verified === true || b.verified === "true",
+    isVerified: b.isVerified === true || b.isVerified === "true",
+
     sponsorBudget: Number(b.sponsorBudget || 0),
+    dailyLimit: Number(b.dailyLimit || 0),
     cpc: Number(b.cpc || b.sponsorCpc || 0),
     sponsorCpc: Number(b.sponsorCpc || b.cpc || 0),
-    dailyLimit: Number(b.dailyLimit || 0),
     aiScore: Number(b.aiScore || 10),
-    cityScore: Number(b.cityScore || 10),
-    popularityScore: Number(b.popularityScore || 10),
-    commentScore: Number(b.commentScore || 0),
-    ownerEmail: b.ownerEmail || b.email || ""
+    qualityScore: Number(b.qualityScore || 0),
+    latitude: Number(b.latitude || 0),
+    longitude: Number(b.longitude || 0)
   };
 }
-
-async function getAiAnswer(query, results) {
-  try {
-    if (!openai) return "";
-
-    const summary = results.slice(0, 5).map((s, i) =>
-      `${i + 1}. ${s.title || s.name || s.businessName} - ${s.description || s.desc || ""}`
-    ).join("\n");
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "Sen NetSearch arama asistanısın. Kısa ve net Türkçe cevap ver." },
-        { role: "user", content: `Arama: ${query}\nSonuçlar:\n${summary || "Sonuç yok"}` }
-      ],
-      max_tokens: 160,
-      temperature: 0.4
-    });
-
-    return completion.choices?.[0]?.message?.content || "";
-  } catch (err) {
-    console.log("AI geçici kapalı:", err.message);
-    return "";
-  }
-}
-
-/* UPLOAD */
-
-app.post("/api/upload", upload.single("file"), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: "Dosya yok" });
-    }
-
-    res.json({
-      success: true,
-      url: `/uploads/${req.file.filename}`
-    });
-  } catch {
-    res.status(500).json({ success: false, message: "Yükleme hatası" });
-  }
-});
-
-app.post("/api/upload/multiple", upload.array("files", 10), (req, res) => {
-  try {
-    const urls = (req.files || []).map(file => `/uploads/${file.filename}`);
-    res.json({ success: true, urls });
-  } catch {
-    res.status(500).json({ success: false, message: "Çoklu yükleme hatası" });
-  }
-});
-
-/* SAYFALAR */
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
 
 /* HEALTH */
 
@@ -323,6 +220,7 @@ app.get("/health", (req, res) => {
     message: "NetSearch çalışıyor",
     mongo: mongoose.connection.readyState === 1 ? "connected" : "not connected",
     openai: process.env.OPENAI_API_KEY ? "key var" : "key yok",
+    jwt: "active",
     upload: "active"
   });
 });
@@ -333,12 +231,14 @@ app.post("/api/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.json({ success: false, message: "Bu e-posta zaten kayıtlı" });
-    }
+    if (!email || !password) return res.json({ success: false, message: "E-posta ve şifre gerekli" });
 
-    await User.create({ name, email, password, role: "user" });
+    const exists = await User.findOne({ email });
+    if (exists) return res.json({ success: false, message: "Bu e-posta kayıtlı" });
+
+    const hashed = await bcrypt.hash(password, 10);
+    await User.create({ name, email, password: hashed, role: "user" });
+
     res.json({ success: true, message: "Kayıt başarılı" });
   } catch {
     res.status(500).json({ success: false, message: "Kayıt hatası" });
@@ -350,91 +250,97 @@ app.post("/api/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (
-      (email === "enderadmin" || email === "admin" || email === "reklamhesabim26@gmail.com") &&
-      password === "123456"
+      (email === "enderadmin" || email === "admin" || email === "reklamhesabim26@gmail.com")
+      && password === "123456"
     ) {
+      const user = {
+        id: "admin",
+        name: "Ender Admin",
+        email: "reklamhesabim26@gmail.com",
+        role: "admin"
+      };
+
       return res.json({
         success: true,
         message: "Admin girişi başarılı",
-        user: {
-          id: "admin",
-          name: "Ender Admin",
-          email: "reklamhesabim26@gmail.com",
-          role: "admin"
-        }
+        token: tokenFor(user),
+        user
       });
     }
 
-    const user = await User.findOne({ email, password });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "E-posta veya şifre hatalı"
-      });
+    let ok = false;
+
+    if (String(user.password || "").startsWith("$2")) {
+      ok = await bcrypt.compare(password, user.password);
+    } else {
+      ok = user.password === password;
+      if (ok) {
+        user.password = await bcrypt.hash(password, 10);
+        await user.save();
+      }
     }
+
+    if (!ok) return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
+
+    const safeUser = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role || "user"
+    };
 
     res.json({
       success: true,
       message: "Giriş başarılı",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      token: tokenFor(safeUser),
+      user: safeUser
     });
   } catch {
     res.status(500).json({ success: false, message: "Giriş hatası" });
   }
 });
 
-/* ARAMA */
+/* UPLOAD */
+
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: "Dosya yok" });
+  res.json({ success: true, url: `/uploads/${req.file.filename}` });
+});
+
+app.post("/api/upload/multiple", upload.array("files", 10), (req, res) => {
+  res.json({ success: true, urls: (req.files || []).map(f => `/uploads/${f.filename}`) });
+});
+
+/* SEARCH */
 
 app.get("/api/sites", async (req, res) => {
   try {
     const q = req.query.q || "";
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(300);
 
-    const allSites = await Site.find({
-      status: { $ne: "deleted" },
-      approved: { $ne: false }
-    }).limit(300);
-
-    let results = allSites;
+    let results = sites;
 
     if (q.trim()) {
       const words = normalize(q).split(/\s+/).filter(Boolean);
-
-      results = allSites.filter(site => {
-        if (hasNegativeKeyword(site, q)) return false;
-        const text = siteSearchText(site);
-        return words.some(word => text.includes(word));
+      results = sites.filter(site => {
+        if (hasNegative(site, q)) return false;
+        const text = siteText(site);
+        return words.some(w => text.includes(w));
       });
     }
 
-    results = results
-      .map(site => {
-        const obj = site.toObject();
-        obj.finalScore = calculateScore(obj, q);
-        obj.searchScore = obj.finalScore;
-        return obj;
-      })
-      .sort((a, b) => {
-        const adA = a.sponsored || a.isSponsored || a.sponsorActive ? 1 : 0;
-        const adB = b.sponsored || b.isSponsored || b.sponsorActive ? 1 : 0;
-
-        if (adA !== adB) return adB - adA;
-        return b.finalScore - a.finalScore;
-      });
-
-    const ids = results.slice(0, 40).map(x => x._id);
-    if (ids.length) {
-      await Site.updateMany({ _id: { $in: ids } }, { $inc: { views: 1 } });
-    }
+    results = results.map(site => {
+      const o = site.toObject();
+      o.finalScore = score(o, q);
+      o.searchScore = o.finalScore;
+      return o;
+    }).sort((a,b) => b.finalScore - a.finalScore);
 
     res.json(results.slice(0, 40));
-  } catch (err) {
-    console.log("Site arama hatası:", err.message);
+  } catch {
     res.status(500).json([]);
   }
 });
@@ -442,49 +348,53 @@ app.get("/api/sites", async (req, res) => {
 app.get("/api/search", async (req, res) => {
   try {
     const q = req.query.q || "";
-
-    const allSites = await Site.find({
-      status: { $ne: "deleted" },
-      approved: { $ne: false }
-    }).limit(300);
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(300);
 
     const words = normalize(q).split(/\s+/).filter(Boolean);
 
-    let results = allSites;
+    let results = sites;
 
     if (q.trim()) {
-      results = allSites.filter(site => {
-        if (hasNegativeKeyword(site, q)) return false;
-        const text = siteSearchText(site);
-        return words.some(word => text.includes(word));
+      results = sites.filter(site => {
+        if (hasNegative(site, q)) return false;
+        const text = siteText(site);
+        return words.some(w => text.includes(w));
       });
     }
 
-    results = results
-      .map(site => {
-        const obj = site.toObject();
-        obj.searchScore = calculateScore(obj, q);
-        return obj;
-      })
-      .sort((a, b) => b.searchScore - a.searchScore);
+    results = results.map(site => {
+      const o = site.toObject();
+      o.searchScore = score(o, q);
+      return o;
+    }).sort((a,b) => b.searchScore - a.searchScore);
 
-    const sponsored = results
-      .filter(s => s.sponsored || s.isSponsored || s.sponsorActive)
-      .slice(0, 5);
+    const sponsored = results.filter(s => s.sponsored || s.isSponsored || s.sponsorActive).slice(0, 5);
+    const organic = results.filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive)).slice(0, 40);
 
-    const organic = results
-      .filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive))
-      .slice(0, 40);
+    let aiAnswer = "";
+    try {
+      if (openai && q.trim()) {
+        const summary = [...sponsored, ...organic].slice(0, 5)
+          .map((s,i) => `${i+1}. ${s.title || s.name || s.businessName} - ${s.description || s.desc || ""}`)
+          .join("\n");
 
-    const aiAnswer = await getAiAnswer(q, [...sponsored, ...organic]);
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "Sen NetSearch arama asistanısın. Kısa Türkçe cevap ver." },
+            { role: "user", content: `Arama: ${q}\nSonuçlar:\n${summary || "Sonuç yok"}` }
+          ],
+          max_tokens: 160
+        });
 
-    res.json({
-      aiAnswer,
-      sponsored,
-      results: organic
-    });
-  } catch (err) {
-    console.log("Search hata:", err.message);
+        aiAnswer = completion.choices?.[0]?.message?.content || "";
+      }
+    } catch (e) {
+      console.log("AI hata:", e.message);
+    }
+
+    res.json({ aiAnswer, sponsored, results: organic });
+  } catch {
     res.status(500).json({ aiAnswer: "", sponsored: [], results: [] });
   }
 });
@@ -494,25 +404,14 @@ app.get("/api/autocomplete", async (req, res) => {
     const q = normalize(req.query.q || "");
     if (q.length < 2) return res.json([]);
 
-    const sites = await Site.find({
-      status: { $ne: "deleted" },
-      approved: { $ne: false }
-    }).limit(200);
-
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).limit(200);
     const suggestions = [];
 
     sites.forEach(site => {
       [
-        site.title,
-        site.name,
-        site.businessName,
-        site.category,
-        site.city,
-        site.sehir,
-        site.district,
-        site.ilce,
-        ...toArray(site.keywords),
-        ...toArray(site.tags)
+        site.title, site.name, site.businessName, site.category,
+        site.city, site.sehir, site.district, site.ilce,
+        ...arr(site.keywords), ...arr(site.tags)
       ].forEach(x => {
         if (x && normalize(x).includes(q)) suggestions.push(x);
       });
@@ -524,17 +423,7 @@ app.get("/api/autocomplete", async (req, res) => {
   }
 });
 
-/* SİTE EKLEME */
-
-app.post("/api/sites", async (req, res) => {
-  try {
-    const site = await Site.create(buildSiteFromBody(req.body));
-    res.json({ success: true, message: "Site eklendi", site });
-  } catch (err) {
-    console.log("Site ekleme hatası:", err.message);
-    res.status(500).json({ success: false, message: "Site eklenemedi" });
-  }
-});
+/* SITE DETAIL / COMMENT */
 
 app.get("/api/sites/:id", async (req, res) => {
   try {
@@ -544,11 +433,7 @@ app.get("/api/sites/:id", async (req, res) => {
     site.views = Number(site.views || 0) + 1;
     await site.save();
 
-    const comments = await Comment.find({
-      siteId: site._id,
-      status: { $ne: "deleted" }
-    }).sort({ createdAt: -1 });
-
+    const comments = await Comment.find({ siteId: site._id, status: { $ne: "deleted" } }).sort({ createdAt: -1 });
     res.json({ site, comments });
   } catch {
     res.status(500).json({ success: false });
@@ -564,19 +449,17 @@ app.post("/api/sites/:id/click", async (req, res) => {
   }
 });
 
-/* YORUM */
-
 app.post("/api/comments", async (req, res) => {
   try {
-    const comment = await Comment.create({
+    await Comment.create({
       siteId: req.body.siteId,
-      name: req.body.name,
+      name: req.body.name || "Misafir",
       comment: req.body.comment,
       rating: Number(req.body.rating || 5),
       status: "active"
     });
 
-    res.json({ success: true, comment });
+    res.json({ success: true });
   } catch {
     res.status(500).json({ success: false });
   }
@@ -598,14 +481,7 @@ app.get("/api/admin/stats", async (req, res) => {
       totalUsers: await User.countDocuments()
     });
   } catch {
-    res.json({
-      totalSites: 0,
-      pendingSites: 0,
-      approvedSites: 0,
-      activeAds: 0,
-      totalComments: 0,
-      totalUsers: 0
-    });
+    res.json({ totalSites:0,pendingSites:0,approvedSites:0,activeAds:0,totalComments:0,totalUsers:0 });
   }
 });
 
@@ -620,20 +496,17 @@ app.get("/api/admin/sites", async (req, res) => {
 
 app.post("/api/admin/sites", async (req, res) => {
   try {
-    const site = await Site.create(buildSiteFromBody(req.body));
-    res.json({ success: true, message: "Site eklendi", site });
-  } catch (err) {
-    console.log("Admin site ekleme hatası:", err.message);
-    res.status(500).json({ success: false, message: "Site eklenemedi" });
+    const site = await Site.create(buildSite(req.body));
+    res.json({ success: true, site });
+  } catch {
+    res.status(500).json({ success: false });
   }
 });
 
 app.put("/api/admin/sites/:id", async (req, res) => {
   try {
-    const updated = await Site.findByIdAndUpdate(req.params.id, buildSiteFromBody(req.body), {
-      new: true
-    });
-    res.json({ success: true, site: updated });
+    const site = await Site.findByIdAndUpdate(req.params.id, buildSite(req.body), { new: true });
+    res.json({ success: true, site });
   } catch {
     res.status(500).json({ success: false });
   }
@@ -641,8 +514,8 @@ app.put("/api/admin/sites/:id", async (req, res) => {
 
 app.patch("/api/admin/sites/:id", async (req, res) => {
   try {
-    const updated = await Site.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, site: updated });
+    const site = await Site.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, site });
   } catch {
     res.status(500).json({ success: false });
   }
@@ -660,8 +533,7 @@ app.delete("/api/admin/sites/:id", async (req, res) => {
 /* SEO */
 
 app.get("/robots.txt", (req, res) => {
-  res.type("text/plain");
-  res.send(`User-agent: *
+  res.type("text/plain").send(`User-agent: *
 Allow: /
 
 Sitemap: https://netsearch.com.tr/sitemap.xml`);
@@ -669,23 +541,17 @@ Sitemap: https://netsearch.com.tr/sitemap.xml`);
 
 app.get("/sitemap.xml", async (req, res) => {
   try {
-    const sites = await Site.find({
-      status: { $ne: "deleted" },
-      approved: { $ne: false }
-    }).select("_id updatedAt");
+    const sites = await Site.find({ status: { $ne: "deleted" }, approved: { $ne: false } }).select("_id updatedAt");
 
-    const urls = sites
-      .map(site => `
+    const urls = sites.map(site => `
   <url>
     <loc>https://netsearch.com.tr/site.html?id=${site._id}</loc>
     <lastmod>${new Date(site.updatedAt || Date.now()).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>`)
-      .join("");
+  </url>`).join("");
 
-    res.type("application/xml");
-    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+    res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://netsearch.com.tr/</loc>
