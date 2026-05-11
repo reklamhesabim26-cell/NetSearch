@@ -4,6 +4,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const multer = require("multer");
+const fs = require("fs");
 const OpenAI = require("openai");
 
 const app = express();
@@ -11,10 +13,38 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URL = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+if (!fs.existsSync(path.join(__dirname, "uploads"))) {
+  fs.mkdirSync(path.join(__dirname, "uploads"));
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const safeName = Date.now() + "-" + Math.round(Math.random() * 1e9) + ext;
+    cb(null, safeName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: function (req, file, cb) {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Sadece görsel yüklenebilir"));
+    }
+    cb(null, true);
+  }
+});
 
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
@@ -26,88 +56,67 @@ mongoose
   .then(() => console.log("MongoDB bağlantısı başarılı"))
   .catch((err) => console.log("MongoDB bağlantı hatası:", err.message));
 
-const userSchema = new mongoose.Schema(
-  {
-    name: String,
-    email: String,
-    password: String,
-    role: { type: String, default: "user" }
-  },
-  { timestamps: true, strict: false }
-);
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  password: String,
+  role: { type: String, default: "user" }
+}, { timestamps: true, strict: false });
 
-const siteSchema = new mongoose.Schema(
-  {
-    title: String,
-    name: String,
-    businessName: String,
+const siteSchema = new mongoose.Schema({
+  title: String,
+  name: String,
+  businessName: String,
+  url: String,
+  website: String,
+  link: String,
+  description: String,
+  desc: String,
+  address: String,
+  category: String,
+  city: String,
+  sehir: String,
+  district: String,
+  ilce: String,
+  phone: String,
+  telefon: String,
+  whatsapp: String,
+  keywords: mongoose.Schema.Types.Mixed,
+  tags: mongoose.Schema.Types.Mixed,
+  negativeKeywords: mongoose.Schema.Types.Mixed,
+  logo: String,
+  logoUrl: String,
+  image: String,
+  cover: String,
+  coverUrl: String,
+  gallery: [String],
+  approved: { type: Boolean, default: true },
+  status: { type: String, default: "active" },
+  sponsored: { type: Boolean, default: false },
+  isSponsored: { type: Boolean, default: false },
+  sponsorActive: { type: Boolean, default: false },
+  sponsorBudget: { type: Number, default: 0 },
+  cpc: { type: Number, default: 0 },
+  sponsorCpc: { type: Number, default: 0 },
+  dailyLimit: { type: Number, default: 0 },
+  views: { type: Number, default: 0 },
+  clicks: { type: Number, default: 0 },
+  aiScore: { type: Number, default: 10 },
+  cityScore: { type: Number, default: 10 },
+  popularityScore: { type: Number, default: 10 },
+  commentScore: { type: Number, default: 0 },
+  rating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
+  ownerEmail: String
+}, { timestamps: true, strict: false });
 
-    url: String,
-    website: String,
-    link: String,
-
-    description: String,
-    desc: String,
-    address: String,
-
-    category: String,
-    city: String,
-    sehir: String,
-    district: String,
-    ilce: String,
-
-    phone: String,
-    telefon: String,
-    whatsapp: String,
-
-    keywords: mongoose.Schema.Types.Mixed,
-    tags: mongoose.Schema.Types.Mixed,
-    negativeKeywords: mongoose.Schema.Types.Mixed,
-
-    logo: String,
-    logoUrl: String,
-    image: String,
-    cover: String,
-    coverUrl: String,
-    gallery: [String],
-
-    approved: { type: Boolean, default: true },
-    status: { type: String, default: "active" },
-
-    sponsored: { type: Boolean, default: false },
-    isSponsored: { type: Boolean, default: false },
-    sponsorActive: { type: Boolean, default: false },
-
-    sponsorBudget: { type: Number, default: 0 },
-    cpc: { type: Number, default: 0 },
-    sponsorCpc: { type: Number, default: 0 },
-    dailyLimit: { type: Number, default: 0 },
-
-    views: { type: Number, default: 0 },
-    clicks: { type: Number, default: 0 },
-
-    aiScore: { type: Number, default: 10 },
-    cityScore: { type: Number, default: 10 },
-    popularityScore: { type: Number, default: 10 },
-    commentScore: { type: Number, default: 0 },
-    rating: { type: Number, default: 0 },
-    reviewCount: { type: Number, default: 0 },
-
-    ownerEmail: String
-  },
-  { timestamps: true, strict: false }
-);
-
-const commentSchema = new mongoose.Schema(
-  {
-    siteId: { type: mongoose.Schema.Types.ObjectId, ref: "Site" },
-    name: String,
-    comment: String,
-    rating: Number,
-    status: { type: String, default: "active" }
-  },
-  { timestamps: true, strict: false }
-);
+const commentSchema = new mongoose.Schema({
+  siteId: { type: mongoose.Schema.Types.ObjectId, ref: "Site" },
+  name: String,
+  comment: String,
+  rating: Number,
+  status: { type: String, default: "active" }
+}, { timestamps: true, strict: false });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 const Site = mongoose.models.Site || mongoose.model("Site", siteSchema);
@@ -132,10 +141,7 @@ function toText(value) {
 
 function toArray(value) {
   if (Array.isArray(value)) return value;
-  return String(value || "")
-    .split(",")
-    .map((x) => x.trim())
-    .filter(Boolean);
+  return String(value || "").split(",").map(x => x.trim()).filter(Boolean);
 }
 
 function siteSearchText(site) {
@@ -156,17 +162,10 @@ function siteSearchText(site) {
   `);
 }
 
-function hasNegativeKeyword(site, query) {
-  const q = normalize(query);
-  const negatives = toArray(site.negativeKeywords).map(normalize);
-  return negatives.some((word) => word && q.includes(word));
-}
-
 function calculateScore(site, query) {
   const q = normalize(query);
   const words = q.split(/\s+/).filter(Boolean);
   const text = siteSearchText(site);
-
   let score = 0;
 
   const title = normalize(site.title || site.name || site.businessName);
@@ -178,7 +177,7 @@ function calculateScore(site, query) {
   if (title.includes(q)) score += 80;
   if (text.includes(q)) score += 45;
 
-  words.forEach((word) => {
+  words.forEach(word => {
     if (title.includes(word)) score += 24;
     if (category.includes(word)) score += 18;
     if (city.includes(word)) score += 16;
@@ -201,10 +200,6 @@ function calculateScore(site, query) {
   score += Math.min(Number(site.clicks || 0) / 5, 35);
   score += Math.min(Number(site.views || 0) / 20, 25);
 
-  const views = Number(site.views || 0);
-  const clicks = Number(site.clicks || 0);
-  if (views > 0) score += Math.min((clicks / views) * 100, 30);
-
   if (site.logo || site.logoUrl || site.image) score += 8;
   if (site.cover || site.coverUrl) score += 8;
   if (site.phone || site.telefon || site.whatsapp) score += 10;
@@ -212,57 +207,53 @@ function calculateScore(site, query) {
   return Math.round(score);
 }
 
+function hasNegativeKeyword(site, query) {
+  const q = normalize(query);
+  const negatives = toArray(site.negativeKeywords).map(normalize);
+  return negatives.some(word => word && q.includes(word));
+}
+
 function buildSiteFromBody(b) {
   return {
     title: b.title || b.name || b.businessName || "",
     name: b.name || b.title || b.businessName || "",
     businessName: b.businessName || b.title || b.name || "",
-
     url: b.url || b.website || b.link || "",
     website: b.website || b.url || b.link || "",
     link: b.link || b.url || b.website || "",
-
     description: b.description || b.desc || b.address || "",
     desc: b.desc || b.description || b.address || "",
     address: b.address || "",
-
     category: b.category || "Genel",
     city: b.city || b.sehir || "",
     sehir: b.sehir || b.city || "",
     district: b.district || b.ilce || "",
     ilce: b.ilce || b.district || "",
-
     phone: b.phone || b.telefon || "",
     telefon: b.telefon || b.phone || "",
     whatsapp: b.whatsapp || b.phone || b.telefon || "",
-
     keywords: toArray(b.keywords || b.tags),
     tags: toArray(b.tags || b.keywords),
     negativeKeywords: toArray(b.negativeKeywords),
-
     logo: b.logo || b.logoUrl || "",
     logoUrl: b.logoUrl || b.logo || "",
     image: b.image || b.logo || b.logoUrl || "",
-    cover: b.cover || b.coverUrl || b.image || "",
-    coverUrl: b.coverUrl || b.cover || b.image || "",
-
-    approved: b.approved !== false,
+    cover: b.cover || b.coverUrl || "",
+    coverUrl: b.coverUrl || b.cover || "",
+    gallery: toArray(b.gallery),
+    approved: b.approved !== false && b.approved !== "false",
     status: b.status || "active",
-
     sponsored: b.sponsored === true || b.sponsored === "true",
     isSponsored: b.isSponsored === true || b.isSponsored === "true",
     sponsorActive: b.sponsorActive === true || b.sponsorActive === "true",
-
     sponsorBudget: Number(b.sponsorBudget || 0),
     cpc: Number(b.cpc || b.sponsorCpc || 0),
     sponsorCpc: Number(b.sponsorCpc || b.cpc || 0),
     dailyLimit: Number(b.dailyLimit || 0),
-
     aiScore: Number(b.aiScore || 10),
     cityScore: Number(b.cityScore || 10),
     popularityScore: Number(b.popularityScore || 10),
     commentScore: Number(b.commentScore || 0),
-
     ownerEmail: b.ownerEmail || b.email || ""
   };
 }
@@ -271,22 +262,15 @@ async function getAiAnswer(query, results) {
   try {
     if (!openai) return "";
 
-    const summary = results
-      .slice(0, 5)
-      .map((s, i) => `${i + 1}. ${s.title || s.name || s.businessName} - ${s.description || s.desc || ""}`)
-      .join("\n");
+    const summary = results.slice(0, 5).map((s, i) =>
+      `${i + 1}. ${s.title || s.name || s.businessName} - ${s.description || s.desc || ""}`
+    ).join("\n");
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        {
-          role: "system",
-          content: "Sen NetSearch arama asistanısın. Kısa ve net Türkçe cevap ver."
-        },
-        {
-          role: "user",
-          content: `Arama: ${query}\nSonuçlar:\n${summary || "Sonuç yok"}`
-        }
+        { role: "system", content: "Sen NetSearch arama asistanısın. Kısa ve net Türkçe cevap ver." },
+        { role: "user", content: `Arama: ${query}\nSonuçlar:\n${summary || "Sonuç yok"}` }
       ],
       max_tokens: 160,
       temperature: 0.4
@@ -298,6 +282,32 @@ async function getAiAnswer(query, results) {
     return "";
   }
 }
+
+/* UPLOAD */
+
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Dosya yok" });
+    }
+
+    res.json({
+      success: true,
+      url: `/uploads/${req.file.filename}`
+    });
+  } catch {
+    res.status(500).json({ success: false, message: "Yükleme hatası" });
+  }
+});
+
+app.post("/api/upload/multiple", upload.array("files", 10), (req, res) => {
+  try {
+    const urls = (req.files || []).map(file => `/uploads/${file.filename}`);
+    res.json({ success: true, urls });
+  } catch {
+    res.status(500).json({ success: false, message: "Çoklu yükleme hatası" });
+  }
+});
 
 /* SAYFALAR */
 
@@ -312,7 +322,8 @@ app.get("/health", (req, res) => {
     ok: true,
     message: "NetSearch çalışıyor",
     mongo: mongoose.connection.readyState === 1 ? "connected" : "not connected",
-    openai: process.env.OPENAI_API_KEY ? "key var" : "key yok"
+    openai: process.env.OPENAI_API_KEY ? "key var" : "key yok",
+    upload: "active"
   });
 });
 
@@ -328,7 +339,6 @@ app.post("/api/register", async (req, res) => {
     }
 
     await User.create({ name, email, password, role: "user" });
-
     res.json({ success: true, message: "Kayıt başarılı" });
   } catch {
     res.status(500).json({ success: false, message: "Kayıt hatası" });
@@ -395,17 +405,15 @@ app.get("/api/sites", async (req, res) => {
     if (q.trim()) {
       const words = normalize(q).split(/\s+/).filter(Boolean);
 
-      results = allSites.filter((site) => {
+      results = allSites.filter(site => {
         if (hasNegativeKeyword(site, q)) return false;
-
         const text = siteSearchText(site);
-
-        return words.some((word) => text.includes(word));
+        return words.some(word => text.includes(word));
       });
     }
 
     results = results
-      .map((site) => {
+      .map(site => {
         const obj = site.toObject();
         obj.finalScore = calculateScore(obj, q);
         obj.searchScore = obj.finalScore;
@@ -419,7 +427,7 @@ app.get("/api/sites", async (req, res) => {
         return b.finalScore - a.finalScore;
       });
 
-    const ids = results.slice(0, 40).map((x) => x._id);
+    const ids = results.slice(0, 40).map(x => x._id);
     if (ids.length) {
       await Site.updateMany({ _id: { $in: ids } }, { $inc: { views: 1 } });
     }
@@ -445,15 +453,15 @@ app.get("/api/search", async (req, res) => {
     let results = allSites;
 
     if (q.trim()) {
-      results = allSites.filter((site) => {
+      results = allSites.filter(site => {
         if (hasNegativeKeyword(site, q)) return false;
         const text = siteSearchText(site);
-        return words.some((word) => text.includes(word));
+        return words.some(word => text.includes(word));
       });
     }
 
     results = results
-      .map((site) => {
+      .map(site => {
         const obj = site.toObject();
         obj.searchScore = calculateScore(obj, q);
         return obj;
@@ -461,11 +469,11 @@ app.get("/api/search", async (req, res) => {
       .sort((a, b) => b.searchScore - a.searchScore);
 
     const sponsored = results
-      .filter((s) => s.sponsored || s.isSponsored || s.sponsorActive)
+      .filter(s => s.sponsored || s.isSponsored || s.sponsorActive)
       .slice(0, 5);
 
     const organic = results
-      .filter((s) => !(s.sponsored || s.isSponsored || s.sponsorActive))
+      .filter(s => !(s.sponsored || s.isSponsored || s.sponsorActive))
       .slice(0, 40);
 
     const aiAnswer = await getAiAnswer(q, [...sponsored, ...organic]);
@@ -493,7 +501,7 @@ app.get("/api/autocomplete", async (req, res) => {
 
     const suggestions = [];
 
-    sites.forEach((site) => {
+    sites.forEach(site => {
       [
         site.title,
         site.name,
@@ -505,7 +513,7 @@ app.get("/api/autocomplete", async (req, res) => {
         site.ilce,
         ...toArray(site.keywords),
         ...toArray(site.tags)
-      ].forEach((x) => {
+      ].forEach(x => {
         if (x && normalize(x).includes(q)) suggestions.push(x);
       });
     });
@@ -583,9 +591,9 @@ app.get("/api/admin/stats", async (req, res) => {
 
     res.json({
       totalSites: sites.length,
-      pendingSites: sites.filter((s) => s.status === "pending").length,
-      approvedSites: sites.filter((s) => s.status !== "pending").length,
-      activeAds: sites.filter((s) => s.sponsored || s.isSponsored || s.sponsorActive).length,
+      pendingSites: sites.filter(s => s.status === "pending").length,
+      approvedSites: sites.filter(s => s.status !== "pending").length,
+      activeAds: sites.filter(s => s.sponsored || s.isSponsored || s.sponsorActive).length,
       totalComments: comments.length,
       totalUsers: await User.countDocuments()
     });
@@ -667,15 +675,13 @@ app.get("/sitemap.xml", async (req, res) => {
     }).select("_id updatedAt");
 
     const urls = sites
-      .map(
-        (site) => `
+      .map(site => `
   <url>
     <loc>https://netsearch.com.tr/site.html?id=${site._id}</loc>
     <lastmod>${new Date(site.updatedAt || Date.now()).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>`
-      )
+  </url>`)
       .join("");
 
     res.type("application/xml");
