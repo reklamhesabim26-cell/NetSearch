@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>NetSearch - AI Destekli Yeni Nesil Arama Motoru</title>
-<meta name="description" content="NetSearch ile işletmeleri, web sitelerini, sponsorlu sonuçları ve AI destekli arama deneyimini keşfedin.">
+<meta name="description" content="NetSearch ile işletmeleri, web sitelerini, sponsorlu sonuçları ve yapay zeka destekli cevapları keşfedin.">
+<meta name="robots" content="index, follow">
 
 <style>
 *{box-sizing:border-box}
@@ -19,7 +20,7 @@ body{
 
 header{
   background:linear-gradient(135deg,#dff4ff,#ffffff,#dbeafe);
-  padding:26px 18px 70px;
+  padding:24px 18px 70px;
   border-bottom:1px solid #dbeafe;
 }
 
@@ -35,11 +36,10 @@ header{
 .logo{
   font-size:34px;
   font-weight:900;
+  letter-spacing:-1px;
 }
 
-.logo span{
-  color:#0284c7;
-}
+.logo span{color:#0284c7}
 
 .nav{
   display:flex;
@@ -59,34 +59,32 @@ header{
 }
 
 .hero{
-  max-width:950px;
-  margin:70px auto 0;
+  max-width:980px;
+  margin:68px auto 0;
   text-align:center;
 }
 
 .hero h1{
   margin:0;
-  font-size:58px;
+  font-size:60px;
   line-height:1.05;
-  letter-spacing:-1.5px;
+  letter-spacing:-1.8px;
 }
 
-.hero h1 span{
-  color:#0284c7;
-}
+.hero h1 span{color:#0284c7}
 
 .hero p{
   color:#475569;
   font-size:19px;
   line-height:1.6;
-  max-width:760px;
+  max-width:780px;
   margin:18px auto 0;
 }
 
 .searchPanel{
-  max-width:950px;
-  margin:-42px auto 25px;
-  background:rgba(255,255,255,.92);
+  max-width:980px;
+  margin:-42px auto 24px;
+  background:rgba(255,255,255,.95);
   border:1px solid #dbeafe;
   border-radius:30px;
   padding:18px;
@@ -117,12 +115,17 @@ header{
 .searchRow button{
   border:0;
   border-radius:20px;
-  padding:0 36px;
+  padding:0 34px;
   background:linear-gradient(135deg,#0ea5e9,#2563eb);
   color:white;
   font-size:17px;
   font-weight:900;
   cursor:pointer;
+}
+
+.voiceBtn{
+  background:linear-gradient(135deg,#22c55e,#16a34a)!important;
+  padding:0 20px!important;
 }
 
 .suggestions{
@@ -146,9 +149,7 @@ header{
   font-weight:bold;
 }
 
-.suggestions div:hover{
-  background:#f0f9ff;
-}
+.suggestions div:hover{background:#f0f9ff}
 
 .chips{
   display:flex;
@@ -169,14 +170,65 @@ header{
   cursor:pointer;
 }
 
-.chip:hover{
-  background:#e0f2fe;
-}
+.chip:hover{background:#e0f2fe}
 
 main{
   max-width:1180px;
   margin:auto;
-  padding:28px 16px 70px;
+  padding:28px 16px 76px;
+}
+
+.categories{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:14px;
+  margin-bottom:28px;
+}
+
+.cat{
+  background:white;
+  border:1px solid #dbeafe;
+  border-radius:20px;
+  padding:18px;
+  text-align:center;
+  font-weight:bold;
+  color:#0369a1;
+  cursor:pointer;
+  box-shadow:0 10px 28px rgba(15,23,42,.06);
+}
+
+.cat:hover{background:#f0f9ff}
+
+.trendBox{
+  background:white;
+  border:1px solid #dbeafe;
+  border-radius:24px;
+  padding:18px;
+  margin-bottom:24px;
+  box-shadow:0 14px 38px rgba(15,23,42,.06);
+}
+
+.trendBox h2{
+  margin:0 0 14px;
+  color:#0284c7;
+  font-size:22px;
+}
+
+.trends{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.trend{
+  background:#f8fbff;
+  border:1px solid #bae6fd;
+  color:#0369a1;
+  border-radius:999px;
+  padding:9px 13px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:13px;
 }
 
 .aiBox{
@@ -218,6 +270,12 @@ main{
   border-radius:28px;
   overflow:hidden;
   box-shadow:0 18px 50px rgba(15,23,42,.08);
+  transition:.18s;
+}
+
+.card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 25px 65px rgba(15,23,42,.12);
 }
 
 .card.sponsored{
@@ -232,9 +290,7 @@ main{
   background:#dbeafe;
 }
 
-.cardBody{
-  padding:22px;
-}
+.cardBody{padding:22px}
 
 .cardTop{
   display:flex;
@@ -345,27 +401,8 @@ main{
   font-weight:bold;
 }
 
-.categories{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:14px;
-  margin-bottom:28px;
-}
-
-.cat{
-  background:white;
-  border:1px solid #dbeafe;
-  border-radius:20px;
-  padding:18px;
-  text-align:center;
-  font-weight:bold;
-  color:#0369a1;
-  cursor:pointer;
-  box-shadow:0 10px 28px rgba(15,23,42,.06);
-}
-
-.cat:hover{
-  background:#f0f9ff;
+.mobileBar{
+  display:none;
 }
 
 footer{
@@ -406,22 +443,40 @@ footer{
     padding:16px;
   }
 
-  .cover{
-    height:165px;
-  }
+  .cover{height:165px}
 
   .cardTop{
     align-items:flex-start;
   }
 
-  .title{
-    font-size:22px;
-  }
+  .title{font-size:22px}
 
   .actions a,
   .actions button{
     width:100%;
     text-align:center;
+  }
+
+  .mobileBar{
+    display:flex;
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:white;
+    border-top:1px solid #dbeafe;
+    box-shadow:0 -8px 30px rgba(15,23,42,.08);
+    z-index:99;
+  }
+
+  .mobileBar button{
+    flex:1;
+    border:0;
+    background:white;
+    padding:12px 6px;
+    color:#0369a1;
+    font-weight:bold;
+    font-size:12px;
   }
 }
 </style>
@@ -448,6 +503,7 @@ footer{
   <div class="searchRow">
     <input id="searchInput" type="text" placeholder="Ne aramak istiyorsun? Örn: Eskişehir kombi servisi" autocomplete="off">
     <button onclick="searchSites()">Ara</button>
+    <button class="voiceBtn" onclick="voiceSearch()">🎙️</button>
   </div>
 
   <div id="suggestions" class="suggestions"></div>
@@ -473,6 +529,19 @@ footer{
     <div class="cat" onclick="quickSearch('Resmi Kurum')">🏛️ Resmi Kurum</div>
   </div>
 
+  <div class="trendBox">
+    <h2>Trend Aramalar</h2>
+    <div class="trends">
+      <div class="trend" onclick="quickSearch('Eskişehir kombi servisi')">Eskişehir kombi servisi</div>
+      <div class="trend" onclick="quickSearch('Beyaz eşya servisi')">Beyaz eşya servisi</div>
+      <div class="trend" onclick="quickSearch('Yapay zeka')">Yapay zeka</div>
+      <div class="trend" onclick="quickSearch('Restoran')">Restoran</div>
+      <div class="trend" onclick="quickSearch('E-Devlet')">E-Devlet</div>
+      <div class="trend" onclick="quickSearch('Sağlık')">Sağlık</div>
+      <div class="trend" onclick="quickSearch('Yakınımdaki işletmeler')">Yakınımdaki işletmeler</div>
+    </div>
+  </div>
+
   <div id="aiBox" class="aiBox">
     <h2>NetSearch AI Özeti</h2>
     <p id="aiText"></p>
@@ -485,6 +554,13 @@ footer{
   <div id="results" class="resultGrid"></div>
 
 </main>
+
+<div class="mobileBar">
+  <button onclick="window.location.href='/'">Ara</button>
+  <button onclick="quickSearch('Trend')">Trend</button>
+  <button onclick="quickSearch('Yakınımdaki işletmeler')">Yakınımda</button>
+  <button onclick="window.location.href='/login.html'">Giriş</button>
+</div>
 
 <footer>
   © 2026 NetSearch.com.tr - AI destekli yeni nesil arama motoru
@@ -546,6 +622,24 @@ function quickSearch(text){
   searchSites();
 }
 
+function voiceSearch(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition){
+    alert("Tarayıcın sesli aramayı desteklemiyor.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "tr-TR";
+  recognition.start();
+
+  recognition.onresult = function(event){
+    input.value = event.results[0][0].transcript;
+    searchSites();
+  };
+}
+
 async function searchSites(){
   const q = input.value.trim();
 
@@ -564,14 +658,9 @@ async function searchSites(){
 
     document.getElementById("results").innerHTML = "";
 
-    if(data.aiAnswer){
-      document.getElementById("aiText").innerText = data.aiAnswer;
-      document.getElementById("aiBox").style.display = "block";
-    }else{
-      document.getElementById("aiText").innerText =
-        `"${q || "Tüm sonuçlar"}" için NetSearch veritabanındaki en alakalı sonuçlar listelendi.`;
-      document.getElementById("aiBox").style.display = "block";
-    }
+    document.getElementById("aiText").innerText =
+      data.aiAnswer || `"${q || "Tüm sonuçlar"}" için NetSearch veritabanındaki en alakalı sonuçlar listelendi.`;
+    document.getElementById("aiBox").style.display = "block";
 
     if(sponsored.length){
       document.getElementById("sponsoredTitle").style.display = "block";
@@ -657,6 +746,7 @@ function createCard(site,isSponsored){
 
 async function trackClick(id){
   if(!id) return;
+
   try{
     await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {
       method:"POST",
