@@ -16,363 +16,60 @@
 
 <style>
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#fff;
-  color:#111827;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-}
-
-.top{
-  display:flex;
-  justify-content:flex-end;
-  gap:12px;
-  padding:18px 24px;
-}
-
-.top a{
-  text-decoration:none;
-  color:#0369a1;
-  font-weight:bold;
-  border:1px solid #bae6fd;
-  padding:9px 15px;
-  border-radius:999px;
-  background:white;
-}
-
-.hero{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  padding:35px 16px 70px;
-}
-
-.logoArea{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:14px;
-  margin-bottom:28px;
-}
-
-.mainLogo{
-  width:140px;
-  height:140px;
-  object-fit:cover;
-  border-radius:32px;
-  box-shadow:0 18px 45px rgba(14,165,233,.28);
-}
-
-.brandText{
-  font-size:64px;
-  font-weight:900;
-  letter-spacing:-3px;
-}
-
-.brandText .net{color:#111827}
-.brandText .search{color:#0ea5e9}
-
-.searchBox{
-  width:min(720px,92vw);
-  position:relative;
-}
-
-.searchRow{
-  width:100%;
-  display:flex;
-  align-items:center;
-  border:1px solid #d1d5db;
-  border-radius:999px;
-  padding:8px 10px 8px 20px;
-  box-shadow:0 3px 12px rgba(0,0,0,.08);
-  background:white;
-}
-
-.searchIcon{
-  color:#64748b;
-  margin-right:10px;
-  flex-shrink:0;
-}
-
-.searchRow input{
-  flex:1;
-  min-width:0;
-  border:0;
-  outline:0;
-  font-size:18px;
-  padding:13px 8px;
-}
-
-.searchRow button{
-  border:0;
-  color:white;
-  font-weight:bold;
-  border-radius:999px;
-  cursor:pointer;
-  flex-shrink:0;
-}
-
-.searchBtn{
-  background:#0ea5e9;
-  padding:12px 22px;
-}
-
-.voice{
-  background:#16a34a;
-  padding:12px 15px;
-  margin-left:6px;
-}
-
-.locationLine{
-  margin-top:18px;
-  display:flex;
-  justify-content:center;
-}
-
-.locationBtn{
-  border:1px solid #ddd6fe;
-  background:#f5f3ff;
-  color:#6d28d9;
-  padding:11px 16px;
-  border-radius:999px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.buttons{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:18px;
-  flex-wrap:wrap;
-}
-
-.buttons button{
-  border:1px solid #e5e7eb;
-  background:#f8fafc;
-  padding:11px 17px;
-  border-radius:8px;
-  cursor:pointer;
-  color:#111827;
-  font-weight:bold;
-}
-
-.suggestions{
-  display:none;
-  position:absolute;
-  left:0;
-  right:0;
-  top:62px;
-  background:white;
-  border:1px solid #e5e7eb;
-  border-radius:18px;
-  overflow:hidden;
-  box-shadow:0 15px 35px rgba(0,0,0,.14);
-  z-index:20;
-}
-
-.suggestionItem{
-  padding:13px 18px;
-  cursor:pointer;
-  border-bottom:1px solid #f1f5f9;
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:center;
-}
-
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#111827;min-height:100vh;display:flex;flex-direction:column}
+.top{display:flex;justify-content:flex-end;gap:12px;padding:18px 24px}
+.top a{text-decoration:none;color:#0369a1;font-weight:bold;border:1px solid #bae6fd;padding:9px 15px;border-radius:999px;background:white}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:35px 16px 70px}
+.logoArea{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:28px}
+.mainLogo{width:140px;height:140px;object-fit:cover;border-radius:32px;box-shadow:0 18px 45px rgba(14,165,233,.28)}
+.brandText{font-size:64px;font-weight:900;letter-spacing:-3px}
+.brandText .net{color:#111827}.brandText .search{color:#0ea5e9}
+.searchBox{width:min(720px,92vw);position:relative}
+.searchRow{width:100%;display:flex;align-items:center;border:1px solid #d1d5db;border-radius:999px;padding:8px 10px 8px 20px;box-shadow:0 3px 12px rgba(0,0,0,.08);background:white}
+.searchIcon{color:#64748b;margin-right:10px;flex-shrink:0}
+.searchRow input{flex:1;min-width:0;border:0;outline:0;font-size:18px;padding:13px 8px}
+.searchRow button{border:0;color:white;font-weight:bold;border-radius:999px;cursor:pointer;flex-shrink:0}
+.searchBtn{background:#0ea5e9;padding:12px 22px}
+.voice{background:#16a34a;padding:12px 15px;margin-left:6px}
+.quick{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.quick button{border:1px solid #e5e7eb;background:#f8fafc;padding:11px 16px;border-radius:999px;cursor:pointer;font-weight:bold;color:#111827}
+.nearBtn{border:1px solid #ddd6fe;background:#f5f3ff!important;color:#6d28d9!important}
+.suggestions{display:none;position:absolute;left:0;right:0;top:62px;background:white;border:1px solid #e5e7eb;border-radius:18px;overflow:hidden;box-shadow:0 15px 35px rgba(0,0,0,.14);z-index:20}
+.suggestionItem{padding:13px 18px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;gap:12px;align-items:center}
 .suggestionItem:hover{background:#f8fafc}
-.suggestionText{font-weight:bold;color:#111827}
-.suggestionType{font-size:12px;color:#64748b;background:#f1f5f9;border-radius:999px;padding:4px 8px}
-
-.resultsWrap{
-  display:none;
-  width:min(960px,94vw);
-  margin:0 auto 70px;
-}
-
-.aiBox{
-  background:#f8fbff;
-  border:1px solid #bfdbfe;
-  border-radius:18px;
-  padding:18px;
-  margin-bottom:18px;
-}
-
-.aiBox h2{
-  margin:0 0 8px;
-  color:#0284c7;
-  font-size:20px;
-}
-
-.aiBox p{margin:0;line-height:1.6;color:#334155}
+.suggestionText{font-weight:bold}.suggestionType{font-size:12px;color:#64748b;background:#f1f5f9;border-radius:999px;padding:4px 8px}
+.resultsWrap{display:none;width:min(1000px,94vw);margin:0 auto 70px}
+.aiBox{background:linear-gradient(135deg,#f8fbff,#eef6ff);border:1px solid #bfdbfe;border-radius:20px;padding:18px;margin-bottom:18px}
+.aiBox h2{margin:0 0 8px;color:#0284c7;font-size:20px}.aiBox p{margin:0;line-height:1.6;color:#334155}
 .sectionTitle{margin:24px 0 12px;font-size:22px}
 .resultGrid{display:grid;gap:16px}
-
-.card{
-  border:1px solid #e5e7eb;
-  border-radius:18px;
-  padding:18px;
-  background:white;
-  box-shadow:0 8px 24px rgba(15,23,42,.06);
-}
-
-.card.sponsored{
-  border-color:#38bdf8;
-  box-shadow:0 12px 30px rgba(14,165,233,.14);
-}
-
-.cardTop{display:flex;align-items:center;gap:14px}
-
-.siteLogo,.logoLetter{
-  width:58px;
-  height:58px;
-  border-radius:16px;
-  background:#e0f2fe;
-  border:1px solid #bae6fd;
-  object-fit:cover;
-  flex-shrink:0;
-}
-
-.logoLetter{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#0284c7;
-  font-size:24px;
-  font-weight:900;
-}
-
-.title{font-size:23px;color:#0284c7;font-weight:900;margin-bottom:4px}
+.card{border:1px solid #e5e7eb;border-radius:20px;padding:18px;background:white;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.card.sponsored{border-color:#38bdf8;box-shadow:0 12px 30px rgba(14,165,233,.16)}
+.cardTop{display:flex;gap:14px;align-items:center}
+.siteLogo,.logoLetter{width:58px;height:58px;border-radius:16px;background:#e0f2fe;border:1px solid #bae6fd;object-fit:cover;flex-shrink:0}
+.logoLetter{display:flex;align-items:center;justify-content:center;color:#0284c7;font-size:24px;font-weight:900}
+.title{font-size:22px;color:#0284c7;font-weight:900;margin-bottom:4px}
 .url{color:#16a34a;font-weight:bold;font-size:14px;word-break:break-all}
 .desc{color:#334155;line-height:1.6;margin:14px 0}
-
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-
-.badge{
-  background:#f8fafc;
-  border:1px solid #e2e8f0;
-  color:#0369a1;
-  border-radius:999px;
-  padding:7px 10px;
-  font-size:12px;
-  font-weight:bold;
-}
-
-.badge.ad{color:#92400e;background:#fef3c7;border-color:#f59e0b}
-.badge.verified{color:#166534;background:#dcfce7;border-color:#86efac}
-.badge.near{color:#6b21a8;background:#f3e8ff;border-color:#d8b4fe}
-
+.badge{background:#f8fafc;border:1px solid #e2e8f0;color:#0369a1;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:bold}
+.ad{color:#92400e;background:#fef3c7;border-color:#f59e0b}.verified{color:#166534;background:#dcfce7;border-color:#86efac}.near{color:#6b21a8;background:#f3e8ff;border-color:#d8b4fe}
 .actions{display:flex;gap:9px;flex-wrap:wrap}
-
-.actions a,.actions button{
-  border:0;
-  text-decoration:none;
-  color:white;
-  padding:10px 14px;
-  border-radius:999px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.visit{background:#16a34a}
-.detail{background:#2563eb}
-.call{background:#0f766e}
-.whatsapp{background:#22c55e}
-.share{background:#9333ea}
-
-.empty,.loading{
-  text-align:center;
-  color:#64748b;
-  padding:30px;
-  font-weight:bold;
-}
-
-footer{
-  margin-top:auto;
-  background:#f8fafc;
-  border-top:1px solid #e5e7eb;
-  padding:22px;
-  color:#64748b;
-  font-size:14px;
-}
-
-.footerInner{
-  max-width:1100px;
-  margin:auto;
-  display:flex;
-  justify-content:space-between;
-  gap:18px;
-  flex-wrap:wrap;
-}
-
-.footerLinks{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-}
-
-footer a{
-  color:#475569;
-  text-decoration:none;
-  font-weight:bold;
-}
-
-.legalText{
-  max-width:1100px;
-  margin:14px auto 0;
-  font-size:12px;
-  line-height:1.5;
-  color:#64748b;
-}
-
+.actions a,.actions button{border:0;text-decoration:none;color:white;padding:10px 14px;border-radius:999px;font-weight:bold;cursor:pointer}
+.visit{background:#16a34a}.detail{background:#2563eb}.call{background:#0f766e}.whatsapp{background:#22c55e}.share{background:#9333ea}
+.empty,.loading{text-align:center;color:#64748b;padding:30px;font-weight:bold}
+footer{margin-top:auto;background:#f8fafc;border-top:1px solid #e5e7eb;padding:22px;color:#64748b;font-size:14px}
+.footerInner{max-width:1100px;margin:auto;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.footerLinks{display:flex;gap:14px;flex-wrap:wrap}
+footer a{color:#475569;text-decoration:none;font-weight:bold}
+.legalText{max-width:1100px;margin:14px auto 0;font-size:12px;line-height:1.5;color:#64748b}
 @media(max-width:700px){
-  .top{padding:14px}
-  .mainLogo{width:110px;height:110px}
-  .brandText{font-size:48px}
-
-  .searchBox{width:94vw}
-
-  .searchRow{
-    padding:7px 7px 7px 14px;
-  }
-
-  .searchRow input{
-    font-size:15px;
-    padding:12px 6px;
-  }
-
-  .searchBtn{
-    padding:11px 13px;
-  }
-
-  .voice{
-    padding:11px 12px;
-    margin-left:5px;
-  }
-
-  .buttons{gap:8px}
-  .buttons button,.locationBtn{width:100%}
-
-  .actions a,.actions button{
-    width:100%;
-    text-align:center;
-  }
-
-  .footerInner{
-    flex-direction:column;
-  }
-
-  .footerLinks{
-    flex-direction:column;
-    gap:8px;
-  }
+  .top{padding:14px}.mainLogo{width:105px;height:105px}.brandText{font-size:48px}
+  .searchBox{width:94vw}.searchRow{padding:7px 7px 7px 14px}.searchRow input{font-size:15px;padding:12px 6px}
+  .searchBtn{padding:11px 13px}.voice{padding:11px 12px;margin-left:5px}
+  .quick button{width:100%}.actions a,.actions button{width:100%;text-align:center}
+  .footerInner{flex-direction:column}.footerLinks{flex-direction:column;gap:8px}
 }
 </style>
 </head>
@@ -385,7 +82,6 @@ footer a{
 </div>
 
 <section class="hero" id="hero">
-
   <div class="logoArea">
     <img src="/icon-512.png" class="mainLogo" alt="NetSearch Logo">
     <div class="brandText"><span class="net">Net</span><span class="search">Search</span></div>
@@ -401,20 +97,15 @@ footer a{
     <div id="suggestions" class="suggestions"></div>
   </div>
 
-  <div class="locationLine">
-    <button class="locationBtn" onclick="nearbySearch()">📍 Yakınımdaki İşletmeleri Göster</button>
-  </div>
-
-  <div class="buttons">
+  <div class="quick">
     <button onclick="quickSearch('Eskişehir kombi servisi')">NetSearch'te Ara</button>
-    <button onclick="quickSearch('Teknik servis')">Teknik Servis Ara</button>
+    <button onclick="quickSearch('Teknik servis')">Teknik Servis</button>
+    <button class="nearBtn" onclick="nearbySearch()">📍 Yakınımdaki İşletmeler</button>
   </div>
-
 </section>
 
 <main id="resultsWrap" class="resultsWrap">
-
-  <div id="aiBox" class="aiBox">
+  <div class="aiBox">
     <h2>NetSearch AI Özeti</h2>
     <p id="aiText"></p>
   </div>
@@ -424,16 +115,11 @@ footer a{
 
   <h2 id="organicTitle" class="sectionTitle" style="display:none;">Arama Sonuçları</h2>
   <div id="results" class="resultGrid"></div>
-
 </main>
 
 <footer>
   <div class="footerInner">
-    <div>
-      <b>NetSearch</b><br>
-      AI destekli yeni nesil arama ve reklam platformu.
-    </div>
-
+    <div><b>NetSearch</b><br>AI destekli yeni nesil arama ve reklam platformu.</div>
     <div class="footerLinks">
       <a href="/index.html">Ana Sayfa</a>
       <a href="/login.html">Reklam Ver</a>
@@ -444,137 +130,101 @@ footer a{
       <a href="#">Çerez Politikası</a>
       <a href="#">Kullanım Şartları</a>
     </div>
-
-    <div>
-      © 2026 NetSearch
-    </div>
+    <div>© 2026 NetSearch</div>
   </div>
-
   <div class="legalText">
-    NetSearch kullanıcı deneyimini geliştirmek, güvenliği sağlamak ve reklam performansını ölçmek amacıyla çerezler ve benzeri teknolojiler kullanabilir.
-    Gizlilik, KVKK, çerez ve kullanım şartları sayfaları ilerleyen aşamada detaylı olarak yayınlanacaktır.
+    NetSearch; kullanıcı deneyimini geliştirmek, güvenliği sağlamak ve reklam performansını ölçmek amacıyla çerezler ve benzeri teknolojiler kullanabilir.
   </div>
 </footer>
 
 <script>
-const input = document.getElementById("searchInput");
-const suggestionsBox = document.getElementById("suggestions");
-let suggestionTimer = null;
-let viewedAds = new Set();
+const input=document.getElementById("searchInput");
+const suggestionsBox=document.getElementById("suggestions");
+let suggestionTimer=null;
+let viewedAds=new Set();
 
-input.addEventListener("keydown", function(e){
-  if(e.key === "Enter"){
-    suggestionsBox.style.display = "none";
-    searchSites();
-  }
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){suggestionsBox.style.display="none";searchSites();}
 });
 
-input.addEventListener("input", function(){
+input.addEventListener("input",()=>{
   clearTimeout(suggestionTimer);
-  const q = input.value.trim();
-
-  if(q.length < 2){
-    suggestionsBox.style.display = "none";
-    suggestionsBox.innerHTML = "";
-    return;
-  }
-
-  suggestionTimer = setTimeout(() => loadSuggestions(q), 180);
+  const q=input.value.trim();
+  if(q.length<2){suggestionsBox.style.display="none";suggestionsBox.innerHTML="";return;}
+  suggestionTimer=setTimeout(()=>loadSuggestions(q),180);
 });
 
-document.addEventListener("click", function(e){
-  if(!e.target.closest(".searchBox")){
-    suggestionsBox.style.display = "none";
-  }
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".searchBox")) suggestionsBox.style.display="none";
 });
 
 function prepareResults(){
-  document.getElementById("hero").style.justifyContent = "flex-start";
-  document.getElementById("hero").style.paddingTop = "35px";
-  document.getElementById("hero").style.paddingBottom = "30px";
-  document.getElementById("resultsWrap").style.display = "block";
-  document.getElementById("results").innerHTML = `<div class="loading">Aranıyor...</div>`;
-  document.getElementById("sponsoredResults").innerHTML = "";
-  document.getElementById("sponsoredTitle").style.display = "none";
-  document.getElementById("organicTitle").style.display = "none";
+  hero.style.justifyContent="flex-start";
+  hero.style.paddingTop="35px";
+  hero.style.paddingBottom="30px";
+  resultsWrap.style.display="block";
+  results.innerHTML=`<div class="loading">Aranıyor...</div>`;
+  sponsoredResults.innerHTML="";
+  sponsoredTitle.style.display="none";
+  organicTitle.style.display="none";
 }
 
 async function loadSuggestions(q){
   try{
-    const res = await fetch("/api/autocomplete?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {cache:"no-store"});
-    const data = await res.json();
-
-    suggestionsBox.innerHTML = "";
-
-    if(!Array.isArray(data) || data.length === 0){
-      suggestionsBox.style.display = "none";
-      return;
-    }
-
-    data.slice(0,8).forEach(item => {
-      const div = document.createElement("div");
-      div.className = "suggestionItem";
-      div.innerHTML = `<span class="suggestionText">🔎 ${escapeHtml(item)}</span><span class="suggestionType">Öneri</span>`;
-      div.onclick = () => {
-        input.value = item;
-        suggestionsBox.style.display = "none";
-        searchSites();
-      };
+    const res=await fetch("/api/autocomplete?q="+encodeURIComponent(q)+"&t="+Date.now(),{cache:"no-store"});
+    const data=await res.json();
+    suggestionsBox.innerHTML="";
+    if(!Array.isArray(data)||!data.length){suggestionsBox.style.display="none";return;}
+    data.slice(0,8).forEach(item=>{
+      const div=document.createElement("div");
+      div.className="suggestionItem";
+      div.innerHTML=`<span class="suggestionText">🔎 ${esc(item)}</span><span class="suggestionType">Öneri</span>`;
+      div.onclick=()=>{input.value=item;suggestionsBox.style.display="none";searchSites();};
       suggestionsBox.appendChild(div);
     });
-
-    suggestionsBox.style.display = "block";
-
-  }catch{
-    suggestionsBox.style.display = "none";
-  }
+    suggestionsBox.style.display="block";
+  }catch{suggestionsBox.style.display="none";}
 }
 
 async function searchSites(){
-  const q = input.value.trim();
-  suggestionsBox.style.display = "none";
+  const q=input.value.trim();
+  suggestionsBox.style.display="none";
   prepareResults();
 
   try{
-    const res = await fetch("/api/search?q=" + encodeURIComponent(q) + "&t=" + Date.now(), {cache:"no-store"});
-    const data = await res.json();
+    const res=await fetch("/api/search?q="+encodeURIComponent(q)+"&t="+Date.now(),{cache:"no-store"});
+    const data=await res.json();
+    const sponsored=data.sponsored||[];
+    const organic=data.results||[];
 
-    const sponsored = data.sponsored || [];
-    const organic = data.results || [];
-
-    document.getElementById("results").innerHTML = "";
-    document.getElementById("sponsoredResults").innerHTML = "";
-
-    document.getElementById("aiText").innerText =
-      data.aiAnswer || `"${q || "Tüm sonuçlar"}" için en alakalı sonuçlar listelendi.`;
+    results.innerHTML="";
+    sponsoredResults.innerHTML="";
+    aiText.innerText=data.aiAnswer||`"${q||"Tüm sonuçlar"}" için en alakalı sonuçlar listelendi.`;
 
     if(sponsored.length){
-      document.getElementById("sponsoredTitle").style.display = "block";
+      sponsoredTitle.style.display="block";
       sponsored.forEach(site=>{
-        document.getElementById("sponsoredResults").appendChild(createCard(site,true));
+        sponsoredResults.appendChild(createCard(site,true));
         trackView(site._id);
       });
     }
 
     if(organic.length){
-      document.getElementById("organicTitle").style.display = "block";
-      document.getElementById("organicTitle").innerText = "Arama Sonuçları";
-      organic.forEach(site=>{
-        document.getElementById("results").appendChild(createCard(site,false));
-      });
+      organicTitle.style.display="block";
+      organicTitle.innerText="Arama Sonuçları";
+      organic.forEach(site=>results.appendChild(createCard(site,false)));
     }else if(!sponsored.length){
-      document.getElementById("results").innerHTML = `<div class="empty">Sonuç bulunamadı.</div>`;
+      results.innerHTML=`<div class="empty">Sonuç bulunamadı.</div>`;
     }
 
-    document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
-
+    resultsWrap.scrollIntoView({behavior:"smooth",block:"start"});
   }catch{
-    document.getElementById("results").innerHTML = `<div class="empty">Sunucu bağlantı hatası.</div>`;
+    results.innerHTML=`<div class="empty">Sunucu bağlantı hatası.</div>`;
   }
 }
 
 function nearbySearch(){
-  const q = input.value.trim();
+  const q=input.value.trim();
 
   if(!navigator.geolocation){
     alert("Tarayıcı konum desteklemiyor.");
@@ -582,102 +232,80 @@ function nearbySearch(){
   }
 
   prepareResults();
+  aiText.innerText="Konum izni bekleniyor. Yakındaki işletmeler aranıyor...";
 
-  document.getElementById("aiText").innerText =
-    "Konum izni bekleniyor. Yakındaki işletmeler aranıyor...";
-
-  navigator.geolocation.getCurrentPosition(async function(pos){
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-
+  navigator.geolocation.getCurrentPosition(async pos=>{
     try{
-      const res = await fetch(`/api/nearby?lat=${lat}&lng=${lng}&q=${encodeURIComponent(q)}&radius=50&t=${Date.now()}`, {cache:"no-store"});
-      const data = await res.json();
-      const results = data.results || [];
+      const lat=pos.coords.latitude;
+      const lng=pos.coords.longitude;
+      const res=await fetch(`/api/nearby?lat=${lat}&lng=${lng}&q=${encodeURIComponent(q)}&radius=50&t=${Date.now()}`,{cache:"no-store"});
+      const data=await res.json();
+      const list=data.results||[];
 
-      document.getElementById("results").innerHTML = "";
-      document.getElementById("sponsoredResults").innerHTML = "";
-      document.getElementById("sponsoredTitle").style.display = "none";
+      results.innerHTML="";
+      aiText.innerText=list.length?`Konumuna göre ${list.length} yakın işletme bulundu.`:"Konumuna yakın kayıtlı işletme bulunamadı.";
 
-      document.getElementById("aiText").innerText =
-        results.length
-        ? `Konumuna göre ${results.length} yakın işletme bulundu.`
-        : "Konumuna yakın kayıtlı işletme bulunamadı.";
-
-      if(results.length){
-        document.getElementById("organicTitle").style.display = "block";
-        document.getElementById("organicTitle").innerText = "Yakındaki İşletmeler";
-        results.forEach(site=>{
-          document.getElementById("results").appendChild(createCard(site,false));
-        });
+      if(list.length){
+        organicTitle.style.display="block";
+        organicTitle.innerText="Yakındaki İşletmeler";
+        list.forEach(site=>results.appendChild(createCard(site,false)));
       }else{
-        document.getElementById("organicTitle").style.display = "none";
-        document.getElementById("results").innerHTML = `<div class="empty">Yakında işletme bulunamadı.</div>`;
+        results.innerHTML=`<div class="empty">Yakında işletme bulunamadı.</div>`;
       }
 
-      document.getElementById("resultsWrap").scrollIntoView({behavior:"smooth",block:"start"});
-
+      resultsWrap.scrollIntoView({behavior:"smooth",block:"start"});
     }catch{
-      document.getElementById("results").innerHTML = `<div class="empty">Yakındaki işletmeler alınamadı.</div>`;
+      results.innerHTML=`<div class="empty">Yakındaki işletmeler alınamadı.</div>`;
     }
-
-  }, function(){
-    document.getElementById("results").innerHTML =
-      `<div class="empty">Konum izni verilmedi. Yakındaki işletmeleri göstermek için konum izni gerekli.</div>`;
+  },()=>{
+    results.innerHTML=`<div class="empty">Konum izni verilmedi.</div>`;
   });
 }
 
 function createCard(site,isSponsored){
-  const div = document.createElement("div");
-  div.className = "card" + (isSponsored ? " sponsored" : "");
+  const div=document.createElement("div");
+  div.className="card"+(isSponsored?" sponsored":"");
 
-  const id = site._id || "";
-  const title = site.title || site.name || site.businessName || "İsimsiz";
-  const url = site.url || site.website || site.link || "#";
-  const desc = site.description || site.desc || "Açıklama yok";
-  const logo = site.logo || site.logoUrl || "";
-  const verified = site.verified || site.isVerified;
-  const category = site.category || "Genel";
-  const city = site.city || site.sehir || "";
-  const district = site.district || site.ilce || "";
-  const phone = site.phone || site.telefon || "";
-  const whatsapp = site.whatsapp || phone;
-  const score = site.searchScore || site.finalScore || site.aiScore || "";
-  const distance = site.distanceKm;
-  const firstLetter = title.charAt(0).toUpperCase() || "N";
+  const id=site._id||"";
+  const title=site.title||site.name||site.businessName||"İsimsiz";
+  const url=site.url||site.website||site.link||"#";
+  const desc=site.description||site.desc||"Açıklama yok";
+  const logo=site.logo||site.logoUrl||site.image||"";
+  const phone=site.phone||site.telefon||"";
+  const whatsapp=site.whatsapp||phone;
+  const city=site.city||site.sehir||"";
+  const district=site.district||site.ilce||"";
+  const category=site.category||"Genel";
+  const verified=site.verified||site.isVerified;
+  const distance=site.distanceKm;
+  const first=title.charAt(0).toUpperCase()||"N";
 
-  div.innerHTML = `
+  div.innerHTML=`
     <div class="cardTop">
-      ${
-        logo
-        ? `<img class="siteLogo" src="${escapeHtml(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${escapeHtml(firstLetter)}</div>'">`
-        : `<div class="logoLetter">${escapeHtml(firstLetter)}</div>`
-      }
-
+      ${logo?`<img class="siteLogo" src="${esc(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${esc(first)}</div>'">`:`<div class="logoLetter">${esc(first)}</div>`}
       <div>
-        <div class="title">${escapeHtml(title)}</div>
-        <div class="url">${escapeHtml(url)}</div>
+        <div class="title">${esc(title)}</div>
+        <div class="url">${esc(url)}</div>
       </div>
     </div>
 
-    <div class="desc">${escapeHtml(desc)}</div>
+    <div class="desc">${esc(desc)}</div>
 
     <div class="badges">
-      ${isSponsored ? `<span class="badge ad">Sponsorlu</span>` : `<span class="badge">Organik Sonuç</span>`}
-      ${verified ? `<span class="badge verified">✅ Doğrulanmış</span>` : ""}
-      ${distance !== undefined ? `<span class="badge near">📍 ${distance} km yakınında</span>` : ""}
-      <span class="badge">${escapeHtml(category)}</span>
-      ${city ? `<span class="badge">📍 ${escapeHtml(city)}${district ? " / " + escapeHtml(district) : ""}</span>` : ""}
-      ${score ? `<span class="badge">AI Skor: ${Math.round(score)}</span>` : ""}
-      ${phone ? `<span class="badge">📞 ${escapeHtml(phone)}</span>` : ""}
+      ${isSponsored?`<span class="badge ad">Sponsorlu</span>`:`<span class="badge">Organik Sonuç</span>`}
+      ${verified?`<span class="badge verified">✅ Doğrulanmış</span>`:""}
+      ${distance!==undefined?`<span class="badge near">📍 ${distance} km</span>`:""}
+      <span class="badge">${esc(category)}</span>
+      ${city?`<span class="badge">📍 ${esc(city)}${district?" / "+esc(district):""}</span>`:""}
+      ${site.qualityScore?`<span class="badge">Kalite: ${site.qualityScore}</span>`:""}
     </div>
 
     <div class="actions">
-      <a class="visit" href="${escapeHtml(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
+      <a class="visit" href="${esc(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
       <a class="detail" href="/site.html?id=${id}">Detay Sayfası</a>
-      ${phone ? `<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>` : ""}
-      ${whatsapp ? `<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>` : ""}
-      <button class="share" onclick="shareSite('${escapeAttr(title)}','${escapeAttr(url)}')">Paylaş</button>
+      ${phone?`<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>`:""}
+      ${whatsapp?`<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>`:""}
+      <button class="share" onclick="shareSite('${escAttr(title)}','${escAttr(url)}')">Paylaş</button>
     </div>
   `;
 
@@ -685,74 +313,47 @@ function createCard(site,isSponsored){
 }
 
 async function trackView(id){
-  if(!id || viewedAds.has(id)) return;
+  if(!id||viewedAds.has(id))return;
   viewedAds.add(id);
-
-  try{
-    await fetch(`/api/sites/${id}/view?t=${Date.now()}`, {method:"POST",cache:"no-store"});
-  }catch{}
+  try{await fetch(`/api/sites/${id}/view?t=${Date.now()}`,{method:"POST",cache:"no-store"});}catch{}
 }
 
 async function trackClick(id){
-  if(!id) return;
-  try{
-    await fetch(`/api/sites/${id}/click?t=${Date.now()}`, {method:"POST",cache:"no-store"});
-  }catch{}
+  if(!id)return;
+  try{await fetch(`/api/sites/${id}/click?t=${Date.now()}`,{method:"POST",cache:"no-store"});}catch{}
 }
 
-function quickSearch(text){
-  input.value = text;
-  searchSites();
-}
+function quickSearch(text){input.value=text;searchSites();}
 
 function voiceSearch(){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if(!SpeechRecognition){
-    alert("Tarayıcı desteklemiyor");
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "tr-TR";
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){alert("Tarayıcı desteklemiyor");return;}
+  const recognition=new SpeechRecognition();
+  recognition.lang="tr-TR";
   recognition.start();
-
-  recognition.onresult = function(event){
-    input.value = event.results[0][0].transcript;
-    searchSites();
-  };
+  recognition.onresult=e=>{input.value=e.results[0][0].transcript;searchSites();};
 }
 
 function shareSite(title,url){
-  if(navigator.share){
-    navigator.share({title,url});
-  }else{
-    navigator.clipboard.writeText(url);
-    alert("Link kopyalandı.");
-  }
+  if(navigator.share){navigator.share({title,url});}
+  else{navigator.clipboard.writeText(url);alert("Link kopyalandı.");}
 }
 
 function cleanPhone(phone){
-  let p = String(phone || "").replace(/\D/g,"");
-  if(p.startsWith("0")) p = "90" + p.slice(1);
-  if(!p.startsWith("90") && p.length === 10) p = "90" + p;
+  let p=String(phone||"").replace(/\D/g,"");
+  if(p.startsWith("0"))p="90"+p.slice(1);
+  if(!p.startsWith("90")&&p.length===10)p="90"+p;
   return p;
 }
 
-function escapeHtml(text){
-  return String(text || "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+function esc(t){
+  return String(t||"")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
 
-function escapeAttr(text){
-  return String(text || "")
-    .replaceAll("\\","\\\\")
-    .replaceAll("'","\\'")
-    .replaceAll('"',"&quot;");
+function escAttr(t){
+  return String(t||"").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll('"',"&quot;");
 }
 </script>
 
