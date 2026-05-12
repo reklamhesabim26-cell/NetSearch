@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use(rateLimit({
   windowMs: 60 * 1000,
-  max: 120
+  max: 180
 }));
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -74,14 +74,6 @@ const User = mongoose.models.User || mongoose.model("User", userSchema);
 const Site = mongoose.models.Site || mongoose.model("Site", siteSchema);
 const Comment = mongoose.models.Comment || mongoose.model("Comment", commentSchema);
 
-function tokenFor(user) {
-  return jwt.sign({
-    id: user.id || user._id,
-    email: user.email,
-    role: user.role
-  }, JWT_SECRET, { expiresIn: "7d" });
-}
-
 function normalize(t) {
   return String(t || "").toLowerCase()
     .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
@@ -101,6 +93,18 @@ function slugify(text) {
 function arr(v) {
   if (Array.isArray(v)) return v;
   return String(v || "").split(",").map(x => x.trim()).filter(Boolean);
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function tokenFor(user) {
+  return jwt.sign({
+    id: user.id || user._id,
+    email: user.email,
+    role: user.role
+  }, JWT_SECRET, { expiresIn: "7d" });
 }
 
 function siteText(s) {
@@ -124,12 +128,46 @@ function hasNegative(site, q) {
   return arr(site.negativeKeywords).map(normalize).some(w => w && text.includes(w));
 }
 
+function targetMatch(site, q) {
+  const query = normalize(q);
+  const cities = arr(site.targetCities).map(normalize);
+  const districts = arr(site.targetDistricts).map(normalize);
+  const city = normalize(site.city || site.sehir || "");
+  const district = normalize(site.district || site.ilce || "");
+
+  let bonus = 0;
+
+  if (city && query.includes(city)) bonus += 45;
+  if (district && query.includes(district)) bonus += 35;
+
+  cities.forEach(c => {
+    if (c && query.includes(c)) bonus += 45;
+  });
+
+  districts.forEach(d => {
+    if (d && query.includes(d)) bonus += 35;
+  });
+
+  return bonus;
+}
+
+function getDailySpent(site) {
+  if (site.dailySpendDate !== todayKey()) return 0;
+  return Number(site.dailySpent || 0);
+}
+
+function dailyLimitAvailable(site) {
+  const dailyLimit = Number(site.dailyLimit || 0);
+  if (dailyLimit <= 0) return true;
+  return getDailySpent(site) < dailyLimit;
+}
+
 function calcQualityScore(site) {
   let q = 0;
 
   if (site.logo || site.logoUrl || site.image) q += 10;
   if (site.cover || site.coverUrl) q += 8;
-  if (site.phone || site.telefon || site.whatsapp) q += 10;
+  if (site.phone || site.telefon || site.whatsapp) q += 12;
   if (site.verified || site.isVerified) q += 15;
 
   if ((site.description || site.desc || "").length > 50) q += 10;
@@ -139,10 +177,10 @@ function calcQualityScore(site) {
   if ((site.adDescription1 || "").length > 30) q += 10;
   if ((site.adDescription2 || "").length > 30) q += 8;
 
-  if (arr(site.keywords).length >= 3) q += 8;
+  if (arr(site.keywords).length >= 3) q += 10;
   if (arr(site.negativeKeywords).length >= 1) q += 6;
-  if (arr(site.targetCities).length || site.city || site.sehir) q += 8;
-  if (arr(site.targetDistricts).length || site.district || site.ilce) q += 6;
+  if (arr(site.targetCities).length || site.city || site.sehir) q += 10;
+  if (arr(site.targetDistricts).length || site.district || site.ilce) q += 8;
 
   const views = Number(site.views || 0);
   const clicks = Number(site.clicks || 0);
@@ -153,14 +191,6 @@ function calcQualityScore(site) {
   if (ctr > 0.10) q += 16;
 
   return Math.min(Math.round(q), 100);
-}
-
-function textMatchStrong(site, q) {
-  const query = normalize(q);
-  if (!query) return true;
-  const title = normalize(site.title || site.name || site.businessName || "");
-  const text = siteText(site);
-  return title.includes(query) || text.includes(query);
 }
 
 function adScore(site, q) {
@@ -175,14 +205,14 @@ function adScore(site, q) {
 
   let s = 0;
   s += Math.min(cpc * 8, 80);
+  s += Math.min(budget / 20, 80);
+  s += Math.min(dailyLimit / 20, 50);
   s += quality;
   s += Math.min(ai, 40);
   s += Math.min(ctr * 10, 60);
-  s += Math.min(budget / 20, 80);
-  s += Math.min(dailyLimit / 20, 50);
+  s += targetMatch(site, q);
 
   if (site.verified || site.isVerified) s += 25;
-  if (textMatchStrong(site, q)) s += 50;
 
   return Math.round(s);
 }
@@ -195,28 +225,29 @@ function score(site, q) {
 
   let s = 0;
 
-  if (title === query) s += 120;
-  if (title.includes(query)) s += 80;
-  if (text.includes(query)) s += 45;
+  if (title === query) s += 130;
+  if (title.includes(query)) s += 90;
+  if (text.includes(query)) s += 55;
 
   words.forEach(w => {
-    if (title.includes(w)) s += 24;
-    if (text.includes(w)) s += 10;
+    if (title.includes(w)) s += 26;
+    if (text.includes(w)) s += 12;
   });
 
-  if (site.sponsored || site.isSponsored || site.sponsorActive) {
-    s += adScore(site, q);
-  }
-
+  s += targetMatch(site, q);
   s += Math.min(Number(site.aiScore || 0), 40);
   s += Math.min(calcQualityScore(site), 70);
   s += Math.min(Number(site.views || 0) / 20, 25);
   s += Math.min(Number(site.clicks || 0) / 5, 35);
 
+  if (site.sponsored || site.isSponsored || site.sponsorActive) {
+    s += adScore(site, q);
+  }
+
   if (site.verified || site.isVerified) s += 35;
   if (site.logo || site.logoUrl || site.image) s += 8;
   if (site.cover || site.coverUrl) s += 8;
-  if (site.phone || site.telefon || site.whatsapp) s += 10;
+  if (site.phone || site.telefon || site.whatsapp) s += 12;
 
   return Math.round(s);
 }
@@ -243,7 +274,6 @@ function buildSite(b) {
     title: b.title || b.name || b.businessName || b.adHeadline1 || "",
     name: b.name || b.title || b.businessName || b.adHeadline1 || "",
     businessName: b.businessName || b.title || b.name || b.adHeadline1 || "",
-
     slug: b.slug || slugify(b.title || b.name || b.businessName || b.adHeadline1 || ""),
 
     url: b.url || b.website || b.link || "",
@@ -270,8 +300,8 @@ function buildSite(b) {
 
     gallery: arr(b.gallery),
 
-    approved: b.approved !== false && b.approved !== "false",
-    status: b.status || "active",
+    approved: b.approved === true || b.approved === "true",
+    status: b.status || "pending",
 
     sponsored: b.sponsored === true || b.sponsored === "true",
     isSponsored: b.isSponsored === true || b.isSponsored === "true",
@@ -282,6 +312,8 @@ function buildSite(b) {
 
     sponsorBudget: Number(b.sponsorBudget || 0),
     dailyLimit: Number(b.dailyLimit || 0),
+    dailySpent: Number(b.dailySpent || 0),
+    dailySpendDate: b.dailySpendDate || "",
     cpc: Number(b.cpc || b.sponsorCpc || 0),
     sponsorCpc: Number(b.sponsorCpc || b.cpc || 0),
     totalSpent: Number(b.totalSpent || 0),
@@ -313,7 +345,10 @@ app.get("/health", (req, res) => {
     autoIndex: "active",
     nearby: "active",
     adsEngine: "active",
-    antiRefresh: "active"
+    antiRefresh: "active",
+    dailyBudget: "active",
+    targetSystem: "active",
+    ranking: "active"
   });
 });
 
@@ -378,18 +413,7 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
     }
 
-    let ok = false;
-
-    if (String(user.password || "").startsWith("$2")) {
-      ok = await bcrypt.compare(password, user.password);
-    } else {
-      ok = user.password === password;
-      if (ok) {
-        user.password = await bcrypt.hash(password, 10);
-        await user.save();
-      }
-    }
-
+    const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
       return res.status(401).json({ success: false, message: "E-posta veya şifre hatalı" });
     }
@@ -488,15 +512,15 @@ app.post("/api/auto-index", async (req, res) => {
 
     const full = normalize(`${title} ${description} ${keywords.join(" ")}`);
 
-    let detectedCategory = "Genel";
-    if (full.includes("kombi") || full.includes("servis") || full.includes("tamir")) detectedCategory = "Teknik Servis";
-    if (full.includes("restoran") || full.includes("yemek")) detectedCategory = "Restoran";
-    if (full.includes("cafe") || full.includes("kahve")) detectedCategory = "Cafe";
-    if (full.includes("doktor") || full.includes("hastane") || full.includes("klinik")) detectedCategory = "Sağlık";
-    if (full.includes("avukat") || full.includes("hukuk")) detectedCategory = "Hukuk";
-    if (full.includes("otel") || full.includes("hotel")) detectedCategory = "Otel";
-    if (full.includes("market") || full.includes("alisveris") || full.includes("alışveriş")) detectedCategory = "Market";
-    if (full.includes("okul") || full.includes("kurs") || full.includes("egitim") || full.includes("eğitim")) detectedCategory = "Eğitim";
+    let category = "Genel";
+    if (full.includes("kombi") || full.includes("servis") || full.includes("tamir")) category = "Teknik Servis";
+    if (full.includes("restoran") || full.includes("yemek")) category = "Restoran";
+    if (full.includes("cafe") || full.includes("kahve")) category = "Cafe";
+    if (full.includes("doktor") || full.includes("hastane") || full.includes("klinik")) category = "Sağlık";
+    if (full.includes("avukat") || full.includes("hukuk")) category = "Hukuk";
+    if (full.includes("otel") || full.includes("hotel")) category = "Otel";
+    if (full.includes("market") || full.includes("alisveris") || full.includes("alışveriş")) category = "Market";
+    if (full.includes("okul") || full.includes("kurs") || full.includes("egitim") || full.includes("eğitim")) category = "Eğitim";
 
     const newSite = await Site.create(buildSite({
       title,
@@ -515,11 +539,13 @@ app.post("/api/auto-index", async (req, res) => {
       gallery: image ? [image] : [],
       keywords: [...new Set(keywords)].slice(0, 20),
       tags: [...new Set(keywords)].slice(0, 20),
-      category: detectedCategory,
+      category,
       city: city || "",
       sehir: city || "",
       district: district || "",
       ilce: district || "",
+      targetCities: city ? [city] : [],
+      targetDistricts: district ? [district] : [],
       ownerEmail: ownerEmail || "",
       approved: true,
       verified: false,
@@ -541,42 +567,6 @@ app.post("/api/auto-index", async (req, res) => {
 
 /* SEARCH */
 
-app.get("/api/sites", async (req, res) => {
-  try {
-    const q = req.query.q || "";
-
-    const sites = await Site.find({
-      status: { $ne: "deleted" },
-      approved: { $ne: false }
-    }).limit(500);
-
-    let results = sites;
-
-    if (q.trim()) {
-      const words = normalize(q).split(/\s+/).filter(Boolean);
-      results = sites.filter(site => {
-        if (hasNegative(site, q)) return false;
-        const text = siteText(site);
-        return words.some(w => text.includes(w));
-      });
-    }
-
-    results = results.map(site => {
-      const o = site.toObject();
-      o.qualityScore = calcQualityScore(o);
-      o.adScore = adScore(o, q);
-      o.finalScore = score(o, q);
-      o.searchScore = o.finalScore;
-      return o;
-    }).sort((a, b) => b.finalScore - a.finalScore);
-
-    res.json(results.slice(0, 60));
-
-  } catch {
-    res.status(500).json([]);
-  }
-});
-
 app.get("/api/search", async (req, res) => {
   try {
     const q = req.query.q || "";
@@ -584,7 +574,7 @@ app.get("/api/search", async (req, res) => {
     const sites = await Site.find({
       status: { $ne: "deleted" },
       approved: { $ne: false }
-    }).limit(500);
+    }).limit(700);
 
     const words = normalize(q).split(/\s+/).filter(Boolean);
 
@@ -610,7 +600,8 @@ app.get("/api/search", async (req, res) => {
       .filter(s =>
         (s.sponsored || s.isSponsored || s.sponsorActive) &&
         Number(s.sponsorBudget || 0) > 0 &&
-        Number(s.cpc || s.sponsorCpc || 0) > 0
+        Number(s.cpc || s.sponsorCpc || 0) > 0 &&
+        dailyLimitAvailable(s)
       )
       .sort((a, b) => b.adScore - a.adScore)
       .slice(0, 5);
@@ -649,6 +640,42 @@ app.get("/api/search", async (req, res) => {
   }
 });
 
+app.get("/api/sites", async (req, res) => {
+  try {
+    const q = req.query.q || "";
+
+    const sites = await Site.find({
+      status: { $ne: "deleted" },
+      approved: { $ne: false }
+    }).limit(700);
+
+    let results = sites;
+
+    if (q.trim()) {
+      const words = normalize(q).split(/\s+/).filter(Boolean);
+      results = sites.filter(site => {
+        if (hasNegative(site, q)) return false;
+        const text = siteText(site);
+        return words.some(w => text.includes(w));
+      });
+    }
+
+    results = results.map(site => {
+      const o = site.toObject();
+      o.qualityScore = calcQualityScore(o);
+      o.adScore = adScore(o, q);
+      o.finalScore = score(o, q);
+      o.searchScore = o.finalScore;
+      return o;
+    }).sort((a, b) => b.finalScore - a.finalScore);
+
+    res.json(results.slice(0, 60));
+
+  } catch {
+    res.status(500).json([]);
+  }
+});
+
 app.get("/api/autocomplete", async (req, res) => {
   try {
     const q = normalize(req.query.q || "");
@@ -657,7 +684,7 @@ app.get("/api/autocomplete", async (req, res) => {
     const sites = await Site.find({
       status: { $ne: "deleted" },
       approved: { $ne: false }
-    }).limit(300);
+    }).limit(400);
 
     const suggestions = [];
 
@@ -690,34 +717,10 @@ app.get("/api/autocomplete", async (req, res) => {
 const viewCache = new Map();
 const clickCache = new Map();
 
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function cacheKey(type, siteId, req) {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "ip";
   const day = todayKey();
   return `${type}:${siteId}:${ip}:${day}`;
-}
-
-function getDailySpent(site) {
-  const today = todayKey();
-
-  if (site.dailySpendDate !== today) {
-    return 0;
-  }
-
-  return Number(site.dailySpent || 0);
-}
-
-function canSpendToday(site, cpc) {
-  const dailyLimit = Number(site.dailyLimit || 0);
-
-  if (dailyLimit <= 0) return true;
-
-  const spentToday = getDailySpent(site);
-
-  return spentToday + cpc <= dailyLimit;
 }
 
 app.post("/api/sites/:id/view", async (req, res) => {
@@ -725,11 +728,7 @@ app.post("/api/sites/:id/view", async (req, res) => {
     const key = cacheKey("view", req.params.id, req);
 
     if (viewCache.has(key)) {
-      return res.json({
-        success: true,
-        counted: false,
-        message: "Tekrar görüntüleme sayılmadı"
-      });
+      return res.json({ success: true, counted: false });
     }
 
     viewCache.set(key, true);
@@ -746,10 +745,7 @@ app.post("/api/sites/:id/view", async (req, res) => {
       }
     });
 
-    res.json({
-      success: true,
-      counted: true
-    });
+    res.json({ success: true, counted: true });
 
   } catch {
     res.status(500).json({ success: false });
@@ -761,11 +757,7 @@ app.post("/api/sites/:id/click", async (req, res) => {
     const key = cacheKey("click", req.params.id, req);
 
     if (clickCache.has(key)) {
-      return res.json({
-        success: true,
-        counted: false,
-        message: "Tekrar tıklama sayılmadı"
-      });
+      return res.json({ success: true, counted: false });
     }
 
     clickCache.set(key, true);
@@ -777,8 +769,8 @@ app.post("/api/sites/:id/click", async (req, res) => {
     const budget = Number(site.sponsorBudget || 0);
     const active = site.sponsored || site.isSponsored || site.sponsorActive;
     const today = todayKey();
-
-    let dailySpent = getDailySpent(site);
+    const dailySpent = getDailySpent(site);
+    const dailyLimit = Number(site.dailyLimit || 0);
 
     const update = {
       $inc: { clicks: 1 },
@@ -790,46 +782,30 @@ app.post("/api/sites/:id/click", async (req, res) => {
     };
 
     if (active && cpc > 0 && budget > 0) {
-
-      if (!canSpendToday(site, cpc)) {
+      if (dailyLimit > 0 && dailySpent + cpc > dailyLimit) {
         update.$set.sponsored = false;
         update.$set.isSponsored = false;
         update.$set.sponsorActive = false;
         update.$set.adStoppedReason = "Günlük bütçe limiti doldu";
+      } else {
+        const newBudget = Math.max(budget - cpc, 0);
+        update.$set.sponsorBudget = newBudget;
+        update.$set.totalSpent = Number(site.totalSpent || 0) + cpc;
+        update.$set.dailySpent = dailySpent + cpc;
+        update.$set.dailySpendDate = today;
 
-        await Site.findByIdAndUpdate(req.params.id, update);
-
-        return res.json({
-          success: true,
-          counted: true,
-          charged: false,
-          message: "Günlük bütçe limiti doldu, reklam durduruldu"
-        });
-      }
-
-      const newBudget = Math.max(budget - cpc, 0);
-      const newDailySpent = dailySpent + cpc;
-
-      update.$set.sponsorBudget = newBudget;
-      update.$set.totalSpent = Number(site.totalSpent || 0) + cpc;
-      update.$set.dailySpent = newDailySpent;
-      update.$set.dailySpendDate = today;
-
-      if (newBudget <= 0) {
-        update.$set.sponsored = false;
-        update.$set.isSponsored = false;
-        update.$set.sponsorActive = false;
-        update.$set.adStoppedReason = "Bütçe bitti";
+        if (newBudget <= 0) {
+          update.$set.sponsored = false;
+          update.$set.isSponsored = false;
+          update.$set.sponsorActive = false;
+          update.$set.adStoppedReason = "Bütçe bitti";
+        }
       }
     }
 
     await Site.findByIdAndUpdate(req.params.id, update);
 
-    res.json({
-      success: true,
-      counted: true,
-      charged: active && cpc > 0 && budget > 0
-    });
+    res.json({ success: true, counted: true });
 
   } catch {
     res.status(500).json({ success: false });
@@ -860,12 +836,10 @@ app.get("/api/nearby", async (req, res) => {
       .filter(site => Number(site.latitude || 0) && Number(site.longitude || 0))
       .map(site => {
         const o = site.toObject();
-
         o.distanceKm = Number(distanceKm(lat, lng, Number(o.latitude), Number(o.longitude)).toFixed(2));
         o.qualityScore = calcQualityScore(o);
         o.adScore = adScore(o, q);
         o.searchScore = score(o, q);
-
         return o;
       })
       .filter(site => site.distanceKm <= radius);
@@ -881,15 +855,13 @@ app.get("/api/nearby", async (req, res) => {
     results = results.sort((a, b) => {
       const sponsorA = a.sponsored || a.isSponsored || a.sponsorActive ? 1 : 0;
       const sponsorB = b.sponsored || b.isSponsored || b.sponsorActive ? 1 : 0;
-
       if (sponsorB !== sponsorA) return sponsorB - sponsorA;
       return a.distanceKm - b.distanceKm;
     });
 
     res.json({ success: true, count: results.length, results: results.slice(0, 60) });
 
-  } catch (e) {
-    console.log("NEARBY ERROR:", e.message);
+  } catch {
     res.status(500).json({ success: false, results: [] });
   }
 });
@@ -960,7 +932,10 @@ app.get("/api/admin/stats", async (req, res) => {
       approvedSites: sites.filter(s => s.status !== "pending").length,
       activeAds: sites.filter(s => s.sponsored || s.isSponsored || s.sponsorActive).length,
       totalComments: comments.length,
-      totalUsers: await User.countDocuments()
+      totalUsers: await User.countDocuments(),
+      totalViews: sites.reduce((a, s) => a + Number(s.views || 0), 0),
+      totalClicks: sites.reduce((a, s) => a + Number(s.clicks || 0), 0),
+      totalSpent: sites.reduce((a, s) => a + Number(s.totalSpent || 0), 0)
     });
 
   } catch {
@@ -989,8 +964,6 @@ app.post("/api/admin/sites", async (req, res) => {
 app.put("/api/admin/sites/:id", async (req, res) => {
   try {
     const fixed = buildSite(req.body);
-    fixed.qualityScore = calcQualityScore(fixed);
-    fixed.adScore = adScore(fixed, "");
     const site = await Site.findByIdAndUpdate(req.params.id, fixed, { new: true });
     res.json({ success: true, site });
   } catch {
@@ -1002,8 +975,6 @@ app.patch("/api/admin/sites/:id", async (req, res) => {
   try {
     const oldSite = await Site.findById(req.params.id);
     const merged = buildSite({ ...(oldSite ? oldSite.toObject() : {}), ...req.body });
-    merged.qualityScore = calcQualityScore(merged);
-    merged.adScore = adScore(merged, "");
     const site = await Site.findByIdAndUpdate(req.params.id, merged, { new: true });
     res.json({ success: true, site });
   } catch {

@@ -6,7 +6,6 @@
 <title>NetSearch Reklam Paneli</title>
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="manifest" href="/manifest.json">
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f9ff;color:#0f172a}
@@ -17,7 +16,7 @@ header{background:white;border-bottom:1px solid #dbeafe;padding:16px 22px}
 .panel{background:white;border:1px solid #dbeafe;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px rgba(15,23,42,.06)}
 h2{margin:0 0 14px;color:#0284c7}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-input,textarea,select{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:13px;font-size:15px;margin-bottom:10px}
+input,textarea{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:13px;font-size:15px;margin-bottom:10px}
 textarea{min-height:80px}
 label{font-weight:bold;font-size:14px;color:#334155}
 button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:pointer;text-decoration:none}
@@ -26,13 +25,13 @@ button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:p
 .stat b{font-size:26px;color:#0284c7;display:block}
 .card{border:1px solid #dbeafe;border-radius:18px;padding:16px;margin-top:12px;background:#f8fbff}
 .badge{display:inline-block;border-radius:999px;padding:7px 10px;font-weight:bold;font-size:12px;margin:4px;background:white;border:1px solid #bae6fd;color:#0369a1}
-.pending{background:#fef3c7;border-color:#f59e0b;color:#92400e}
-.active{background:#dcfce7;border-color:#86efac;color:#166534}
-.rejected{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+.pending{background:#fef3c7;border-color:#f59e0b;color:#92400e}.active{background:#dcfce7;border-color:#86efac;color:#166534}.rejected{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+.preview{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+.preview img{width:90px;height:90px;object-fit:cover;border-radius:14px;border:1px solid #dbeafe;background:white}
 .msg{text-align:center;font-weight:bold;margin:10px}.ok{color:#16a34a}.err{color:#dc2626}
+@media(max-width:700px){.top{flex-direction:column;gap:10px;align-items:flex-start}button,a{width:100%;text-align:center}}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -59,13 +58,33 @@ button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:p
 
   <div class="panel">
     <h2 id="formTitle">Yeni Reklam Oluştur</h2>
-
     <input type="hidden" id="editingId">
+    <input type="hidden" id="logoUrl">
+    <input type="hidden" id="coverUrl">
+    <input type="hidden" id="galleryUrls">
 
     <div class="grid">
       <div><label>İşletme Adı</label><input id="businessName" placeholder="Örn: Eskişehir Kombi Servisi"></div>
       <div><label>Web Site</label><input id="website" placeholder="https://siteadresi.com"></div>
-      <div><label>Telefon</label><input id="phone" placeholder="0530..."></div>
+      <div><label>Telefon / WhatsApp</label><input id="phone" placeholder="0530..."></div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Logo Yükle</label>
+        <input type="file" id="logoFile" accept="image/*" onchange="uploadSingle('logoFile','logoUrl','logoPreview')">
+        <div id="logoPreview" class="preview"></div>
+      </div>
+      <div>
+        <label>Kapak Görseli Yükle</label>
+        <input type="file" id="coverFile" accept="image/*" onchange="uploadSingle('coverFile','coverUrl','coverPreview')">
+        <div id="coverPreview" class="preview"></div>
+      </div>
+      <div>
+        <label>Galeri Görselleri Yükle</label>
+        <input type="file" id="galleryFile" accept="image/*" multiple onchange="uploadGallery()">
+        <div id="galleryPreview" class="preview"></div>
+      </div>
     </div>
 
     <div class="grid">
@@ -84,6 +103,11 @@ button,a{border:0;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:p
       <div><label>Hedef Şehir</label><input id="city" placeholder="Eskişehir"></div>
       <div><label>Hedef İlçeler</label><input id="districts" placeholder="Tepebaşı, Odunpazarı"></div>
       <div><label>Kategori</label><input id="category" placeholder="Teknik Servis"></div>
+    </div>
+
+    <div class="grid">
+      <div><label>Harita Enlem</label><input id="latitude" placeholder="39.7767"></div>
+      <div><label>Harita Boylam</label><input id="longitude" placeholder="30.5206"></div>
     </div>
 
     <label>Anahtar Kelimeler</label>
@@ -128,6 +152,42 @@ function logout(){
   location.href="/login.html";
 }
 
+async function uploadSingle(fileId, hiddenId, previewId){
+  const file=document.getElementById(fileId).files[0];
+  if(!file) return;
+
+  const fd=new FormData();
+  fd.append("file",file);
+
+  const res=await fetch("/api/upload",{method:"POST",body:fd});
+  const data=await res.json();
+
+  if(data.success){
+    document.getElementById(hiddenId).value=data.url;
+    document.getElementById(previewId).innerHTML=`<img src="${data.url}">`;
+  }else{
+    alert("Görsel yüklenemedi.");
+  }
+}
+
+async function uploadGallery(){
+  const files=document.getElementById("galleryFile").files;
+  if(!files.length) return;
+
+  const fd=new FormData();
+  [...files].forEach(f=>fd.append("files",f));
+
+  const res=await fetch("/api/upload/multiple",{method:"POST",body:fd});
+  const data=await res.json();
+
+  if(data.success){
+    document.getElementById("galleryUrls").value=data.urls.join(",");
+    document.getElementById("galleryPreview").innerHTML=data.urls.map(u=>`<img src="${u}">`).join("");
+  }else{
+    alert("Galeri yüklenemedi.");
+  }
+}
+
 async function loadAds(){
   const box=document.getElementById("myAds");
   box.innerHTML="Yükleniyor...";
@@ -170,6 +230,7 @@ function renderAds(){
     const active=s.sponsored||s.isSponsored||s.sponsorActive;
     const pending=s.status==="pending";
     const rejected=s.status==="rejected";
+
     const div=document.createElement("div");
     div.className="card";
     div.innerHTML=`
@@ -181,6 +242,10 @@ function renderAds(){
         <span class="badge">Bütçe: ${s.sponsorBudget||0}₺</span>
         <span class="badge">CPC: ${s.cpc||0}₺</span>
         <span class="badge">Kalite: ${s.qualityScore||0}</span>
+      </div>
+      <div class="preview">
+        ${s.logo ? `<img src="${s.logo}">` : ""}
+        ${s.cover ? `<img src="${s.cover}">` : ""}
       </div>
       <p>${esc(s.description||"")}</p>
       ${s.rejectReason ? `<p style="color:#dc2626"><b>Red nedeni:</b> ${esc(s.rejectReason)}</p>` : ""}
@@ -200,6 +265,9 @@ function editAd(id){
   set("businessName",s.title||s.businessName||"");
   set("website",s.url||s.website||"");
   set("phone",s.phone||s.telefon||"");
+  set("logoUrl",s.logo||s.logoUrl||"");
+  set("coverUrl",s.cover||s.coverUrl||"");
+  set("galleryUrls",arrayText(s.gallery));
   set("h1",s.adHeadline1||s.title||"");
   set("h2",s.adHeadline2||"");
   set("h3",s.adHeadline3||"");
@@ -208,11 +276,17 @@ function editAd(id){
   set("city",s.city||s.sehir||arrayText(s.targetCities));
   set("districts",arrayText(s.targetDistricts)||s.district||s.ilce||"");
   set("category",s.category||"");
+  set("latitude",s.latitude||"");
+  set("longitude",s.longitude||"");
   set("keywords",arrayText(s.keywords||s.tags));
   set("negativeKeywords",arrayText(s.negativeKeywords));
   set("dailyLimit",s.dailyLimit||0);
   set("cpc",s.cpc||s.sponsorCpc||0);
   set("budget",s.sponsorBudget||0);
+
+  logoPreview.innerHTML=s.logo ? `<img src="${s.logo}">` : "";
+  coverPreview.innerHTML=s.cover ? `<img src="${s.cover}">` : "";
+  galleryPreview.innerHTML=Array.isArray(s.gallery) ? s.gallery.map(u=>`<img src="${u}">`).join("") : "";
 
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -234,22 +308,22 @@ async function saveAd(){
   }
 
   const payload={
-    title:name,
-    name:name,
-    businessName:name,
-    url:url,
-    website:url,
-    link:url,
-    phone:phone,
-    telefon:phone,
-    whatsapp:phone,
+    title:name,name,businessName:name,
+    url,website:url,link:url,
+    phone,telefon:phone,whatsapp:phone,
+
+    logo:val("logoUrl"),
+    logoUrl:val("logoUrl"),
+    image:val("logoUrl"),
+    cover:val("coverUrl"),
+    coverUrl:val("coverUrl"),
+    gallery:toArray(val("galleryUrls")),
 
     adHeadline1:val("h1")||name,
     adHeadline2:val("h2"),
     adHeadline3:val("h3"),
     adDescription1:val("d1"),
     adDescription2:val("d2"),
-
     description:val("d1"),
     desc:val("d1"),
 
@@ -258,6 +332,9 @@ async function saveAd(){
     targetCities:toArray(val("city")),
     targetDistricts:toArray(val("districts")),
     category:val("category")||"Genel",
+
+    latitude:Number(val("latitude")||0),
+    longitude:Number(val("longitude")||0),
 
     keywords:val("keywords"),
     tags:val("keywords"),
@@ -308,18 +385,18 @@ async function saveAd(){
 
 async function deleteAd(id){
   if(!confirm("Reklam silinsin mi?")) return;
-
-  try{
-    await fetch("/api/admin/sites/"+id,{method:"DELETE"});
-    loadAds();
-  }catch{
-    alert("Sunucuya bağlanılamadı.");
-  }
+  await fetch("/api/admin/sites/"+id,{method:"DELETE"});
+  loadAds();
 }
 
 function clearForm(){
   formTitle.innerText="Yeni Reklam Oluştur";
-  document.querySelectorAll("input,textarea").forEach(x=>x.value="");
+  document.querySelectorAll("input,textarea").forEach(x=>{
+    if(x.type!=="file") x.value="";
+  });
+  logoPreview.innerHTML="";
+  coverPreview.innerHTML="";
+  galleryPreview.innerHTML="";
 }
 
 function val(id){return document.getElementById(id).value.trim();}

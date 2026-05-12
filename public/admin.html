@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NetSearch Admin Panel</title>
-
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="manifest" href="/manifest.json">
 
@@ -21,7 +20,7 @@ h2{margin:0 0 14px;color:#0284c7}
 .stat{background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:15px}
 .stat b{display:block;font-size:28px;color:#0284c7}
 input,textarea,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;margin-bottom:9px;font-size:14px}
-textarea{min-height:80px}
+textarea{min-height:78px}
 label{font-weight:bold;font-size:13px;color:#334155}
 button,a{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:pointer;text-decoration:none;margin:3px}
 .blue{background:#2563eb;color:white}.green{background:#16a34a;color:white}.red{background:#dc2626;color:white}.dark{background:#0f172a;color:white}.orange{background:#f59e0b;color:white}.gray{background:#64748b;color:white}
@@ -31,7 +30,10 @@ button,a{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:p
 .active{background:#dcfce7;border-color:#86efac;color:#166534}
 .rejected{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
 .small{font-size:13px;color:#64748b;word-break:break-all}
+.preview{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+.preview img{width:88px;height:88px;object-fit:cover;border-radius:14px;border:1px solid #dbeafe;background:white}
 .editBox{display:none;margin-top:14px;background:white;border:1px solid #dbeafe;border-radius:16px;padding:14px}
+.msg{text-align:center;font-weight:bold;margin:10px}.ok{color:#16a34a}.err{color:#dc2626}
 @media(max-width:700px){.top{flex-direction:column;align-items:flex-start}button,a{width:100%;text-align:center}}
 </style>
 </head>
@@ -57,7 +59,105 @@ button,a{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:p
       <div class="stat"><b id="pendingSites">0</b>Onay Bekleyen</div>
       <div class="stat"><b id="activeAds">0</b>Aktif Reklam</div>
       <div class="stat"><b id="totalUsers">0</b>Kullanıcı</div>
+      <div class="stat"><b id="totalViews">0</b>Görüntüleme</div>
+      <div class="stat"><b id="totalClicks">0</b>Tıklama</div>
+      <div class="stat"><b id="totalSpent">0₺</b>Toplam Harcama</div>
     </div>
+  </div>
+
+  <div class="panel">
+    <h2 id="formTitle">Admin Site / Reklam Ekle</h2>
+
+    <input type="hidden" id="editingId">
+    <input type="hidden" id="logoUrl">
+    <input type="hidden" id="coverUrl">
+    <input type="hidden" id="galleryUrls">
+
+    <div class="grid">
+      <div><label>İşletme Adı</label><input id="businessName" placeholder="Eskişehir Kombi Servisi"></div>
+      <div><label>Web Site</label><input id="website" placeholder="https://siteadresi.com"></div>
+      <div><label>Telefon / WhatsApp</label><input id="phone" placeholder="0530..."></div>
+      <div><label>Owner E-posta</label><input id="ownerEmail" placeholder="kullanici@mail.com"></div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Logo Yükle</label>
+        <input type="file" id="logoFile" accept="image/*" onchange="uploadSingle('logoFile','logoUrl','logoPreview')">
+        <div id="logoPreview" class="preview"></div>
+      </div>
+      <div>
+        <label>Kapak Görseli Yükle</label>
+        <input type="file" id="coverFile" accept="image/*" onchange="uploadSingle('coverFile','coverUrl','coverPreview')">
+        <div id="coverPreview" class="preview"></div>
+      </div>
+      <div>
+        <label>Galeri Görselleri Yükle</label>
+        <input type="file" id="galleryFile" accept="image/*" multiple onchange="uploadGallery()">
+        <div id="galleryPreview" class="preview"></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div><label>Başlık 1</label><input id="h1" placeholder="Eskişehir Kombi Servisi"></div>
+      <div><label>Başlık 2</label><input id="h2" placeholder="Aynı Gün Servis"></div>
+      <div><label>Başlık 3</label><input id="h3" placeholder="Hemen Ara"></div>
+    </div>
+
+    <label>Açıklama 1</label>
+    <textarea id="d1" placeholder="İşletme ve reklam açıklaması"></textarea>
+
+    <label>Açıklama 2</label>
+    <textarea id="d2" placeholder="Ek açıklama"></textarea>
+
+    <div class="grid">
+      <div><label>Hedef Şehir</label><input id="city" placeholder="Eskişehir"></div>
+      <div><label>Hedef İlçeler</label><input id="districts" placeholder="Tepebaşı, Odunpazarı"></div>
+      <div><label>Kategori</label><input id="category" placeholder="Teknik Servis"></div>
+    </div>
+
+    <div class="grid">
+      <div><label>Harita Enlem</label><input id="latitude" placeholder="39.7767"></div>
+      <div><label>Harita Boylam</label><input id="longitude" placeholder="30.5206"></div>
+    </div>
+
+    <label>Anahtar Kelimeler</label>
+    <textarea id="keywords" placeholder="kombi servisi, kombi tamircisi, beyaz eşya servisi"></textarea>
+
+    <label>Negatif Anahtar Kelimeler</label>
+    <textarea id="negativeKeywords" placeholder="ücretsiz, iş ilanı"></textarea>
+
+    <div class="grid">
+      <div><label>Günlük Bütçe ₺</label><input id="dailyLimit" type="number" placeholder="100"></div>
+      <div><label>CPC / Tıklama Teklifi ₺</label><input id="cpc" type="number" placeholder="10"></div>
+      <div><label>Bakiye ₺</label><input id="budget" type="number" placeholder="500"></div>
+      <div>
+        <label>Durum</label>
+        <select id="statusSelect">
+          <option value="pending">Onay Bekliyor</option>
+          <option value="active">Aktif</option>
+          <option value="rejected">Reddedildi</option>
+        </select>
+      </div>
+      <div>
+        <label>Reklam Yayında mı?</label>
+        <select id="sponsorSelect">
+          <option value="false">Hayır</option>
+          <option value="true">Evet</option>
+        </select>
+      </div>
+      <div>
+        <label>Doğrulanmış mı?</label>
+        <select id="verifiedSelect">
+          <option value="false">Hayır</option>
+          <option value="true">Evet</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="green" onclick="saveAdminSite()">Kaydet / Güncelle</button>
+    <button class="gray" onclick="clearForm()">Formu Temizle</button>
+    <div id="createMsg" class="msg"></div>
   </div>
 
   <div class="panel">
@@ -107,6 +207,42 @@ function logout(){
   location.href="/login.html";
 }
 
+async function uploadSingle(fileId, hiddenId, previewId){
+  const file=document.getElementById(fileId).files[0];
+  if(!file) return;
+
+  const fd=new FormData();
+  fd.append("file",file);
+
+  const res=await fetch("/api/upload",{method:"POST",body:fd});
+  const data=await res.json();
+
+  if(data.success){
+    document.getElementById(hiddenId).value=data.url;
+    document.getElementById(previewId).innerHTML=`<img src="${data.url}">`;
+  }else{
+    alert("Görsel yüklenemedi.");
+  }
+}
+
+async function uploadGallery(){
+  const files=document.getElementById("galleryFile").files;
+  if(!files.length) return;
+
+  const fd=new FormData();
+  [...files].forEach(f=>fd.append("files",f));
+
+  const res=await fetch("/api/upload/multiple",{method:"POST",body:fd});
+  const data=await res.json();
+
+  if(data.success){
+    document.getElementById("galleryUrls").value=data.urls.join(",");
+    document.getElementById("galleryPreview").innerHTML=data.urls.map(u=>`<img src="${u}">`).join("");
+  }else{
+    alert("Galeri yüklenemedi.");
+  }
+}
+
 async function loadData(){
   try{
     const statsRes=await fetch("/api/admin/stats?t="+Date.now(),{cache:"no-store"});
@@ -116,6 +252,9 @@ async function loadData(){
     pendingSites.innerText=stats.pendingSites||0;
     activeAds.innerText=stats.activeAds||0;
     totalUsers.innerText=stats.totalUsers||0;
+    totalViews.innerText=stats.totalViews||0;
+    totalClicks.innerText=stats.totalClicks||0;
+    totalSpent.innerText=(stats.totalSpent||0)+"₺";
 
     const sitesRes=await fetch("/api/admin/sites?t="+Date.now(),{cache:"no-store"});
     allSites=await sitesRes.json();
@@ -151,7 +290,6 @@ function renderSites(){
   }
 
   list.forEach(s=>{
-    const id=s._id;
     const active=s.sponsored||s.isSponsored||s.sponsorActive;
     const pending=s.status==="pending";
     const rejected=s.status==="rejected";
@@ -168,8 +306,8 @@ function renderSites(){
         ${rejected?'<span class="badge rejected">Reddedildi</span>':""}
         <span class="badge">Owner: ${esc(s.ownerEmail||"Yok")}</span>
         <span class="badge">Şehir: ${esc(s.city||s.sehir||"")}</span>
-        <span class="badge">İlçe: ${esc(s.district||s.ilce||"")}</span>
         <span class="badge">Bütçe: ${s.sponsorBudget||0}₺</span>
+        <span class="badge">Günlük: ${s.dailySpent||0}/${s.dailyLimit||0}₺</span>
         <span class="badge">CPC: ${s.cpc||s.sponsorCpc||0}₺</span>
         <span class="badge">Görüntüleme: ${s.views||0}</span>
         <span class="badge">Tıklama: ${s.clicks||0}</span>
@@ -177,70 +315,164 @@ function renderSites(){
         <span class="badge">AdScore: ${s.adScore||0}</span>
       </div>
 
+      <div class="preview">
+        ${s.logo ? `<img src="${s.logo}">` : ""}
+        ${s.cover ? `<img src="${s.cover}">` : ""}
+        ${Array.isArray(s.gallery) ? s.gallery.slice(0,4).map(u=>`<img src="${u}">`).join("") : ""}
+      </div>
+
       <p><b>Başlıklar:</b> ${esc([s.adHeadline1,s.adHeadline2,s.adHeadline3].filter(Boolean).join(" | "))}</p>
       <p><b>Açıklamalar:</b> ${esc([s.adDescription1,s.adDescription2].filter(Boolean).join(" "))}</p>
       <p><b>Anahtar:</b> ${esc(arrayText(s.keywords||s.tags))}</p>
       <p><b>Negatif:</b> ${esc(arrayText(s.negativeKeywords))}</p>
       ${s.rejectReason ? `<p style="color:#dc2626"><b>Red nedeni:</b> ${esc(s.rejectReason)}</p>` : ""}
+      ${s.adStoppedReason ? `<p style="color:#92400e"><b>Durdurma nedeni:</b> ${esc(s.adStoppedReason)}</p>` : ""}
       <p class="small">${esc(s.url||s.website||"")}</p>
 
-      <button class="green" onclick="approveAd('${id}')">Onayla ve Yayına Al</button>
-      <button class="orange" onclick="pauseAd('${id}')">Reklamı Durdur</button>
-      <button class="red" onclick="rejectAd('${id}')">Reddet</button>
-      <button class="dark" onclick="deleteAd('${id}')">Sil</button>
-      <button class="blue" onclick="toggleEdit('${id}')">Detaylı Düzenle</button>
-
-      <div id="edit-${id}" class="editBox">
-        <div class="grid">
-          <div><label>İşletme Adı</label><input id="title-${id}" value="${attr(s.title||s.businessName||"")}"></div>
-          <div><label>Owner E-posta</label><input id="owner-${id}" value="${attr(s.ownerEmail||"")}"></div>
-          <div><label>Web Site</label><input id="url-${id}" value="${attr(s.url||s.website||"")}"></div>
-          <div><label>Telefon</label><input id="phone-${id}" value="${attr(s.phone||s.telefon||"")}"></div>
-        </div>
-
-        <div class="grid">
-          <div><label>Başlık 1</label><input id="h1-${id}" value="${attr(s.adHeadline1||"")}"></div>
-          <div><label>Başlık 2</label><input id="h2-${id}" value="${attr(s.adHeadline2||"")}"></div>
-          <div><label>Başlık 3</label><input id="h3-${id}" value="${attr(s.adHeadline3||"")}"></div>
-        </div>
-
-        <label>Açıklama 1</label>
-        <textarea id="d1-${id}">${esc(s.adDescription1||s.description||"")}</textarea>
-
-        <label>Açıklama 2</label>
-        <textarea id="d2-${id}">${esc(s.adDescription2||"")}</textarea>
-
-        <div class="grid">
-          <div><label>Şehir</label><input id="city-${id}" value="${attr(s.city||s.sehir||"")}"></div>
-          <div><label>İlçeler</label><input id="districts-${id}" value="${attr(arrayText(s.targetDistricts)||s.district||s.ilce||"")}"></div>
-          <div><label>Kategori</label><input id="category-${id}" value="${attr(s.category||"Genel")}"></div>
-        </div>
-
-        <label>Anahtar Kelimeler</label>
-        <textarea id="keywords-${id}">${esc(arrayText(s.keywords||s.tags))}</textarea>
-
-        <label>Negatif Anahtar Kelimeler</label>
-        <textarea id="negative-${id}">${esc(arrayText(s.negativeKeywords))}</textarea>
-
-        <div class="grid">
-          <div><label>Günlük Bütçe</label><input id="daily-${id}" type="number" value="${s.dailyLimit||0}"></div>
-          <div><label>CPC</label><input id="cpc-${id}" type="number" value="${s.cpc||s.sponsorCpc||0}"></div>
-          <div><label>Bakiye</label><input id="budget-${id}" type="number" value="${s.sponsorBudget||0}"></div>
-          <div><label>Enlem</label><input id="lat-${id}" value="${s.latitude||""}"></div>
-          <div><label>Boylam</label><input id="lng-${id}" value="${s.longitude||""}"></div>
-        </div>
-
-        <button class="green" onclick="saveEdit('${id}')">Düzenlemeyi Kaydet</button>
-      </div>
+      <button class="green" onclick="approveAd('${s._id}')">Onayla ve Yayına Al</button>
+      <button class="orange" onclick="pauseAd('${s._id}')">Reklamı Durdur</button>
+      <button class="red" onclick="rejectAd('${s._id}')">Reddet</button>
+      <button class="dark" onclick="deleteAd('${s._id}')">Sil</button>
+      <button class="blue" onclick="editAdminSite('${s._id}')">Forma Al / Düzenle</button>
     `;
 
     box.appendChild(div);
   });
 }
 
-function toggleEdit(id){
-  const el=document.getElementById("edit-"+id);
-  el.style.display=el.style.display==="block" ? "none" : "block";
+function editAdminSite(id){
+  const s=allSites.find(x=>x._id===id);
+  if(!s) return;
+
+  formTitle.innerText="Admin Site / Reklam Düzenle";
+  set("editingId",s._id);
+  set("businessName",s.title||s.businessName||"");
+  set("website",s.url||s.website||"");
+  set("phone",s.phone||s.telefon||"");
+  set("ownerEmail",s.ownerEmail||"");
+  set("logoUrl",s.logo||s.logoUrl||"");
+  set("coverUrl",s.cover||s.coverUrl||"");
+  set("galleryUrls",arrayText(s.gallery));
+  set("h1",s.adHeadline1||s.title||"");
+  set("h2",s.adHeadline2||"");
+  set("h3",s.adHeadline3||"");
+  set("d1",s.adDescription1||s.description||"");
+  set("d2",s.adDescription2||"");
+  set("city",s.city||s.sehir||arrayText(s.targetCities));
+  set("districts",arrayText(s.targetDistricts)||s.district||s.ilce||"");
+  set("category",s.category||"");
+  set("latitude",s.latitude||"");
+  set("longitude",s.longitude||"");
+  set("keywords",arrayText(s.keywords||s.tags));
+  set("negativeKeywords",arrayText(s.negativeKeywords));
+  set("dailyLimit",s.dailyLimit||0);
+  set("cpc",s.cpc||s.sponsorCpc||0);
+  set("budget",s.sponsorBudget||0);
+  set("statusSelect",s.status||"pending");
+  set("sponsorSelect",(s.sponsored||s.isSponsored||s.sponsorActive) ? "true" : "false");
+  set("verifiedSelect",(s.verified||s.isVerified) ? "true" : "false");
+
+  logoPreview.innerHTML=s.logo ? `<img src="${s.logo}">` : "";
+  coverPreview.innerHTML=s.cover ? `<img src="${s.cover}">` : "";
+  galleryPreview.innerHTML=Array.isArray(s.gallery) ? s.gallery.map(u=>`<img src="${u}">`).join("") : "";
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function saveAdminSite(){
+  const msg=document.getElementById("createMsg");
+  msg.className="msg";
+  msg.innerText="";
+
+  const id=val("editingId");
+  const name=val("businessName");
+  const url=val("website");
+  const phone=val("phone");
+  const sponsor=val("sponsorSelect")==="true";
+  const verified=val("verifiedSelect")==="true";
+  const status=val("statusSelect");
+
+  if(!name || !url){
+    msg.className="msg err";
+    msg.innerText="İşletme adı ve web site zorunlu.";
+    return;
+  }
+
+  const payload={
+    title:name,name,businessName:name,
+    url,website:url,link:url,
+    phone,telefon:phone,whatsapp:phone,
+    ownerEmail:val("ownerEmail"),
+
+    logo:val("logoUrl"),
+    logoUrl:val("logoUrl"),
+    image:val("logoUrl"),
+    cover:val("coverUrl"),
+    coverUrl:val("coverUrl"),
+    gallery:toArray(val("galleryUrls")),
+
+    adHeadline1:val("h1")||name,
+    adHeadline2:val("h2"),
+    adHeadline3:val("h3"),
+    adDescription1:val("d1"),
+    adDescription2:val("d2"),
+    description:val("d1"),
+    desc:val("d1"),
+
+    city:val("city"),
+    sehir:val("city"),
+    targetCities:toArray(val("city")),
+    targetDistricts:toArray(val("districts")),
+    category:val("category")||"Genel",
+
+    latitude:Number(val("latitude")||0),
+    longitude:Number(val("longitude")||0),
+
+    keywords:val("keywords"),
+    tags:val("keywords"),
+    negativeKeywords:val("negativeKeywords"),
+
+    dailyLimit:Number(val("dailyLimit")||0),
+    cpc:Number(val("cpc")||0),
+    sponsorCpc:Number(val("cpc")||0),
+    sponsorBudget:Number(val("budget")||0),
+
+    status,
+    approved:status==="active",
+    sponsored:sponsor,
+    isSponsored:sponsor,
+    sponsorActive:sponsor,
+    verified,
+    isVerified:verified,
+    rejectReason:"",
+    adStoppedReason:""
+  };
+
+  try{
+    const endpoint=id ? "/api/admin/sites/"+id : "/api/admin/sites";
+    const method=id ? "PATCH" : "POST";
+
+    const res=await fetch(endpoint,{
+      method,
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+
+    const data=await res.json();
+
+    if(data.success){
+      msg.className="msg ok";
+      msg.innerText=id ? "Kayıt güncellendi." : "Yeni kayıt eklendi.";
+      clearForm();
+      loadData();
+    }else{
+      msg.className="msg err";
+      msg.innerText="İşlem başarısız.";
+    }
+  }catch{
+    msg.className="msg err";
+    msg.innerText="Sunucuya bağlanılamadı.";
+  }
 }
 
 async function approveAd(id){
@@ -284,52 +516,6 @@ async function deleteAd(id){
   loadData();
 }
 
-async function saveEdit(id){
-  const payload={
-    title:val("title-"+id),
-    name:val("title-"+id),
-    businessName:val("title-"+id),
-    ownerEmail:val("owner-"+id),
-
-    url:val("url-"+id),
-    website:val("url-"+id),
-    link:val("url-"+id),
-
-    phone:val("phone-"+id),
-    telefon:val("phone-"+id),
-    whatsapp:val("phone-"+id),
-
-    adHeadline1:val("h1-"+id),
-    adHeadline2:val("h2-"+id),
-    adHeadline3:val("h3-"+id),
-    adDescription1:val("d1-"+id),
-    adDescription2:val("d2-"+id),
-
-    description:val("d1-"+id),
-    desc:val("d1-"+id),
-
-    city:val("city-"+id),
-    sehir:val("city-"+id),
-    targetCities:toArray(val("city-"+id)),
-    targetDistricts:toArray(val("districts-"+id)),
-    category:val("category-"+id),
-
-    keywords:val("keywords-"+id),
-    tags:val("keywords-"+id),
-    negativeKeywords:val("negative-"+id),
-
-    dailyLimit:Number(val("daily-"+id)||0),
-    cpc:Number(val("cpc-"+id)||0),
-    sponsorCpc:Number(val("cpc-"+id)||0),
-    sponsorBudget:Number(val("budget-"+id)||0),
-
-    latitude:Number(val("lat-"+id)||0),
-    longitude:Number(val("lng-"+id)||0)
-  };
-
-  await updateSite(id,payload);
-}
-
 async function updateSite(id,payload){
   try{
     const res=await fetch("/api/admin/sites/"+id,{
@@ -350,20 +536,24 @@ async function updateSite(id,payload){
   }
 }
 
+function clearForm(){
+  formTitle.innerText="Admin Site / Reklam Ekle";
+  document.querySelectorAll("input,textarea").forEach(x=>{
+    if(x.type!=="file") x.value="";
+  });
+  statusSelect.value="pending";
+  sponsorSelect.value="false";
+  verifiedSelect.value="false";
+  logoPreview.innerHTML="";
+  coverPreview.innerHTML="";
+  galleryPreview.innerHTML="";
+}
+
 function val(id){return document.getElementById(id).value.trim();}
+function set(id,v){document.getElementById(id).value=v||"";}
 function toArray(v){return String(v||"").split(",").map(x=>x.trim()).filter(Boolean);}
 function arrayText(v){return Array.isArray(v) ? v.join(", ") : (v || "");}
-
-function esc(t){
-  return String(t||"")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;");
-}
-
-function attr(t){
-  return esc(t).replaceAll('"',"&quot;");
-}
+function esc(t){return String(t||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
 </script>
 
 </body>
