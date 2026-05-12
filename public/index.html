@@ -80,6 +80,9 @@ footer a{color:#475569;text-decoration:none;font-weight:bold}
 <div class="top">
   <a href="/login.html">Giriş</a>
   <a href="/register.html">Kayıt Ol</a>
+  <button id="installBtn" onclick="installApp()" style="background:#16a34a;color:white;border:none;padding:10px 16px;border-radius:999px;font-weight:bold;cursor:pointer;">
+    📲 NetSearch İndir
+  </button>
 </div>
 
 <section class="hero" id="hero">
@@ -354,6 +357,27 @@ function esc(t){
 
 function escAttr(t){
   return String(t||"").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll('"',"&quot;");
+}
+
+let deferredPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+async function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  } else {
+    alert("Kurulum için Chrome/Edge sağ üst menüden 'Uygulamayı yükle' veya 'Ana ekrana ekle' seçeneğini kullanabilirsiniz.");
+  }
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js").catch(() => {});
 }
 </script>
 
