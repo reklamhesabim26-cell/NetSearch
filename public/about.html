@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Hakkımızda - NetSearch</title>
+
+<link rel="icon" type="image/png" href="/icon-192.png">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f4f9ff;
+  color:#0f172a;
+  line-height:1.7;
+}
+
+header{
+  background:white;
+  border-bottom:1px solid #dbeafe;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+
+.top{
+  width:min(1400px,95vw);
+  margin:auto;
+  padding:16px 10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:34px;
+  font-weight:900;
+  color:#0f172a;
+}
+
+.logo span{
+  color:#0ea5e9;
+}
+
+.homeBtn{
+  text-decoration:none;
+  background:#2563eb;
+  color:white;
+  padding:12px 18px;
+  border-radius:12px;
+  font-weight:bold;
+}
+
+.hero{
+  width:min(1400px,95vw);
+  margin:auto;
+  padding:55px 10px 30px;
+}
+
+.heroCard{
+  background:linear-gradient(135deg,#0ea5e9,#2563eb);
+  color:white;
+  border-radius:28px;
+  padding:60px 40px;
+  text-align:center;
+  box-shadow:0 20px 50px rgba(37,99,235,.25);
+}
+
+.heroCard h1{
+  font-size:58px;
+  margin-bottom:18px;
+}
+
+.heroCard p{
+  font-size:22px;
+  opacity:.95;
+  max-width:900px;
+  margin:auto;
+}
+
+.section{
+  width:min(1400px,95vw);
+  margin:22px auto;
+}
+
+.card{
+  background:white;
+  border:1px solid #dbeafe;
+  border-radius:24px;
+  padding:35px;
+  box-shadow:0 10px 30px rgba(15,23,42,.05);
+}
+
+.card h2{
+  font-size:34px;
+  margin-bottom:18px;
+  color:#0284c7;
+}
+
+.card p{
+  font-size:18px;
+  color:#334155;
+  margin-bottom:18px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:18px;
+  margin-top:20px;
+}
+
+.feature{
+  background:#f8fbff;
+  border:1px solid #dbeafe;
+  border-radius:22px;
+  padding:28px;
+}
+
+.feature h3{
+  font-size:24px;
+  color:#0284c7;
+  margin-bottom:14px;
+}
+
+.feature p{
+  font-size:16px;
+  color:#475569;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+  margin-top:24px;
+}
+
+.stat{
+  background:linear-gradient(135deg,#ffffff,#eff6ff);
+  border:1px solid #dbeafe;
+  border-radius:24px;
+  padding:30px;
+  text-align:center;
+}
+
+.stat h3{
+  font-size:46px;
+  color:#0ea5e9;
+  margin-bottom:10px;
+}
+
+.stat p{
+  font-size:17px;
+  color:#475569;
+}
+
+footer{
+  margin-top:40px;
+  background:#f8fafc;
+  border-top:1px solid #dbeafe;
+  padding:35px 20px;
+  text-align:center;
+  color:#64748b;
+}
+
+.footerLinks{
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+.footerLinks a{
+  text-decoration:none;
+  color:#334155;
+  font-weight:bold;
+}
+
+@media(max-width:768px){
+
+  .top{
+    width:100%;
+    padding:14px;
+  }
+
+  .logo{
+    font-size:28px;
+  }
+
+  .hero{
+    width:100%;
+    padding:20px 8px;
+  }
+
+  .heroCard{
+    padding:38px 22px;
+    border-radius:20px;
+  }
+
+  .heroCard h1{
+    font-size:38px;
+    line-height:1.2;
+  }
+
+  .heroCard p{
+    font-size:18px;
+  }
+
+  .section{
+    width:100%;
+    padding:0 8px;
+  }
+
+  .card{
+    padding:22px;
+    border-radius:18px;
+  }
+
+  .card h2{
+    font-size:28px;
+  }
+
+  .card p{
+    font-size:17px;
+  }
+
+  .feature{
+    padding:22px;
+    border-radius:18px;
+  }
+
+  .feature h3{
+    font-size:22px;
+  }
+
+  .stat{
+    padding:24px;
+  }
+
+  .stat h3{
+    font-size:38px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="top">
+    <div class="logo">Net<span>Search</span></div>
+    <a href="/index.html" class="homeBtn">Ana Sayfa</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="heroCard">
+    <h1>NetSearch Hakkında</h1>
+    <p>
+      NetSearch; yapay zeka destekli yeni nesil arama motoru ve reklam platformudur.
+      İşletmeleri, hizmetleri ve kullanıcıları hızlı, güvenli ve akıllı şekilde bir araya getirmek için geliştirilmiştir.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="card">
+    <h2>NetSearch Nedir?</h2>
+
+    <p>
+      NetSearch; kullanıcıların işletmeleri, web sitelerini ve yerel hizmetleri daha hızlı bulabilmesi için geliştirilen modern bir arama motorudur.
+    </p>
+
+    <p>
+      Platform içerisinde işletmeler kendi reklamlarını oluşturabilir, hedef şehir belirleyebilir, günlük bütçe ayarlayabilir ve performanslarını takip edebilir.
+    </p>
+
+    <p>
+      NetSearch altyapısında yapay zeka destekli sıralama sistemi, reklam optimizasyon sistemi, yakın işletme sistemi ve güvenlik filtreleri bulunmaktadır.
+    </p>
+
+    <div class="grid">
+
+      <div class="feature">
+        <h3>🔎 Yapay Zeka Destekli Arama</h3>
+        <p>
+          Arama sonuçları sadece anahtar kelimeye göre değil; kalite, açıklama, hedefleme ve kullanıcı deneyimine göre listelenir.
+        </p>
+      </div>
+
+      <div class="feature">
+        <h3>📍 Yakındaki İşletmeler</h3>
+        <p>
+          Kullanıcılar konum izinleri ile yakın işletmeleri görüntüleyebilir ve bölgesel sonuçlara ulaşabilir.
+        </p>
+      </div>
+
+      <div class="feature">
+        <h3>📈 Reklam Sistemi</h3>
+        <p>
+          İşletmeler kendi reklam bütçelerini belirleyebilir, tıklama maliyetlerini yönetebilir ve performans raporlarını inceleyebilir.
+        </p>
+      </div>
+
+      <div class="feature">
+        <h3>🛡️ Güvenlik ve Doğrulama</h3>
+        <p>
+          NetSearch üzerinde sahte içerik, spam reklam ve kötü amaçlı yönlendirmeler güvenlik sistemleri ile filtrelenmektedir.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="card">
+
+    <h2>NetSearch Vizyonu</h2>
+
+    <p>
+      NetSearch’in hedefi; kullanıcıların güvenilir işletmelere hızlı ulaşabildiği, reklam verenlerin ise gerçek performans alabildiği modern bir dijital platform oluşturmaktır.
+    </p>
+
+    <p>
+      Platform sürekli olarak geliştirilmektedir ve gelecekte daha büyük yapay zeka sistemleri, gelişmiş harita altyapısı ve mobil uygulamalar ile desteklenecektir.
+    </p>
+
+    <div class="stats">
+
+      <div class="stat">
+        <h3>AI</h3>
+        <p>Yapay zeka destekli arama sistemi</p>
+      </div>
+
+      <div class="stat">
+        <h3>24/7</h3>
+        <p>Sürekli çalışan reklam altyapısı</p>
+      </div>
+
+      <div class="stat">
+        <h3>TR</h3>
+        <p>Türkiye odaklı yerel işletme sistemi</p>
+      </div>
+
+      <div class="stat">
+        <h3>∞</h3>
+        <p>Sürekli geliştirilen teknoloji altyapısı</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<footer>
+
+  <div class="footerLinks">
+    <a href="/index.html">Ana Sayfa</a>
+    <a href="/privacy.html">Gizlilik</a>
+    <a href="/kvkk.html">KVKK</a>
+    <a href="/cookies.html">Çerezler</a>
+    <a href="/terms.html">Kullanım Şartları</a>
+    <a href="/contact.html">İletişim</a>
+  </div>
+
+  <div>
+    © 2026 NetSearch — AI Destekli Yeni Nesil Arama Motoru
+  </div>
+
+</footer>
+
+</body>
+</html>
