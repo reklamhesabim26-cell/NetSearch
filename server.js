@@ -179,8 +179,29 @@ function siteText(s) {
 }
 
 function hasNegative(site, q) {
-  const text = normalize(q);
-  return arr(site.negativeKeywords).map(normalize).some(w => w && text.includes(w));
+  const query = normalize(q);
+
+  const negatives = arr(site.negativeKeywords)
+    .map(normalize)
+    .filter(Boolean);
+
+  if (!negatives.length) return false;
+
+  const queryWords = query.split(/\s+/).filter(Boolean);
+
+  for (const negative of negatives) {
+    if (query.includes(negative)) {
+      return true;
+    }
+
+    for (const qw of queryWords) {
+      if (similar(qw, negative)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 function targetMatch(site, q) {
@@ -281,12 +302,24 @@ function score(site, q) {
   let s = 0;
 
   if (title === query) s += 130;
-  if (title.includes(query)) s += 90;
-  if (text.includes(query)) s += 55;
+  if (title.includes(query)) s += 140;
+if (text.includes(query)) s += 80;
+
+if (similar(title, query)) s += 120;
 
   words.forEach(w => {
-    if (title.includes(w)) s += 26;
-    if (text.includes(w)) s += 12;
+    if (title.includes(w)) s += 42;
+if (text.includes(w)) s += 18;
+
+const textWords = text.split(/\s+/);
+
+textWords.forEach(tw => {
+
+  if (similar(tw, w)) {
+    s += 14;
+  }
+
+});
   });
 
   s += targetMatch(site, q);
@@ -722,7 +755,7 @@ return words.some(w => {
   const textWords = text.split(/\s+/);
 
   return textWords.some(tw => similar(tw, w));
-});      });
+});s      });
     }
 
     results = results.map(site => {
