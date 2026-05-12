@@ -49,7 +49,8 @@ body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#111827;min-hei
 .cardTop{display:flex;gap:14px;align-items:center}
 .siteLogo,.logoLetter{width:58px;height:58px;border-radius:16px;background:#e0f2fe;border:1px solid #bae6fd;object-fit:cover;flex-shrink:0}
 .logoLetter{display:flex;align-items:center;justify-content:center;color:#0284c7;font-size:24px;font-weight:900}
-.title{font-size:22px;color:#0284c7;font-weight:900;margin-bottom:4px}
+.title{font-size:22px;color:#0284c7;font-weight:900;margin-bottom:4px;text-decoration:none;display:inline-block}
+.title:hover{text-decoration:underline}
 .url{color:#16a34a;font-weight:bold;font-size:14px;word-break:break-all}
 .desc{color:#334155;line-height:1.6;margin:14px 0}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -57,7 +58,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#111827;min-hei
 .ad{color:#92400e;background:#fef3c7;border-color:#f59e0b}.verified{color:#166534;background:#dcfce7;border-color:#86efac}.near{color:#6b21a8;background:#f3e8ff;border-color:#d8b4fe}
 .actions{display:flex;gap:9px;flex-wrap:wrap}
 .actions a,.actions button{border:0;text-decoration:none;color:white;padding:10px 14px;border-radius:999px;font-weight:bold;cursor:pointer}
-.visit{background:#16a34a}.detail{background:#2563eb}.call{background:#0f766e}.whatsapp{background:#22c55e}.share{background:#9333ea}
+.visit{background:#16a34a}.call{background:#0f766e}.whatsapp{background:#22c55e}.share{background:#9333ea}
 .empty,.loading{text-align:center;color:#64748b;padding:30px;font-weight:bold}
 footer{margin-top:auto;background:#f8fafc;border-top:1px solid #e5e7eb;padding:22px;color:#64748b;font-size:14px}
 .footerInner{max-width:1100px;margin:auto;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
@@ -123,12 +124,12 @@ footer a{color:#475569;text-decoration:none;font-weight:bold}
     <div class="footerLinks">
       <a href="/index.html">Ana Sayfa</a>
       <a href="/login.html">Reklam Ver</a>
-      <a href="#">Hakkımızda</a>
-      <a href="#">Bize Ulaşın</a>
-      <a href="#">Gizlilik Politikası</a>
-      <a href="#">KVKK</a>
-      <a href="#">Çerez Politikası</a>
-      <a href="#">Kullanım Şartları</a>
+      <a href="/about.html">Hakkımızda</a>
+      <a href="/contact.html">Bize Ulaşın</a>
+      <a href="/privacy.html">Gizlilik Politikası</a>
+      <a href="/kvkk.html">KVKK</a>
+      <a href="/cookies.html">Çerez Politikası</a>
+      <a href="/terms.html">Kullanım Şartları</a>
     </div>
     <div>© 2026 NetSearch</div>
   </div>
@@ -284,7 +285,7 @@ function createCard(site,isSponsored){
     <div class="cardTop">
       ${logo?`<img class="siteLogo" src="${esc(logo)}" onerror="this.outerHTML='<div class=&quot;logoLetter&quot;>${esc(first)}</div>'">`:`<div class="logoLetter">${esc(first)}</div>`}
       <div>
-        <div class="title">${esc(title)}</div>
+        <a class="title" href="${esc(url)}" target="_blank" onclick="trackClick('${id}')">${esc(title)}</a>
         <div class="url">${esc(url)}</div>
       </div>
     </div>
@@ -302,7 +303,6 @@ function createCard(site,isSponsored){
 
     <div class="actions">
       <a class="visit" href="${esc(url)}" target="_blank" onclick="trackClick('${id}')">Siteye Git</a>
-      <a class="detail" href="/site.html?id=${id}">Detay Sayfası</a>
       ${phone?`<a class="call" href="tel:${cleanPhone(phone)}">Ara</a>`:""}
       ${whatsapp?`<a class="whatsapp" href="https://wa.me/${cleanPhone(whatsapp)}" target="_blank">WhatsApp</a>`:""}
       <button class="share" onclick="shareSite('${escAttr(title)}','${escAttr(url)}')">Paylaş</button>
