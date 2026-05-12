@@ -80,6 +80,61 @@ function normalize(t) {
     .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c")
     .trim();
 }
+function normalize(t) {
+  return String(t || "").toLowerCase()
+    .replaceAll("ı", "i").replaceAll("ğ", "g").replaceAll("ü", "u")
+    .replaceAll("ş", "s").replaceAll("ö", "o").replaceAll("ç", "c")
+    .trim();
+}
+
+function levenshtein(a, b) {
+  a = normalize(a);
+  b = normalize(b);
+
+  const matrix = [];
+
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
+function similar(a, b) {
+  a = normalize(a);
+  b = normalize(b);
+
+  if (!a || !b) return false;
+
+  if (a.includes(b) || b.includes(a)) return true;
+
+  const distance = levenshtein(a, b);
+
+  if (a.length <= 4) return distance <= 1;
+  if (a.length <= 7) return distance <= 2;
+
+  return distance <= 3;
+}
 
 function slugify(text) {
   return String(text || "")
@@ -584,8 +639,13 @@ app.get("/api/search", async (req, res) => {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
         const text = siteText(site);
-        return words.some(w => text.includes(w));
-      });
+return words.some(w => {
+  if (text.includes(w)) return true;
+
+  const textWords = text.split(/\s+/);
+
+  return textWords.some(tw => similar(tw, w));
+});      });
     }
 
     results = results.map(site => {
@@ -656,8 +716,13 @@ app.get("/api/sites", async (req, res) => {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
         const text = siteText(site);
-        return words.some(w => text.includes(w));
-      });
+return words.some(w => {
+  if (text.includes(w)) return true;
+
+  const textWords = text.split(/\s+/);
+
+  return textWords.some(tw => similar(tw, w));
+});      });
     }
 
     results = results.map(site => {
