@@ -236,62 +236,85 @@ function categoryIntentScore(site, q) {
       name: "kombi",
       words: ["kombi", "kombici", "kombi servisi", "kombi tamiri", "kombi bakimi", "dogalgaz", "kalorifer"],
       boostCategories: ["teknik servis", "kombi", "beyaz esya", "servis"],
-      blockWords: ["oto", "araba", "otomobil", "lastik", "motor", "kaporta"]
+      blockCategories: ["devlet", "otomotiv", "restoran", "haber", "egitim", "hukuk", "saglik", "e-ticaret"],
+      blockWords: ["oto", "araba", "otomobil", "lastik", "motor", "kaporta", "edevlet", "e devlet", "haber", "restoran"]
     },
     {
       name: "beyaz_esya",
       words: ["beyaz esya", "buzdolabi", "camasir makinesi", "bulasik makinesi", "servis", "tamirci"],
       boostCategories: ["teknik servis", "beyaz esya", "servis"],
-      blockWords: ["oto", "araba", "otomobil", "lastik", "kaporta"]
+      blockCategories: ["devlet", "otomotiv", "restoran", "haber", "egitim", "hukuk", "saglik"],
+      blockWords: ["oto", "araba", "otomobil", "lastik", "kaporta", "edevlet", "haber", "restoran"]
     },
     {
       name: "oto",
       words: ["oto", "araba", "otomobil", "arac", "motor", "kaporta", "lastik", "oto tamirci", "oto servis"],
       boostCategories: ["oto", "otomotiv", "oto servis", "araba", "servis"],
-      blockWords: ["kombi", "buzdolabi", "camasir", "bulasik"]
+      blockCategories: ["devlet", "teknik servis", "restoran", "haber", "egitim", "hukuk", "saglik"],
+      blockWords: ["kombi", "buzdolabi", "camasir", "bulasik", "edevlet", "haber", "restoran"]
+    },
+    {
+      name: "devlet",
+      words: ["edevlet", "e devlet", "devlet", "turkiye gov", "sgk", "vergi", "belediye", "bakanlik"],
+      boostCategories: ["devlet"],
+      blockCategories: ["teknik servis", "otomotiv", "restoran", "e-ticaret"],
+      blockWords: ["kombi", "oto", "araba", "tamir", "servis", "restoran"]
     },
     {
       name: "eczane",
       words: ["eczane", "nobetci eczane", "ilac", "saglik"],
       boostCategories: ["eczane", "saglik"],
+      blockCategories: ["teknik servis", "otomotiv", "restoran", "haber"],
       blockWords: ["kombi", "oto", "araba", "tamir"]
     },
     {
       name: "restoran",
-      words: ["restoran", "yemek", "lokanta", "cafe", "kahvalti"],
+      words: ["restoran", "yemek", "lokanta", "cafe", "kahvalti", "pizza", "burger"],
       boostCategories: ["restoran", "cafe", "yemek"],
-      blockWords: ["kombi", "oto", "tamir"]
+      blockCategories: ["teknik servis", "otomotiv", "devlet", "hukuk"],
+      blockWords: ["kombi", "oto", "tamir", "edevlet"]
     }
   ];
 
   let total = 0;
+  let matchedAnyIntent = false;
 
   for (const group of groups) {
-
-    const intentMatched = group.words.some(w =>
-      query.includes(normalize(w)) || similar(query, w)
-    );
+    const intentMatched = group.words.some(w => {
+      const nw = normalize(w);
+      return query.includes(nw) || similar(query, nw);
+    });
 
     if (!intentMatched) continue;
 
-    const categoryMatched = group.boostCategories.some(c =>
-      category.includes(normalize(c)) ||
-      text.includes(normalize(c))
-    );
+    matchedAnyIntent = true;
 
-    const blocked = group.blockWords.some(w =>
-      text.includes(normalize(w)) ||
-      category.includes(normalize(w))
-    );
+    const categoryMatched = group.boostCategories.some(c => {
+      const nc = normalize(c);
+      return category.includes(nc) || text.includes(nc);
+    });
 
-    if (categoryMatched) total += 120;
+    const categoryBlocked = group.blockCategories.some(c => {
+      const nc = normalize(c);
+      return category.includes(nc);
+    });
 
-    if (blocked) total -= 180;
+    const wordBlocked = group.blockWords.some(w => {
+      const nw = normalize(w);
+      return text.includes(nw) || category.includes(nw);
+    });
+
+    if (categoryMatched) total += 180;
+    if (categoryBlocked) total -= 260;
+    if (wordBlocked) total -= 160;
+  }
+
+  if (matchedAnyIntent && total < -200) {
+    total -= 300;
   }
 
   return total;
 }
-
 function getDailySpent(site) {
   if (site.dailySpendDate !== todayKey()) return 0;
   return Number(site.dailySpent || 0);
@@ -665,49 +688,106 @@ function guessCategoryFromText(full) {
   const rules = [
     {
       category: "Teknik Servis",
-      words: ["kombi", "beyaz esya", "buzdolabi", "camasir", "bulasik", "servis", "tamir", "ariza", "bakim"]
+      words: [
+        "kombi","beyaz esya","buzdolabi","camasir","bulasik",
+        "servis","tamir","ariza","bakim","teknik servis",
+        "kombi servisi","klima","elektronik"
+      ]
     },
+
+    {
+      category: "Devlet",
+      words: [
+        "edevlet","e devlet","gov","bakanlik","belediye",
+        "resmi","devlet","kurum","sgk","vergi"
+      ]
+    },
+
     {
       category: "Otomotiv",
-      words: ["oto", "araba", "otomobil", "arac", "lastik", "kaporta", "motor", "oto servis", "oto tamir"]
+      words: [
+        "oto","araba","otomobil","arac","lastik",
+        "kaporta","motor","oto servis","oto tamir"
+      ]
     },
+
     {
       category: "Sağlık",
-      words: ["doktor", "hastane", "klinik", "dis", "eczane", "saglik", "muayene"]
+      words: [
+        "doktor","hastane","klinik","dis","eczane",
+        "saglik","muayene","psikolog"
+      ]
     },
+
     {
       category: "Restoran",
-      words: ["restoran", "lokanta", "yemek", "cafe", "kahvalti", "pizza", "burger"]
+      words: [
+        "restoran","lokanta","yemek","cafe",
+        "kahvalti","pizza","burger","doner"
+      ]
     },
+
     {
       category: "Hukuk",
-      words: ["avukat", "hukuk", "dava", "danismanlik", "icra"]
+      words: [
+        "avukat","hukuk","dava","danismanlik",
+        "icra","noter"
+      ]
     },
+
     {
       category: "Eğitim",
-      words: ["okul", "kurs", "egitim", "ders", "akademi"]
+      words: [
+        "okul","kurs","egitim","ders",
+        "akademi","universite"
+      ]
     },
+
     {
-      category: "Otel",
-      words: ["otel", "hotel", "konaklama", "pansiyon"]
+      category: "E-Ticaret",
+      words: [
+        "satın al","sepete ekle","urun","kargo",
+        "alisveris","indirim","magaza"
+      ]
     },
+
     {
-      category: "Market",
-      words: ["market", "alisveris", "mağaza", "magaza", "ticaret"]
+      category: "Haber",
+      words: [
+        "haber","son dakika","gazete",
+        "gundem","spor haberleri"
+      ]
+    },
+
+    {
+      category: "Yazılım",
+      words: [
+        "yazilim","software","web tasarim",
+        "hosting","domain","seo","mobil uygulama"
+      ]
     }
   ];
 
-  let best = { category: "Genel", score: 0 };
+  let best = {
+    category: "Genel",
+    score: 0
+  };
 
   for (const rule of rules) {
+
     let score = 0;
 
-    for (const word of rule.words) {
-      if (text.includes(normalize(word))) score += 1;
+    for (const w of rule.words) {
+      if (text.includes(normalize(w))) {
+        score++;
+      }
     }
 
     if (score > best.score) {
-      best = { category: rule.category, score };
+      best = {
+        category: rule.category,
+        score
+      };
     }
   }
 
