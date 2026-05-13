@@ -226,6 +226,71 @@ function targetMatch(site, q) {
 
   return bonus;
 }
+function categoryIntentScore(site, q) {
+  const query = normalize(q);
+  const category = normalize(site.category || "");
+  const text = siteText(site);
+
+  const groups = [
+    {
+      name: "kombi",
+      words: ["kombi", "kombici", "kombi servisi", "kombi tamiri", "kombi bakimi", "dogalgaz", "kalorifer"],
+      boostCategories: ["teknik servis", "kombi", "beyaz esya", "servis"],
+      blockWords: ["oto", "araba", "otomobil", "lastik", "motor", "kaporta"]
+    },
+    {
+      name: "beyaz_esya",
+      words: ["beyaz esya", "buzdolabi", "camasir makinesi", "bulasik makinesi", "servis", "tamirci"],
+      boostCategories: ["teknik servis", "beyaz esya", "servis"],
+      blockWords: ["oto", "araba", "otomobil", "lastik", "kaporta"]
+    },
+    {
+      name: "oto",
+      words: ["oto", "araba", "otomobil", "arac", "motor", "kaporta", "lastik", "oto tamirci", "oto servis"],
+      boostCategories: ["oto", "otomotiv", "oto servis", "araba", "servis"],
+      blockWords: ["kombi", "buzdolabi", "camasir", "bulasik"]
+    },
+    {
+      name: "eczane",
+      words: ["eczane", "nobetci eczane", "ilac", "saglik"],
+      boostCategories: ["eczane", "saglik"],
+      blockWords: ["kombi", "oto", "araba", "tamir"]
+    },
+    {
+      name: "restoran",
+      words: ["restoran", "yemek", "lokanta", "cafe", "kahvalti"],
+      boostCategories: ["restoran", "cafe", "yemek"],
+      blockWords: ["kombi", "oto", "tamir"]
+    }
+  ];
+
+  let total = 0;
+
+  for (const group of groups) {
+
+    const intentMatched = group.words.some(w =>
+      query.includes(normalize(w)) || similar(query, w)
+    );
+
+    if (!intentMatched) continue;
+
+    const categoryMatched = group.boostCategories.some(c =>
+      category.includes(normalize(c)) ||
+      text.includes(normalize(c))
+    );
+
+    const blocked = group.blockWords.some(w =>
+      text.includes(normalize(w)) ||
+      category.includes(normalize(w))
+    );
+
+    if (categoryMatched) total += 120;
+
+    if (blocked) total -= 180;
+  }
+
+  return total;
+}
 
 function getDailySpent(site) {
   if (site.dailySpendDate !== todayKey()) return 0;
@@ -287,6 +352,7 @@ function adScore(site, q) {
   s += Math.min(ai, 40);
   s += Math.min(ctr * 10, 60);
   s += targetMatch(site, q);
+  s += categoryIntentScore(site, q);
 
   if (site.verified || site.isVerified) s += 25;
 
@@ -540,116 +606,337 @@ app.post("/api/upload/multiple", upload.array("files", 10), (req, res) => {
 
 /* AUTO INDEX */
 
+function safeUrl(input) {
+  try {
+    let url = String(input || "").trim();
+
+    if (!url) return null;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
+
+    const parsed = new URL(url);
+
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}
+
+function getDomain(input) {
+  try {
+    return new URL(input).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function absoluteUrl(base, value) {
+  try {
+    if (!value) return "";
+    if (value.startsWith("data:")) return "";
+    if (value.startsWith("http://") || value.startsWith("https://")) return value;
+    return new URL(value, base).href;
+  } catch {
+    return "";
+  }
+}
+
+function cleanText(text, max = 300) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
+function uniqueList(list, limit = 30) {
+  return [...new Set(
+    list
+      .map(x => cleanText(x, 80))
+      .filter(x => x && x.length > 2)
+  )].slice(0, limit);
+}
+
+function guessCategoryFromText(full) {
+  const text = normalize(full);
+
+  const rules = [
+    {
+      category: "Teknik Servis",
+      words: ["kombi", "beyaz esya", "buzdolabi", "camasir", "bulasik", "servis", "tamir", "ariza", "bakim"]
+    },
+    {
+      category: "Otomotiv",
+      words: ["oto", "araba", "otomobil", "arac", "lastik", "kaporta", "motor", "oto servis", "oto tamir"]
+    },
+    {
+      category: "Sağlık",
+      words: ["doktor", "hastane", "klinik", "dis", "eczane", "saglik", "muayene"]
+    },
+    {
+      category: "Restoran",
+      words: ["restoran", "lokanta", "yemek", "cafe", "kahvalti", "pizza", "burger"]
+    },
+    {
+      category: "Hukuk",
+      words: ["avukat", "hukuk", "dava", "danismanlik", "icra"]
+    },
+    {
+      category: "Eğitim",
+      words: ["okul", "kurs", "egitim", "ders", "akademi"]
+    },
+    {
+      category: "Otel",
+      words: ["otel", "hotel", "konaklama", "pansiyon"]
+    },
+    {
+      category: "Market",
+      words: ["market", "alisveris", "mağaza", "magaza", "ticaret"]
+    }
+  ];
+
+  let best = { category: "Genel", score: 0 };
+
+  for (const rule of rules) {
+    let score = 0;
+
+    for (const word of rule.words) {
+      if (text.includes(normalize(word))) score += 1;
+    }
+
+    if (score > best.score) {
+      best = { category: rule.category, score };
+    }
+  }
+
+  return best.category;
+}
+
+function extractKeywordsFromPage($, title, description) {
+  const keywords = [];
+
+  const metaKeywords = $('meta[name="keywords"]').attr("content");
+  if (metaKeywords) keywords.push(...arr(metaKeywords));
+
+  $("h1,h2,h3").each((i, el) => {
+    const txt = cleanText($(el).text(), 90);
+    if (txt) keywords.push(txt);
+  });
+
+  $("a").each((i, el) => {
+    const txt = cleanText($(el).text(), 60);
+    if (txt && txt.length > 3 && txt.length < 45) keywords.push(txt);
+  });
+
+  const combined = normalize(`${title} ${description} ${keywords.join(" ")}`);
+  const words = combined
+    .split(/\s+/)
+    .filter(w => w.length > 3)
+    .filter(w => !["icin", "ile", "veya", "daha", "hemen", "firma", "hizmet", "iletisim", "anasayfa"].includes(w));
+
+  keywords.push(...words);
+
+  return uniqueList(keywords, 35);
+}
+
+async function crawlOneUrl(url) {
+  const finalUrl = safeUrl(url);
+  if (!finalUrl) throw new Error("Geçersiz URL");
+
+  const response = await axios.get(finalUrl, {
+    timeout: 16000,
+    maxRedirects: 5,
+    maxContentLength: 2 * 1024 * 1024,
+    headers: {
+      "User-Agent": "NetSearchBot/1.0 (+https://netsearch.com.tr)",
+      "Accept": "text/html,application/xhtml+xml"
+    }
+  });
+
+  const html = String(response.data || "");
+  const $ = cheerio.load(html);
+
+  const title =
+    cleanText($("title").first().text(), 90) ||
+    cleanText($('meta[property="og:title"]').attr("content"), 90) ||
+    getDomain(finalUrl);
+
+  const description =
+    cleanText($('meta[name="description"]').attr("content"), 260) ||
+    cleanText($('meta[property="og:description"]').attr("content"), 260) ||
+    cleanText($("p").first().text(), 240) ||
+    title;
+
+  let favicon =
+    $('link[rel="icon"]').attr("href") ||
+    $('link[rel="shortcut icon"]').attr("href") ||
+    $('link[rel="apple-touch-icon"]').attr("href") ||
+    "/favicon.ico";
+
+  favicon = absoluteUrl(finalUrl, favicon);
+
+  let image =
+    $('meta[property="og:image"]').attr("content") ||
+    $('meta[name="twitter:image"]').attr("content") ||
+    "";
+
+  image = absoluteUrl(finalUrl, image);
+
+  const h1 = cleanText($("h1").first().text(), 90);
+  const h2 = cleanText($("h2").first().text(), 90);
+
+  const keywords = extractKeywordsFromPage($, title, description);
+
+  const full = `${title} ${description} ${h1} ${h2} ${keywords.join(" ")}`;
+  const category = guessCategoryFromText(full);
+
+  return {
+    title,
+    description,
+    favicon,
+    image,
+    h1,
+    h2,
+    keywords,
+    category,
+    domain: getDomain(finalUrl),
+    finalUrl
+  };
+}
+
 app.post("/api/auto-index", async (req, res) => {
   try {
-    let { url, city, district, ownerEmail } = req.body;
+    const { city, district, ownerEmail } = req.body;
+    const url = safeUrl(req.body.url);
 
-    if (!url) return res.json({ success: false, message: "URL gerekli" });
-    if (!url.startsWith("http")) url = "https://" + url;
+    if (!url) {
+      return res.json({
+        success: false,
+        message: "Geçerli bir URL gerekli"
+      });
+    }
+
+    const domain = getDomain(url);
 
     const already = await Site.findOne({
-      $or: [{ url }, { website: url }, { link: url }],
-      status: { $ne: "deleted" }
+      status: { $ne: "deleted" },
+      $or: [
+        { url },
+        { website: url },
+        { link: url },
+        { domain }
+      ]
     });
 
     if (already) {
-      return res.json({ success: false, message: "Bu site zaten kayıtlı", site: already });
+      return res.json({
+        success: false,
+        message: "Bu site zaten indexte kayıtlı",
+        site: already
+      });
     }
 
-    const response = await axios.get(url, {
-      timeout: 15000,
-      maxRedirects: 5,
-      headers: { "User-Agent": "NetSearchBot/1.0 (+https://netsearch.com.tr)" }
-    });
-
-    const $ = cheerio.load(response.data);
-
-    const title =
-      $("title").first().text().trim() ||
-      $('meta[property="og:title"]').attr("content") ||
-      url;
-
-    const description =
-      $('meta[name="description"]').attr("content") ||
-      $('meta[property="og:description"]').attr("content") ||
-      $("p").first().text().trim().slice(0, 220) ||
-      "";
-
-    let favicon =
-      $('link[rel="icon"]').attr("href") ||
-      $('link[rel="shortcut icon"]').attr("href") ||
-      "/favicon.ico";
-
-    if (favicon && !favicon.startsWith("http")) favicon = new URL(favicon, url).href;
-
-    let image =
-      $('meta[property="og:image"]').attr("content") ||
-      $('meta[name="twitter:image"]').attr("content") ||
-      "";
-
-    if (image && !image.startsWith("http")) image = new URL(image, url).href;
-
-    const keywords = [];
-    const metaKeywords = $('meta[name="keywords"]').attr("content");
-    if (metaKeywords) keywords.push(...arr(metaKeywords));
-
-    $("h1,h2,h3").each((i, el) => {
-      const text = $(el).text().trim();
-      if (text.length > 3 && text.length < 70) keywords.push(text);
-    });
-
-    const full = normalize(`${title} ${description} ${keywords.join(" ")}`);
-
-    let category = "Genel";
-    if (full.includes("kombi") || full.includes("servis") || full.includes("tamir")) category = "Teknik Servis";
-    if (full.includes("restoran") || full.includes("yemek")) category = "Restoran";
-    if (full.includes("cafe") || full.includes("kahve")) category = "Cafe";
-    if (full.includes("doktor") || full.includes("hastane") || full.includes("klinik")) category = "Sağlık";
-    if (full.includes("avukat") || full.includes("hukuk")) category = "Hukuk";
-    if (full.includes("otel") || full.includes("hotel")) category = "Otel";
-    if (full.includes("market") || full.includes("alisveris") || full.includes("alışveriş")) category = "Market";
-    if (full.includes("okul") || full.includes("kurs") || full.includes("egitim") || full.includes("eğitim")) category = "Eğitim";
+    const crawled = await crawlOneUrl(url);
 
     const newSite = await Site.create(buildSite({
-      title,
-      name: title,
-      businessName: title,
-      description,
-      desc: description,
-      url,
-      website: url,
-      link: url,
-      logo: favicon,
-      logoUrl: favicon,
-      image: favicon,
-      cover: image,
-      coverUrl: image,
-      gallery: image ? [image] : [],
-      keywords: [...new Set(keywords)].slice(0, 20),
-      tags: [...new Set(keywords)].slice(0, 20),
-      category,
+      title: crawled.title,
+      name: crawled.title,
+      businessName: crawled.title,
+
+      url: crawled.finalUrl,
+      website: crawled.finalUrl,
+      link: crawled.finalUrl,
+      domain: crawled.domain,
+
+      description: crawled.description,
+      desc: crawled.description,
+
+      adHeadline1: crawled.h1 || crawled.title,
+      adHeadline2: crawled.h2 || crawled.category,
+      adHeadline3: crawled.domain,
+
+      adDescription1: crawled.description,
+      adDescription2: `${crawled.category} kategorisinde NetSearch tarafından indexlendi.`,
+
+      logo: crawled.favicon,
+      logoUrl: crawled.favicon,
+      image: crawled.favicon,
+
+      cover: crawled.image,
+      coverUrl: crawled.image,
+      gallery: crawled.image ? [crawled.image] : [],
+
+      keywords: crawled.keywords,
+      tags: crawled.keywords,
+
+      category: crawled.category,
+
       city: city || "",
       sehir: city || "",
       district: district || "",
       ilce: district || "",
       targetCities: city ? [city] : [],
       targetDistricts: district ? [district] : [],
+
       ownerEmail: ownerEmail || "",
+
       approved: true,
       verified: false,
       sponsored: false,
+      isSponsored: false,
       sponsorActive: false,
-      aiScore: 25,
+
+      aiScore: 35,
       status: "active",
-      createdBy: "auto-index",
-      indexedAt: new Date()
+
+      createdBy: "crawler-v1",
+      indexedAt: new Date(),
+      lastCrawledAt: new Date()
     }));
 
-    res.json({ success: true, message: "Site başarıyla otomatik indexlendi", site: newSite });
+    res.json({
+      success: true,
+      message: "Site başarıyla crawler ile indexlendi",
+      site: newSite
+    });
 
   } catch (e) {
-    console.log("AUTO INDEX ERROR:", e.message);
-    res.status(500).json({ success: false, message: "Site taranamadı" });
+    console.log("CRAWLER ERROR:", e.message);
+
+    res.status(500).json({
+      success: false,
+      message: "Site taranamadı",
+      error: e.message
+    });
+  }
+});
+
+app.post("/api/crawl-preview", async (req, res) => {
+  try {
+    const url = safeUrl(req.body.url);
+
+    if (!url) {
+      return res.json({
+        success: false,
+        message: "Geçerli URL gerekli"
+      });
+    }
+
+    const crawled = await crawlOneUrl(url);
+
+    res.json({
+      success: true,
+      data: crawled
+    });
+
+  } catch (e) {
+    res.status(500).json({
+      success: false,
+      message: "Ön izleme alınamadı",
+      error: e.message
+    });
   }
 });
 
@@ -671,23 +958,32 @@ app.get("/api/search", async (req, res) => {
     if (q.trim()) {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
+
         const text = siteText(site);
-return words.some(w => {
-  if (text.includes(w)) return true;
 
-  const textWords = text.split(/\s+/);
+        return words.some(w => {
+          if (text.includes(w)) return true;
 
-  return textWords.some(tw => similar(tw, w));
-});      });
+          const textWords = text.split(/\s+/);
+
+          return textWords.some(tw => similar(tw, w));
+        });
+      });
     }
 
-    results = results.map(site => {
-      const o = site.toObject();
-      o.qualityScore = calcQualityScore(o);
-      o.adScore = adScore(o, q);
-      o.searchScore = score(o, q);
-      return o;
-    }).sort((a, b) => b.searchScore - a.searchScore);
+    results = results
+      .map(site => {
+        const o = site.toObject();
+
+        o.qualityScore = calcQualityScore(o);
+        o.adScore = adScore(o, q);
+        o.searchScore = score(o, q);
+        o.isRelevant = !q.trim() || o.searchScore >= 60;
+
+        return o;
+      })
+      .filter(o => o.isRelevant)
+      .sort((a, b) => b.searchScore - a.searchScore);
 
     const sponsored = results
       .filter(s =>
@@ -728,7 +1024,8 @@ return words.some(w => {
 
     res.json({ aiAnswer, sponsored, results: organic });
 
-  } catch {
+  } catch (e) {
+    console.log("SEARCH ERROR:", e.message);
     res.status(500).json({ aiAnswer: "", sponsored: [], results: [] });
   }
 });
