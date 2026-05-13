@@ -894,8 +894,9 @@ async function crawlOneUrl(url) {
       "User-Agent": "NetSearchBot/1.0 (+https://netsearch.com.tr)",
       "Accept": "text/html,application/xhtml+xml"
     }
+    
   });
-
+  
   const html = String(response.data || "");
   const $ = cheerio.load(html);
 
@@ -945,6 +946,30 @@ async function crawlOneUrl(url) {
     domain: getDomain(finalUrl),
     finalUrl
   };
+}
+async function crawlSitemap(url) {
+  try {
+    const sitemapUrl = url.replace(/\/$/, "") + "/sitemap.xml";
+
+    const res = await axios.get(sitemapUrl, {
+      timeout: 10000,
+      headers: {
+        "User-Agent": "NetSearchBot/1.0"
+      }
+    });
+
+    const xml = res.data;
+
+    const matches = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)];
+
+    return matches
+      .map(m => m[1])
+      .filter(u => u.startsWith("http"))
+      .slice(0, 30);
+
+  } catch (e) {
+    return [];
+  }
 }
 
 app.post("/api/auto-index", async (req, res) => {
@@ -1612,6 +1637,126 @@ app.get("/:cityCategory", async (req, res, next) => {
 
   } catch {
     next();
+  }
+});
+const crypto = require("crypto");
+
+app.post("/api/paytr-token", async (req, res) => {
+  try {
+    const merchant_id = process.env.PAYTR_MERCHANT_ID;
+    const merchant_key = process.env.PAYTR_MERCHANT_KEY;
+    const merchant_salt = process.env.PAYTR_MERCHANT_SALT;
+
+    const amount = Number(req.body.amount || 100);
+    const email = req.body.email || "test@netsearch.com";
+    const merchant_oid = "NS" + Date.now();
+    const payment_amount = Math.round(amount * 100);
+
+    const user_ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1").split(",")[0];
+
+    const user_basket = Buffer.from(JSON.stringify([
+      ["NetSearch Reklam Bakiyesi", amount.toFixed(2), 1]
+    ])).toString("base64");
+
+    const no_installment = "0";
+    const max_installment = "0";
+    const currency = "TL";
+    const test_mode = process.env.PAYTR_TEST_MODE === "true" ? "1" : "0";
+
+    const hashSTR =
+      merchant_id +
+      user_ip +
+      merchant_oid +
+      email +
+      payment_amount +
+      user_basket +
+      no_installment +
+      max_installment +
+      currency +
+      test_mode;
+
+    const paytr_token = crypto
+      .createHmac("sha256", merchant_key)
+      .update(hashSTR + merchant_salt)
+      .digest("base64");
+
+    const params = new URLSearchParams({
+      merchant_id,
+      user_ip,
+      merchant_oid,
+      email,
+      payment_amount: String(payment_amount),
+      paytr_token,
+      user_basket,
+      debug_on: "1",
+      no_installment,
+      max_installment,
+      user_name: "NetSearch Kullanıcısı",
+      user_address: "Eskisehir",
+      user_phone: "05300000000",
+      merchant_ok_url: "https://netsearch.com.tr/user-panel.html?payment=success",
+      merchant_fail_url: "https://netsearch.com.tr/user-panel.html?payment=fail",
+      timeout_limit: "30",
+      currency,
+      test_mode,
+      lang: "tr",
+      iframe_v2: "1"
+    });
+
+    const paytrRes = await axios.post(
+      "https://www.paytr.com/odeme/api/get-token",
+      params.toString(),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
+
+    if (paytrRes.data.status !== "success") {
+      return res.json({ success: false, error: paytrRes.data.reason || "PayTR token alınamadı" });
+    }
+
+    res.json({
+      success: true,
+      token: paytrRes.data.token,
+      iframeUrl: `https://www.paytr.com/odeme/guvenli/${paytrRes.data.token}`,
+      merchant_oid
+    });
+
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+app.post("/api/paytr/callback", express.urlencoded({ extended: false }), async (req, res) => {
+  try {
+    const merchant_key = process.env.PAYTR_MERCHANT_KEY;
+    const merchant_salt = process.env.PAYTR_MERCHANT_SALT;
+
+    const {
+      merchant_oid,
+      status,
+      total_amount,
+      hash
+    } = req.body;
+
+    const checkHash = crypto
+      .createHmac("sha256", merchant_key)
+      .update(merchant_oid + merchant_salt + status + total_amount)
+      .digest("base64");
+
+    if (hash !== checkHash) {
+      return res.status(400).send("PAYTR notification failed: bad hash");
+    }
+
+    if (status === "success") {
+      console.log("PAYTR ÖDEME BAŞARILI:", merchant_oid, total_amount);
+      // Burada birazdan kullanıcı bakiyesine ekleyeceğiz
+    } else {
+      console.log("PAYTR ÖDEME BAŞARISIZ:", merchant_oid);
+    }
+
+    res.send("OK");
+
+  } catch (e) {
+    console.log("PAYTR CALLBACK HATA:", e.message);
+    res.status(500).send("ERROR");
   }
 });
 

@@ -216,6 +216,35 @@ function renderStats(){
   totalClicks.innerText=clicks;
   totalBudget.innerText=budget+"₺";
 }
+async function loadPayTR(amount = 100){
+
+  const res = await fetch("/api/paytr-token",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      amount,
+      email:"user@netsearch.com"
+    })
+  });
+
+  const data = await res.json();
+
+  if(!data.success){
+    alert("Ödeme başlatılamadı");
+    return;
+  }
+
+  alert("PAYTR TOKEN OLUŞTU ✅");
+
+  if (data.iframeUrl) {
+window.location.href = data.iframeUrl;}
+
+  console.log(data);
+
+}
+window.loadPayTR = loadPayTR;
 
 function renderAds(){
   const box=document.getElementById("myAds");
