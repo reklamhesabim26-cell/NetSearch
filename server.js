@@ -1099,22 +1099,7 @@ app.get("/api/search", async (req, res) => {
     if (q.trim()) {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
-        const intent = detectQueryIntent(q);
-
-if (intent) {
-  const cat = normalize(site.category || "");
-  const text = siteText(site);
-
-  const allowed = intent.allowedCategories.some(c => {
-    const nc = normalize(c);
-    return cat.includes(nc) || text.includes(nc);
-  });
-
-  if (!allowed) {
-    return false;
-  }
-}
-
+        
         const text = siteText(site);
 
         return words.some(w => {
