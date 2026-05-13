@@ -225,6 +225,67 @@ function targetMatch(site, q) {
   });
 
   return bonus;
+  function detectQueryIntent(q) {
+  q = normalize(q);
+
+  const intents = [
+    {
+      name: "devlet",
+      words: [
+        "edevlet","e devlet","sgk","vergi",
+        "belediye","bakanlik","devlet"
+      ],
+      allowedCategories: ["devlet"]
+    },
+
+    {
+      name: "teknik_servis",
+      words: [
+        "kombi","kombici","beyaz esya",
+        "servis","tamir","buzdolabi",
+        "camasir","bulasik"
+      ],
+      allowedCategories: ["teknik servis"]
+    },
+
+    {
+      name: "eczane",
+      words: [
+        "eczane","nobetci eczane",
+        "ilac","saglik"
+      ],
+      allowedCategories: ["eczane","saglik"]
+    },
+
+    {
+      name: "otomotiv",
+      words: [
+        "oto","araba","otomobil",
+        "motor","lastik","kaporta"
+      ],
+      allowedCategories: ["otomotiv","oto servis"]
+    },
+
+    {
+      name: "egitim",
+      words: [
+        "okul","universite","ders",
+        "egitim","tarih","matematik"
+      ],
+      allowedCategories: ["egitim"]
+    }
+  ];
+
+  for (const intent of intents) {
+    for (const w of intent.words) {
+      if (q.includes(normalize(w))) {
+        return intent;
+      }
+    }
+  }
+
+  return null;
+}
 }
 function categoryIntentScore(site, q) {
   const query = normalize(q);
@@ -1038,6 +1099,12 @@ app.get("/api/search", async (req, res) => {
     if (q.trim()) {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
+        const intent = detectQueryIntent(q);
+if (intent) {
+  const cat = normalize(site.category || "");
+  const allowed = intent.allowedCategories.some(c => cat.includes(normalize(c)));
+  if (!allowed) return false;
+}
 
         const text = siteText(site);
 
