@@ -64,15 +64,24 @@ const userSchema = new mongoose.Schema({
   phone: String,
   email: String,
   password: String,
-  role: { type: String, default: "user" }
+  role: { type: String, default: "user" },
+  balance: { type: Number, default: 0 },
 }, { timestamps: true, strict: false });
 
 const siteSchema = new mongoose.Schema({}, { timestamps: true, strict: false });
 const commentSchema = new mongoose.Schema({}, { timestamps: true, strict: false });
+const paymentSchema = new mongoose.Schema({
+  merchant_oid: String,
+  email: String,
+  amount: Number,
+  status: { type: String, default: "pending" },
+  processed: { type: Boolean, default: false }
+}, { timestamps: true, strict: false });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 const Site = mongoose.models.Site || mongoose.model("Site", siteSchema);
 const Comment = mongoose.models.Comment || mongoose.model("Comment", commentSchema);
+const Payment = mongoose.models.Payment || mongoose.model("Payment", paymentSchema);
 
 function normalize(t) {
   return String(t || "").toLowerCase()
@@ -1652,6 +1661,13 @@ app.post("/api/paytr-token", async (req, res) => {
     const merchant_oid = "NS" + Date.now();
     const payment_amount = Math.round(amount * 100);
 
+    await Payment.create({
+  merchant_oid,
+  email,
+  amount,
+  status: "pending"
+});
+
     const user_ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1").split(",")[0];
 
     const user_basket = Buffer.from(JSON.stringify([
@@ -1746,11 +1762,38 @@ app.post("/api/paytr/callback", express.urlencoded({ extended: false }), async (
     }
 
     if (status === "success") {
-      console.log("PAYTR ÖDEME BAŞARILI:", merchant_oid, total_amount);
-      // Burada birazdan kullanıcı bakiyesine ekleyeceğiz
-    } else {
-      console.log("PAYTR ÖDEME BAŞARISIZ:", merchant_oid);
-    }
+
+  const payment = await Payment.findOne({ merchant_oid });
+
+  if (payment && !payment.processed) {
+
+    payment.status = "success";
+    payment.processed = true;
+
+    await payment.save();
+
+    await User.findOneAndUpdate(
+      { email: payment.email },
+      {
+        $inc: {
+          balance: Number(payment.amount || 0)
+        }
+      }
+    );
+
+    console.log("BAKİYE EKLENDİ:", payment.email, payment.amount);
+
+  } else {
+
+    console.log("ÖDEME ZATEN İŞLENMİŞ:", merchant_oid);
+
+  }
+
+} else {
+
+  console.log("PAYTR ÖDEME BAŞARISIZ:", merchant_oid);
+
+}
 
     res.send("OK");
 
