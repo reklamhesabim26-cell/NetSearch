@@ -1100,10 +1100,19 @@ app.get("/api/search", async (req, res) => {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
         const intent = detectQueryIntent(q);
+
 if (intent) {
   const cat = normalize(site.category || "");
-  const allowed = intent.allowedCategories.some(c => cat.includes(normalize(c)));
-  if (!allowed) return false;
+  const text = siteText(site);
+
+  const allowed = intent.allowedCategories.some(c => {
+    const nc = normalize(c);
+    return cat.includes(nc) || text.includes(nc);
+  });
+
+  if (!allowed) {
+    return false;
+  }
 }
 
         const text = siteText(site);
