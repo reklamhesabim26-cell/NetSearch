@@ -159,6 +159,44 @@ button,a{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:p
     <button class="gray" onclick="clearForm()">Formu Temizle</button>
     <div id="createMsg" class="msg"></div>
   </div>
+  <div class="panel">
+
+<h2>🤖 Yapay Zeka / Otomatik Site Indexleme</h2>
+
+<div class="grid">
+
+<input
+type="text"
+id="autoIndexUrl"
+placeholder="https://siteadi.com">
+
+<input
+type="text"
+id="autoIndexCity"
+placeholder="Şehir">
+
+<input
+type="text"
+id="autoIndexDistrict"
+placeholder="İlçe">
+
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+
+<button class="blue" onclick="previewAutoIndex()">
+🔍 Ön İzleme Yap
+</button>
+
+<button class="green" onclick="runAutoIndex()">
+🚀 Siteyi Indexle
+</button>
+
+</div>
+
+<div id="crawlPreviewBox" style="margin-top:20px;"></div>
+
+</div>
 
   <div class="panel">
     <h2>Reklam / İşletme Yönetimi</h2>
@@ -554,6 +592,145 @@ function set(id,v){document.getElementById(id).value=v||"";}
 function toArray(v){return String(v||"").split(",").map(x=>x.trim()).filter(Boolean);}
 function arrayText(v){return Array.isArray(v) ? v.join(", ") : (v || "");}
 function esc(t){return String(t||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+async function previewAutoIndex() {
+
+  const url = document.getElementById("autoIndexUrl").value.trim();
+
+  if (!url) {
+    alert("URL gir.");
+    return;
+  }
+
+  const box = document.getElementById("crawlPreviewBox");
+
+  box.innerHTML = "Crawler analiz yapıyor...";
+
+  try {
+
+    const res = await fetch("/api/crawl-preview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      box.innerHTML = `<div class="msg">${data.message}</div>`;
+      return;
+    }
+
+    const s = data.data;
+
+    box.innerHTML = `
+      <div style="border:1px solid #dbeafe;border-radius:18px;padding:18px;background:#f8fbff;">
+
+        ${s.image ? `
+        <img src="${s.image}"
+        style="width:100%;max-height:240px;object-fit:cover;border-radius:14px;margin-bottom:14px;">
+        ` : ""}
+
+        <div style="display:flex;gap:14px;align-items:center;">
+
+          ${s.favicon ? `
+          <img src="${s.favicon}"
+          style="width:60px;height:60px;border-radius:14px;background:white;padding:6px;">
+          ` : ""}
+
+          <div>
+            <h3 style="margin:0;">${s.title}</h3>
+            <div style="color:#16a34a;font-weight:bold;">
+              ${s.domain}
+            </div>
+          </div>
+
+        </div>
+
+        <p style="margin-top:16px;line-height:1.6;">
+          ${s.description}
+        </p>
+
+        <div style="margin-top:12px;">
+          <b>Kategori:</b> ${s.category}
+        </div>
+
+        <div style="margin-top:12px;">
+          <b>Anahtar Kelimeler:</b><br>
+
+          ${s.keywords.slice(0,15).map(k => `
+            <span style="
+              display:inline-block;
+              background:#e0f2fe;
+              padding:6px 10px;
+              border-radius:999px;
+              margin:4px;
+              font-size:12px;
+              font-weight:bold;
+            ">
+              ${k}
+            </span>
+          `).join("")}
+
+        </div>
+
+      </div>
+    `;
+
+  } catch (e) {
+
+    box.innerHTML = `
+      <div class="msg">
+        Crawler bağlantı hatası oluştu.
+      </div>
+    `;
+  }
+}
+
+async function runAutoIndex() {
+
+  const url = document.getElementById("autoIndexUrl").value.trim();
+  const city = document.getElementById("autoIndexCity").value.trim();
+  const district = document.getElementById("autoIndexDistrict").value.trim();
+
+  if (!url) {
+    alert("URL gir.");
+    return;
+  }
+
+  try {
+
+    const res = await fetch("/api/auto-index", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        url,
+        city,
+        district
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message || "Indexleme başarısız.");
+      return;
+    }
+
+    alert("🚀 Site başarıyla indexlendi.");
+
+    if (typeof loadSites === "function") {
+      loadSites();
+    }
+
+  } catch (e) {
+
+    alert("Crawler sistemi çalışmadı.");
+  }
+}
 </script>
 
 </body>
