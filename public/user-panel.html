@@ -229,6 +229,8 @@ function renderStats(){
 }
 async function loadPayTR(amount = 100){
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const res = await fetch("/api/paytr-token",{
     method:"POST",
     headers:{
@@ -236,7 +238,7 @@ async function loadPayTR(amount = 100){
     },
     body:JSON.stringify({
       amount,
-      email:"user@netsearch.com"
+      email: user.email || "user@netsearch.com"
     })
   });
 
