@@ -1119,7 +1119,7 @@ app.get("/api/search", async (req, res) => {
         o.qualityScore = calcQualityScore(o);
         o.adScore = adScore(o, q);
         o.searchScore = score(o, q);
-        o.isRelevant = !q.trim() || o.searchScore >= 60;
+        o.isRelevant = !q.trim() || o.searchScore >= 90;
 
         return o;
       })
