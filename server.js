@@ -1221,13 +1221,17 @@ app.get("/api/sites", async (req, res) => {
       results = sites.filter(site => {
         if (hasNegative(site, q)) return false;
         const text = siteText(site);
-return words.some(w => {
-  if (text.includes(w)) return true;
+let matchCount = 0;
 
-  const textWords = text.split(/\s+/);
+words.forEach(w => {
+  if (text.includes(w)) matchCount++;
+});
 
-  return textWords.some(tw => similar(tw, w));
-});s      });
+if (words.length === 1) {
+  return matchCount >= 1;
+}
+
+return matchCount >= 2;s      });
     }
 
     results = results.map(site => {
