@@ -1803,6 +1803,25 @@ app.post("/api/paytr/callback", express.urlencoded({ extended: false }), async (
   }
 });
 
+app.get("/api/user-balance", async (req, res) => {
+  try {
+    const email = req.query.email;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, balance: 0 });
+    }
+
+    res.json({
+      success: true,
+      balance: Number(user.balance || 0)
+    });
+
+  } catch (e) {
+    res.status(500).json({ success: false, balance: 0 });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`NetSearch server ${PORT} portunda çalışıyor`);
 });

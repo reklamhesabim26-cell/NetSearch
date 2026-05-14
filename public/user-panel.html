@@ -215,6 +215,23 @@ async function loadAds(){
   }
 }
 
+async function loadUserBalance(){
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  if(!user.email){
+    return;
+  }
+
+  const res = await fetch("/api/user-balance?email=" + encodeURIComponent(user.email));
+  const data = await res.json();
+
+  if(data.success){
+    totalBudget.innerText = Number(data.balance || 0) + "₺";
+  }
+}
+
+loadUserBalance();
+
 function renderStats(){
   let views=0,clicks=0,budget=0;
   mySites.forEach(s=>{
