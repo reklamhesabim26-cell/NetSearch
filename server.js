@@ -464,6 +464,19 @@ function score(site, q) {
   if (title.includes(query)) s += 140;
 if (text.includes(query)) s += 80;
 
+let exactWordMatch = 0;
+
+words.forEach(w => {
+  if (title.includes(w)) exactWordMatch += 2;
+  if (text.includes(w)) exactWordMatch += 1;
+});
+
+s += exactWordMatch * 35;
+
+if (words.length > 1 && exactWordMatch < words.length) {
+  s -= 120;
+}
+
 if (similar(title, query)) s += 120;
 
   words.forEach(w => {
@@ -1146,7 +1159,9 @@ if (words.length === 1) {
   return matchCount >= 1;
 }
 
-return matchCount >= 2;
+const requiredMatch = Math.ceil(words.length * 0.5);
+
+return matchCount >= requiredMatch;
       });
     }
 
