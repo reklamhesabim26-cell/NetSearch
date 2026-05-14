@@ -1136,13 +1136,17 @@ app.get("/api/search", async (req, res) => {
         
         const text = siteText(site);
 
-        return words.some(w => {
-          if (text.includes(w)) return true;
+        let matchCount = 0;
 
-          const textWords = text.split(/\s+/);
+words.forEach(w => {
+  if (text.includes(w)) matchCount++;
+});
 
-          return textWords.some(tw => similar(tw, w));
-        });
+if (words.length === 1) {
+  return matchCount >= 1;
+}
+
+return matchCount >= 2;
       });
     }
 
