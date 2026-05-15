@@ -295,8 +295,8 @@ function renderAds(){
       <h3>${esc(s.title||s.businessName||"Reklam")}</h3>
       <div>
         ${pending?'<span class="badge pending">Onay Bekliyor</span>':active?'<span class="badge active">Aktif Reklam</span>':rejected?'<span class="badge rejected">Reddedildi</span>':'<span class="badge">Pasif</span>'}
-        <span class="badge">Görüntüleme: ${s.views||0}</span>
-        <span class="badge">Tıklama: ${s.clicks||0}</span>
+        <span class="badge">Görüntüleme: ${s.views || s.impressions || 0}</span>
+        <span class="badge">Tıklama: ${s.clicks || s.adClicks || 0}</span>
         <span class="badge">Bütçe: ${s.sponsorBudget||0}₺</span>
         <span class="badge">CPC: ${s.cpc||0}₺</span>
         <span class="badge">Kalite: ${s.qualityScore||0}</span>
