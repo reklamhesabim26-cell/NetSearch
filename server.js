@@ -1845,6 +1845,42 @@ app.get("/api/user-balance", async (req, res) => {
   }
 });
 
+app.post("/api/ad-click", async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const ad = await Site.findById(id);
+    if (!ad) return res.json({ success: false, message: "Reklam bulunamadı" });
+
+    const cpc = Number(ad.cpc || ad.sponsorCpc || 1);
+    const ownerEmail = ad.ownerEmail || ad.email;
+
+    const user = await User.findOne({ email: ownerEmail });
+    if (!user) return res.json({ success: false, message: "Kullanıcı bulunamadı" });
+
+    if (Number(user.balance || 0) < cpc) {
+      ad.sponsored = false;
+      ad.isSponsored = false;
+      ad.sponsorActive = false;
+      await ad.save();
+
+      return res.json({ success: false, message: "Bakiye yetersiz, reklam durduruldu" });
+    }
+
+    user.balance = Number(user.balance || 0) - cpc;
+    await user.save();
+
+    ad.clicks = Number(ad.clicks || 0) + 1;
+    ad.spend = Number(ad.spend || 0) + cpc;
+    await ad.save();
+
+    res.json({ success: true, balance: user.balance, cpc });
+
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`NetSearch server ${PORT} portunda çalışıyor`);
 });
