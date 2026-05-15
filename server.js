@@ -1850,13 +1850,36 @@ app.post("/api/ad-click", async (req, res) => {
     const { id } = req.body;
 
     const ad = await Site.findById(id);
-    if (!ad) return res.json({ success: false, message: "Reklam bulunamadı" });
+    if (!ad) {
+      return res.json({ success: false, message: "Site bulunamadı" });
+    }
+
+    ad.clicks = Number(ad.clicks || 0) + 1;
+
+    const isSponsored =
+      ad.sponsored || ad.isSponsored || ad.sponsorActive;
+
+    if (!isSponsored) {
+      await ad.save();
+      return res.json({
+        success: true,
+        charged: false,
+        message: "Organik tıklama sayıldı"
+      });
+    }
 
     const cpc = Number(ad.cpc || ad.sponsorCpc || 1);
     const ownerEmail = ad.ownerEmail || ad.email;
 
     const user = await User.findOne({ email: ownerEmail });
-    if (!user) return res.json({ success: false, message: "Kullanıcı bulunamadı" });
+
+    if (!user) {
+      await ad.save();
+      return res.json({
+        success: false,
+        message: "Reklam sahibi bulunamadı"
+      });
+    }
 
     if (Number(user.balance || 0) < cpc) {
       ad.sponsored = false;
@@ -1864,24 +1887,30 @@ app.post("/api/ad-click", async (req, res) => {
       ad.sponsorActive = false;
       await ad.save();
 
-      return res.json({ success: false, message: "Bakiye yetersiz, reklam durduruldu" });
+      return res.json({
+        success: false,
+        message: "Bakiye yetersiz, reklam durduruldu"
+      });
     }
 
     user.balance = Number(user.balance || 0) - cpc;
     await user.save();
 
-   user.balance = Number(user.balance || 0) - cpc;
-await user.save();
+    ad.spend = Number(ad.spend || 0) + cpc;
+    await ad.save();
 
-ad.clicks = Number(ad.clicks || 0) + 1;
-ad.spend = Number(ad.spend || 0) + cpc;
-
-await ad.save();
-
-    res.json({ success: true, balance: user.balance, cpc });
+    res.json({
+      success: true,
+      charged: true,
+      balance: user.balance,
+      cpc
+    });
 
   } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
+    res.status(500).json({
+      success: false,
+      message: e.message
+    });
   }
 });
 
