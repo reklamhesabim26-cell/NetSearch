@@ -322,8 +322,19 @@ async function trackView(id){
 }
 
 async function trackClick(id){
-  if(!id)return;
-  try{await fetch(`/api/sites/${id}/click?t=${Date.now()}`,{method:"POST",cache:"no-store"});}catch{}
+  if(!id) return;
+
+  try{
+    await fetch("/api/ad-click", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id })
+    });
+  }catch(e){
+    console.log(e);
+  }
 }
 
 function quickSearch(text){input.value=text;searchSites();}
