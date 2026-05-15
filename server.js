@@ -1857,7 +1857,9 @@ app.post("/api/ad-click", async (req, res) => {
     ad.clicks = Number(ad.clicks || 0) + 1;
 
     const isSponsored =
-      ad.sponsored || ad.isSponsored || ad.sponsorActive;
+  (ad.sponsored === true || ad.isSponsored === true || ad.sponsorActive === true) &&
+  Number(ad.sponsorBudget || 0) > 0 &&
+  Number(ad.cpc || ad.sponsorCpc || 0) > 0;
 
     if (!isSponsored) {
       await ad.save();
