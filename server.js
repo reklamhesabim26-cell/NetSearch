@@ -1870,9 +1870,13 @@ app.post("/api/ad-click", async (req, res) => {
     user.balance = Number(user.balance || 0) - cpc;
     await user.save();
 
-    ad.clicks = Number(ad.clicks || 0) + 1;
-    ad.spend = Number(ad.spend || 0) + cpc;
-    await ad.save();
+   user.balance = Number(user.balance || 0) - cpc;
+await user.save();
+
+ad.clicks = Number(ad.clicks || 0) + 1;
+ad.spend = Number(ad.spend || 0) + cpc;
+
+await ad.save();
 
     res.json({ success: true, balance: user.balance, cpc });
 
